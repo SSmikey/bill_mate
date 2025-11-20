@@ -31,6 +31,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "types/**/*.d.ts",
     ".next/dev/types/**/*.ts",
     ".next/types/**/*.ts",
     "next-env.d.ts",

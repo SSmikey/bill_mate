@@ -48,7 +48,9 @@ export async function PUT(
     if (approved) {
       // Update payment status
       payment.status = 'verified';
-      payment.verifiedBy = session.user?.id;
+      if (session.user?.id) {
+        payment.verifiedBy = session.user.id as any;
+      }
       payment.verifiedAt = new Date();
       await payment.save();
 

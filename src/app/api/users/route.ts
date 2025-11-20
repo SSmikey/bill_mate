@@ -59,8 +59,8 @@ export async function POST(req: NextRequest) {
       roomId: roomId || null,
     });
 
-    const userResponse = user.toObject();
-    delete userResponse.password;
+    const userObject = user.toObject();
+    const { password: _, ...userResponse } = userObject;
 
     return NextResponse.json({ success: true, data: userResponse }, { status: 201 });
   } catch (error) {
