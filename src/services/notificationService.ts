@@ -29,8 +29,8 @@ export async function sendPaymentReminders(daysBefore: number) {
   let notificationCount = 0;
 
   for (const bill of bills) {
-    const user = bill.tenantId;
-    const room = bill.roomId;
+    const user = bill.tenantId as any;
+    const room = bill.roomId as any;
 
     if (!user || !room) continue;
 
@@ -83,8 +83,8 @@ export async function sendPaymentOverdueNotifications() {
   let notificationCount = 0;
 
   for (const bill of bills) {
-    const user = bill.tenantId;
-    const room = bill.roomId;
+    const user = bill.tenantId as any;
+    const room = bill.roomId as any;
 
     if (!user || !room) continue;
 

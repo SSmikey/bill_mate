@@ -1,34 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
 import bcryptjs from 'bcryptjs';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
-import { authOptions } from '@/lib/auth';
 
-// GET all users (admin only)
-export async function GET(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || session.user?.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    await connectDB();
-    const users = await User.find().select('-password').populate('roomId');
-
-    return NextResponse.json({ success: true, data: users });
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
-  }
-}
-
-// POST create user
+// POST create initial admin user (no authentication required for setup)
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, password, name, phone, role = 'tenant', roomId } = body;
+    const { email, password, name, phone } = body;
 
     // Validation
     if (!email || !password || !name) {
@@ -39,6 +18,14 @@ export async function POST(req: NextRequest) {
     }
 
     await connectDB();
+
+    // Check if any admin already exists
+    const existingAdmin = await User.findOne({ role: 'admin' });
+    if (existingAdmin) {
+      return NextResponse.json({ 
+        error: 'Admin user already exists. Cannot create multiple admins through this endpoint.' 
+      }, { status: 400 });
+    }
 
     // Check if user exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -55,16 +42,19 @@ export async function POST(req: NextRequest) {
       password: hashedPassword,
       name,
       phone: phone || null,
-      role,
-      roomId: roomId || null,
+      role: 'admin',
     });
 
     const userObject = user.toObject();
     const { password: _, ...userResponse } = userObject;
 
-    return NextResponse.json({ success: true, data: userResponse }, { status: 201 });
+    return NextResponse.json({ 
+      success: true, 
+      data: userResponse,
+      message: 'Admin user created successfully!'
+    }, { status: 201 });
   } catch (error) {
-    console.error('Error creating user:', error);
-    return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
+    console.error('Error creating admin user:', error);
+    return NextResponse.json({ error: 'Failed to create admin user' }, { status: 500 });
   }
 }

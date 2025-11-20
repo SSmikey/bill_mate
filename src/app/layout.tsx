@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import BootstrapClient from './components/BootstrapClient';
+import SessionProvider from './components/SessionProvider';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ตัวอ่านสลิปธนาคาร - Bank Slip Reader",
-  description: "อ่านสลิปธนาคารด้วย QR Code และ OCR",
+  title: "Bill Mate - ระบบจัดการค่าเช่าหอพัก",
+  description: "ระบบจัดการค่าเช่า ค่าน้ำ ค่าไฟ และตรวจสอบการชำระเงิน",
 };
 
 export default function RootLayout({
@@ -29,8 +30,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <BootstrapClient />
-        {children}
+        <SessionProvider>
+          <BootstrapClient />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );
