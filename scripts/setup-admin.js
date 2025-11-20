@@ -1,11 +1,22 @@
+// Load environment variables
+require('dotenv').config({ path: '.env.local' });
+
 const http = require('http');
 
+// Admin credentials from environment variables
 const adminData = {
-  email: 'admin@billmate.com',
-  password: 'admin123',
-  name: 'System Administrator',
-  phone: '0800000000'
+  email: process.env.ADMIN_EMAIL,
+  password: process.env.ADMIN_PASSWORD,
+  name: process.env.ADMIN_NAME,
+  phone: process.env.ADMIN_PHONE
 };
+
+// Validate that all required environment variables are set
+if (!adminData.email || !adminData.password || !adminData.name) {
+  console.error('❌ Error: Missing required admin credentials in environment variables.');
+  console.error('Please check ADMIN_EMAIL, ADMIN_PASSWORD, and ADMIN_NAME in .env.local');
+  process.exit(1);
+}
 
 const postData = JSON.stringify(adminData);
 
@@ -38,12 +49,10 @@ const req = http.request(options, (res) => {
       if (res.statusCode === 201) {
         console.log('✅ Admin user created successfully!');
         console.log('===============================');
-        console.log(`Email: ${adminData.email}`);
-        console.log(`Password: ${adminData.password}`);
-        console.log(`Name: ${adminData.name}`);
-        console.log(`Role: admin`);
+        console.log('Admin credentials have been set from environment variables');
+        console.log('Role: admin');
         console.log('===============================');
-        console.log('Please save these credentials securely!');
+        console.log('Check your .env.local file for the actual credentials');
         console.log('');
         console.log('You can now login at: http://localhost:3000/login');
       } else {
