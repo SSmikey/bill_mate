@@ -41,8 +41,7 @@ async function initializeDatabase() {
     const existingAdmin = await User.findOne({ email: adminData.email });
     if (existingAdmin) {
       console.log('✅ Admin user already exists!');
-      console.log(`Email: ${adminData.email}`);
-      console.log('Password: admin123');
+      console.log('Admin credentials are configured in .env.local file');
       return;
     }
 
