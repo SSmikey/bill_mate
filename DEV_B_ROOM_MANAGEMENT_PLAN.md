@@ -559,3 +559,96 @@ interface RoomFormData {
 **วันที่:** 2025-11-21
 **Version:** 1.0
 **Status:** Ready for Implementation 🚀
+
+โครงสร้างโปรเจคที่แนะนำสำหรับโปรเจค :
+
+src/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/
+│   │   │   └── page.tsx
+│   │   └── register/
+│   │       └── page.tsx
+│   ├── admin/
+│   │   ├── dashboard/
+│   │   │   └── page.tsx
+│   │   ├── rooms/
+│   │   │   └── page.tsx
+│   │   ├── bills/
+│   │   │   └── page.tsx
+│   │   ├── payments/
+│   │   │   └── page.tsx
+│   │   └── layout.tsx
+│   ├── tenant/
+│   │   ├── dashboard/
+│   │   │   └── page.tsx
+│   │   ├── bills/
+│   │   │   └── page.tsx
+│   │   └── layout.tsx
+│   ├── api/
+│   │   ├── auth/
+│   │   │   └── [...nextauth]/
+│   │   │       └── route.ts
+│   │   ├── users/
+│   │   │   └── route.ts
+│   │   ├── rooms/
+│   │   │   ├── route.ts
+│   │   │   └── [id]/
+│   │   │       └── route.ts
+│   │   ├── bills/
+│   │   │   ├── route.ts
+│   │   │   └── [id]/
+│   │   │       └── route.ts
+│   │   ├── payments/
+│   │   │   ├── route.ts
+│   │   │   ├── upload/
+│   │   │   │   └── route.ts
+│   │   │   └── [id]/
+│   │   │       ├── route.ts
+│   │   │       └── verify/
+│   │   │           └── route.ts
+│   │   └── notifications/
+│   │       ├── route.ts
+│   │       └── send/
+│   │           └── route.ts
+│   ├── components/
+│   │   ├── BootstrapClient.tsx (existing)
+│   │   ├── SlipReader.tsx (existing - will refactor)
+│   │   ├── Navbar.tsx
+│   │   ├── Sidebar.tsx
+│   │   ├── NotificationBell.tsx
+│   │   ├── BillCard.tsx
+│   │   ├── PaymentCard.tsx
+│   │   ├── RoomForm.tsx
+│   │   ├── UserForm.tsx
+│   │   └── SlipUploader.tsx
+│   ├── globals.css (existing)
+│   ├── layout.tsx (existing - will modify)
+│   └── page.tsx (existing - will modify)
+├── lib/
+│   ├── mongodb.ts
+│   ├── auth.ts
+│   └── email.ts
+├── models/
+│   ├── User.ts
+│   ├── Room.ts
+│   ├── Bill.ts
+│   ├── Payment.ts
+│   └── Notification.ts
+├── services/
+│   ├── ocrService.ts
+│   ├── qrService.ts
+│   └── notificationService.ts
+├── types/
+│   ├── index.ts
+│   ├── user.ts
+│   ├── room.ts
+│   ├── bill.ts
+│   ├── payment.ts
+│   └── notification.ts
+├── utils/
+│   ├── constants.ts
+│   ├── dateHelpers.ts
+│   ├── validators.ts
+│   └── formatters.ts
+└── middleware.ts
