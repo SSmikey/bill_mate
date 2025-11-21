@@ -320,7 +320,7 @@ export default function AdminRoomsPage() {
                             <th className="text-end">ค่าน้ำ</th>
                             <th className="text-end">ค่าไฟ</th>
                             <th>สถานะ/ผู้เช่า</th>
-                            <th className="text-center">การจัดการ</th>
+                            <th className="text-center" style={{ minWidth: '200px' }}>การจัดการ</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -356,20 +356,24 @@ export default function AdminRoomsPage() {
                                 )}
                               </td>
                               <td className="text-center">
-                                <button
-                                  className="btn btn-sm btn-outline-primary me-1"
-                                  onClick={() => handleEditClick(room)}
-                                  title="แก้ไข"
-                                >
-                                  <i className="bi bi-pencil"></i>
-                                </button>
-                                <button
-                                  className="btn btn-sm btn-outline-danger"
-                                  onClick={() => handleDelete(room._id, room.roomNumber)}
-                                  title="ลบ"
-                                >
-                                  <i className="bi bi-trash"></i>
-                                </button>
+                                <div className="btn-group" role="group">
+                                  <button
+                                    className="btn btn-primary btn-sm"
+                                    onClick={() => handleEditClick(room)}
+                                    title="แก้ไขข้อมูลห้อง"
+                                  >
+                                    <i className="bi bi-pencil-square me-1"></i>
+                                    แก้ไข
+                                  </button>
+                                  <button
+                                    className="btn btn-danger btn-sm"
+                                    onClick={() => handleDelete(room._id, room.roomNumber)}
+                                    title="ลบห้อง"
+                                  >
+                                    <i className="bi bi-trash-fill me-1"></i>
+                                    ลบ
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
