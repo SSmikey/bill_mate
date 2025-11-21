@@ -318,7 +318,7 @@ export default function AdminRoomsPage() {
                             <th>ชั้น</th>
                             <th className="text-end">ค่าเช่า</th>
                             <th className="text-end">ค่าน้ำ</th>
-                            <th className="text-end">ค่าไฟ</th>
+                            <th className="text-end">ค่าไฟ/หน่วย</th>
                             <th>สถานะ/ผู้เช่า</th>
                             <th className="text-center" style={{ minWidth: '200px' }}>การจัดการ</th>
                           </tr>

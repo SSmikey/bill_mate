@@ -8,7 +8,7 @@ interface RoomFormData {
   floor?: number;
   rentPrice: number;
   waterPrice: number;
-  electricityPrice: number;
+  electricityPrice: number; // ตอนนี้หมายถึง "บาทต่อหน่วย" แทน
 }
 
 // Interface สำหรับ Props ของ Component
@@ -70,7 +70,7 @@ export default function RoomForm({
       return 'กรุณากรอกค่าน้ำที่ถูกต้อง';
     }
     if (!formData.electricityPrice || formData.electricityPrice < 0) {
-      return 'กรุณากรอกค่าไฟที่ถูกต้อง';
+      return 'กรุณากรอกค่าไฟต่อหน่วยที่ถูกต้อง';
     }
     return null;
   };
@@ -203,7 +203,7 @@ export default function RoomForm({
             {/* ค่าเช่า */}
             <div className="col-md-6 mb-3">
               <label htmlFor="rentPrice" className="form-label">
-                ค่าเช่า (บาท) <span className="text-danger">*</span>
+                ค่าเช่า (บาท/เดือน) <span className="text-danger">*</span>
               </label>
               <input
                 type="number"
@@ -222,7 +222,7 @@ export default function RoomForm({
             {/* ค่าน้ำ */}
             <div className="col-md-6 mb-3">
               <label htmlFor="waterPrice" className="form-label">
-                ค่าน้ำ (บาท) <span className="text-danger">*</span>
+                ค่าน้ำ (บาท/เดือน) <span className="text-danger">*</span>
               </label>
               <input
                 type="number"
@@ -230,20 +230,24 @@ export default function RoomForm({
                 id="waterPrice"
                 value={formData.waterPrice}
                 onChange={(e) => handleChange('waterPrice', parseFloat(e.target.value) || 0)}
-                placeholder="เช่น 150"
+                placeholder="เช่น 120, 150"
                 min="0"
                 step="0.01"
                 disabled={isLoading}
                 required
               />
+              <div className="form-text">
+                <i className="bi bi-info-circle me-1"></i>
+                ค่าน้ำแบบเหมาจ่ายต่อเดือน
+              </div>
             </div>
           </div>
 
           <div className="row">
-            {/* ค่าไฟ */}
+            {/* ค่าไฟต่อหน่วย */}
             <div className="col-md-6 mb-3">
               <label htmlFor="electricityPrice" className="form-label">
-                ค่าไฟ (บาท) <span className="text-danger">*</span>
+                ค่าไฟต่อหน่วย (บาท/หน่วย) <span className="text-danger">*</span>
               </label>
               <input
                 type="number"
@@ -253,12 +257,16 @@ export default function RoomForm({
                 onChange={(e) =>
                   handleChange('electricityPrice', parseFloat(e.target.value) || 0)
                 }
-                placeholder="เช่น 600"
+                placeholder="เช่น 8, 10, 12"
                 min="0"
                 step="0.01"
                 disabled={isLoading}
                 required
               />
+              <div className="form-text">
+                <i className="bi bi-info-circle me-1"></i>
+                กรอกราคาต่อหน่วย (จะคำนวณตามหน่วยที่ใช้จริงในแต่ละเดือน)
+              </div>
             </div>
           </div>
 
