@@ -4,6 +4,7 @@ import "./globals.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import BootstrapClient from './components/BootstrapClient';
 import SessionProvider from './components/SessionProvider';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +33,9 @@ export default function RootLayout({
       >
         <SessionProvider>
           <BootstrapClient />
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </SessionProvider>
       </body>
     </html>
