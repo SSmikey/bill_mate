@@ -173,13 +173,21 @@ const AdminPaymentsPage = () => {
       rejected: "ปฏิเสธ",
       all: "ทั้งหมด",
     };
+    const filterColors: { [key: string]: string } = {
+      pending: "warning",
+      // คุณสามารถมาเพิ่มสีสำหรับปุ่มอื่นตรงนี้ได้ใน commit ต่อไป
+      // verified: "success",
+      // rejected: "danger",
+      // all: "dark",
+    };
 
     return (
       <div className="mb-3">
         {filters.map((f) => (
           <Button
             key={f}
-            variant={filter === f ? "primary" : "outline-secondary"}
+            // ถ้าปุ่มถูกเลือก ให้ใช้สีจาก map, ถ้าไม่มีให้ใช้สีน้ำเงิน(primary) เหมือนเดิม
+            variant={filter === f ? (filterColors[f] || "primary") : "outline-secondary"}
             size="sm"
             className="me-2"
             onClick={() => setFilter(f)}

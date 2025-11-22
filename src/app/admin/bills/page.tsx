@@ -250,7 +250,7 @@ const AdminBillsPage = () => {
                         <td>
                           {/* อาจจะลิงก์ไปหน้า Admin Payment ที่กรองตาม billId นี้ */}
                           <Link href={`/admin/payments`} passHref>
-                             <Button variant="outline-primary" size="sm"><i className="bi bi-search me-1"></i>ดูการชำระ</Button>
+                             <Button variant="outline-primary" size="sm"><i className="bi bi-search me-1"></i>ดูการชำระเงิน</Button>
                           </Link>
                         </td>
                       </tr>
