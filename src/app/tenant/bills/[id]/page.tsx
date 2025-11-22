@@ -145,7 +145,11 @@ const BillDetailPage = () => {
                       <div>
                         อัปโหลดเมื่อ {format(new Date(p.createdAt), "dd MMM yy, HH:mm", { locale: th })}
                         <br />
-                        <small className="text-muted">จำนวนเงินจากสลิป: {p.ocrData?.amount?.toLocaleString() ?? 'N/A'} บาท</small>
+                        <small className="text-muted">
+                          จำนวนเงินจากสลิป: {p.ocrData?.amount ? `${p.ocrData.amount.toLocaleString()} บาท` : 'ไม่สามารถอ่านได้'}
+                          {p.ocrData?.amount && bill && p.ocrData.amount !== bill.totalAmount &&
+                            <Badge bg="warning" text="dark" className="ms-2">ยอดไม่ตรง</Badge>}
+                        </small>
                         {p.status === 'rejected' && <div className="small text-danger">เหตุผล: {p.rejectionReason}</div>}
                       </div>
                       {getPaymentStatusBadge(p.status)}
