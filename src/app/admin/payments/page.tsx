@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Modal, Button, Spinner, Alert, Badge, Table } from "react-bootstrap";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
+import { rejects } from "assert";
 
 // สมมติว่า Type เหล่านี้ถูก import มาจากไฟล์กลาง
 // src/types/payment.ts
@@ -176,8 +177,8 @@ const AdminPaymentsPage = () => {
     const filterColors: { [key: string]: string } = {
       pending: "warning",
       verified: "success",
+      rejected: "danger",
       // คุณสามารถมาเพิ่มสีสำหรับปุ่มอื่นตรงนี้ได้ใน commit ต่อไป
-      // rejected: "danger",
       // all: "dark",
     };
 
