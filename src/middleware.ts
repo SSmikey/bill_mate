@@ -22,7 +22,7 @@ export default withAuth(
     const rateLimitResult = rateLimiter.isAllowed(ip);
     if (!rateLimitResult.allowed) {
       const response = NextResponse.json(
-        { error: rateLimiter.config.message || 'Too many requests' },
+        { error: 'Too many requests' },
         { status: 429 }
       );
       
