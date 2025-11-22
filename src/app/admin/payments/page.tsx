@@ -471,7 +471,7 @@ const AdminPaymentsPage = () => {
                       <td colSpan={8} className="text-center py-4">
                         {filter === 'all'
                           ? 'ยังไม่มีข้อมูลการชำระเงิน'
-                          : `ไม่พบรายการที่ "${filterLabels[filter]}"`}
+                          : `ไม่พบรายการที่ ${filterLabels[filter]}`}
                       </td>
                     </tr>
                   )}

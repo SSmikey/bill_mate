@@ -164,7 +164,7 @@ const TenantPaymentsPage = () => {
                   ) : (
                     <tr>
                       <td colSpan={5} className="text-center py-4">
-                        {filter === 'all' ? 'ยังไม่มีประวัติการชำระเงิน' : `ไม่พบรายการที่ "${filterLabels[filter]}"`}
+                        {filter === 'all' ? 'ยังไม่มีประวัติการชำระเงิน' : `ไม่พบรายการที่ ${filterLabels[filter]}`}
                       </td>
                     </tr>
                   )}
