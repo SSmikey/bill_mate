@@ -63,7 +63,7 @@ export default async function TenantLayout({
 
           <div className="nav flex-column">
             <Link
-              href="/profile"
+              href="/tenant/profile"
               className="nav-link text-dark d-flex align-items-center px-3 py-2 mb-2"
             >
               <i className="bi bi-person me-3"></i>

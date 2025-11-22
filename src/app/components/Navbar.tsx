@@ -169,7 +169,7 @@ export default function Navbar() {
                   <hr className="dropdown-divider" />
                 </li>
                 <li>
-                  <Link href="/profile" className="dropdown-item">
+                  <Link href={session.user?.role === 'admin' ? '/admin/profile' : '/tenant/profile'} className="dropdown-item">
                     <i className="bi bi-gear me-2"></i>
                     ตั้งค่าโปรไฟล์
                   </Link>
