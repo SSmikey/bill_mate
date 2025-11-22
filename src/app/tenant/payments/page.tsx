@@ -80,17 +80,31 @@ const TenantPaymentsPage = () => {
       verified: "อนุมัติแล้ว",
       rejected: "ปฏิเสธ",
     };
+    const filterColors: { [key: string]: string } = {
+      all: "dark",
+      pending: "warning",
+      verified: "success",
+      rejected: "danger",
+    };
 
     return (
       <div className="mb-3">
         {filters.map((f) => (
           <Button
             key={f}
-            variant={filter === f ? "primary" : "outline-secondary"}
+            variant={filter === f ? (filterColors[f] || "primary") : "outline-dark"}
             size="sm"
             className="me-2"
             onClick={() => setFilter(f)}
           >
+            <i
+              className={`bi bi-${
+                f === "all" ? "collection"
+                  : f === "pending" ? "hourglass-split"
+                  : f === "verified" ? "check2-circle"
+                  : "x-circle"
+              } me-1`}
+            ></i>
             {filterLabels[f]}
           </Button>
         ))}
@@ -134,7 +148,7 @@ const TenantPaymentsPage = () => {
                         </td>
                         <td>
                           <Link href={`/tenant/bills/${p.billId._id}`} passHref>
-                            <Button variant="outline-primary" size="sm"><i className="bi bi-eye me-1"></i>ดูบิล</Button>
+                            <Button variant="link" size="sm" className="p-0"><i className="bi bi-eye me-1"></i>ดูบิล</Button>
                           </Link>
                         </td>
                       </tr>

@@ -88,12 +88,12 @@ const TenantBillsListPage = () => {
                         <td>
                           <Link href={`/tenant/bills/${b._id}`} passHref>
                             <Button 
-                              variant={b.status === 'pending' || b.status === 'overdue' ? 'primary' : 'outline-secondary'} 
+                              variant={b.status === 'pending' || b.status === 'overdue' ? 'primary' : 'link'} 
                               size="sm"
                             >
                               {b.status === 'pending' || b.status === 'overdue' ? 
                                 <><i className="bi bi-wallet2 me-1"></i>ชำระเงิน</> : 
-                                <><i className="bi bi-search me-1"></i>ดูรายละเอียด</>}
+                                <><i className="bi bi-eye me-1"></i>ดูรายละเอียด</>}
                             </Button>
                           </Link>
                         </td>

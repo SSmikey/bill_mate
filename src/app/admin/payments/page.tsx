@@ -178,8 +178,7 @@ const AdminPaymentsPage = () => {
       pending: "warning",
       verified: "success",
       rejected: "danger",
-      // คุณสามารถมาเพิ่มสีสำหรับปุ่มอื่นตรงนี้ได้ใน commit ต่อไป
-      // all: "dark",
+      all: "dark",
     };
 
     return (
@@ -193,7 +192,8 @@ const AdminPaymentsPage = () => {
             className="me-2"
             onClick={() => setFilter(f)}
           >
-            {filterLabels[f]}{" "}
+            <i className={`bi bi-${f === 'pending' ? 'hourglass-split' : f === 'verified' ? 'check2-circle' : f === 'rejected' ? 'x-circle' : 'collection'} me-1`}></i>
+            {filterLabels[f]}
             {f === "pending" && `(${payments.filter((p) => p.status === "pending").length})`}
           </Button>
         ))}
@@ -352,7 +352,7 @@ const AdminPaymentsPage = () => {
   return (
     <div className="container-fluid mt-4">
       <div className="card">
-        <div className="card-header">
+        <div className="card-header bg-light">
           <h3>
             <i className="bi bi-check2-circle me-2"></i>ยืนยันการชำระเงิน
           </h3>
@@ -411,7 +411,7 @@ const AdminPaymentsPage = () => {
                             size="sm"
                             onClick={() => handleShowModal(p)}
                           >
-                            <i className="bi bi-search me-1"></i>ตรวจสอบ
+                            <i className="bi bi-search me-2"></i>ตรวจสอบ
                           </Button>
                         </td>
                       </tr>
