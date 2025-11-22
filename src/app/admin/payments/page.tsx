@@ -175,8 +175,8 @@ const AdminPaymentsPage = () => {
     };
     const filterColors: { [key: string]: string } = {
       pending: "warning",
+      verified: "success",
       // คุณสามารถมาเพิ่มสีสำหรับปุ่มอื่นตรงนี้ได้ใน commit ต่อไป
-      // verified: "success",
       // rejected: "danger",
       // all: "dark",
     };
