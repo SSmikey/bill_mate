@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import jsQR from 'jsqr';
-import Tesseract from 'tesseract.js';
+import { useState, useRef, useEffect } from "react";
+import jsQR from "jsqr";
+import Tesseract from "tesseract.js";
 
-interface QRData {
+ export interface QRData {
   merchantID: string;
   amount: string;
   reference: string;
@@ -12,7 +12,7 @@ interface QRData {
   billPaymentRef2: string;
 }
 
-interface OCRData {
+export interface OCRData {
   amount: string | null;
   fee: string | null;
   date: string | null;
@@ -35,13 +35,25 @@ interface SlipData {
   success: boolean;
 }
 
-export default function SlipReader() {
+interface SlipReaderProps {
+  onScanComplete?: (data: {
+    slipImageBase64: string | null;
+    ocrData: OCRData | null;
+    qrData: QRData | null;
+  }) => void;
+  isEmbedded?: boolean; // New prop to control rendering when embedded
+}
+
+export default function SlipReader({
+  onScanComplete,
+  isEmbedded = false,
+}: SlipReaderProps) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState({ message: '', percent: 0 });
+  const [progress, setProgress] = useState({ message: "", percent: 0 });
   const [qrData, setQrData] = useState<QRData | null>(null);
   const [ocrData, setOcrData] = useState<OCRData | null>(null);
-  const [ocrTextFull, setOcrTextFull] = useState('');
+  const [ocrTextFull, setOcrTextFull] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showOcrText, setShowOcrText] = useState(false);
   const [jsonOutput, setJsonOutput] = useState<SlipData | null>(null);
@@ -60,8 +72,8 @@ export default function SlipReader() {
   };
 
   const handleFile = (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      setError('กรุณาเลือกไฟล์รูปภาพเท่านั้น');
+    if (!file.type.startsWith("image/")) {
+      setError("กรุณาเลือกไฟล์รูปภาพเท่านั้น");
       return;
     }
 
@@ -71,7 +83,7 @@ export default function SlipReader() {
       setError(null);
       setQrData(null);
       setOcrData(null);
-      setOcrTextFull('');
+      setOcrTextFull("");
       setJsonOutput(null);
     };
     reader.readAsDataURL(file);
@@ -102,23 +114,35 @@ export default function SlipReader() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [previewImage]);
 
+  useEffect(() => {
+    if (jsonOutput && onScanComplete) {
+      onScanComplete({
+        slipImageBase64: previewImage,
+        ocrData: jsonOutput.slip_data.ocr_data,
+        qrData: jsonOutput.slip_data.qr_data,
+      });
+      // Optionally reset internal state if it's a one-shot embedded use
+      if (isEmbedded) resetUpload();
+    }
+  }, [jsonOutput, onScanComplete, previewImage, isEmbedded]);
+
   const processImage = async () => {
     setLoading(true);
-    setProgress({ message: 'กำลังประมวลผล...', percent: 0 });
+    setProgress({ message: "กำลังประมวลผล...", percent: 0 });
 
     try {
       // Step 1: Read QR Code
-      setProgress({ message: 'กำลังอ่าน QR Code...', percent: 25 });
+      setProgress({ message: "กำลังอ่าน QR Code...", percent: 25 });
       const qr = await scanQRCode();
       setQrData(qr);
 
       // Step 2: OCR
-      setProgress({ message: 'กำลังอ่านข้อความจากสลิป...', percent: 50 });
+      setProgress({ message: "กำลังอ่านข้อความจากสลิป...", percent: 50 });
       const ocr = await performOCR();
       setOcrData(ocr);
 
       // Step 3: Create JSON output
-      setProgress({ message: 'กำลังประมวลผลข้อมูล...', percent: 90 });
+      setProgress({ message: "กำลังประมวลผลข้อมูล...", percent: 90 });
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       const output: SlipData = {
@@ -131,10 +155,10 @@ export default function SlipReader() {
       };
       setJsonOutput(output);
 
-      setProgress({ message: 'เสร็จสิ้น!', percent: 100 });
+      setProgress({ message: "เสร็จสิ้น!", percent: 100 });
       setTimeout(() => setLoading(false), 1000);
     } catch (err) {
-      setError('เกิดข้อผิดพลาดในการประมวลผล: ' + (err as Error).message);
+      setError("เกิดข้อผิดพลาดในการประมวลผล: " + (err as Error).message);
       setLoading(false);
     }
   };
@@ -147,7 +171,7 @@ export default function SlipReader() {
       }
 
       const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       const img = imageRef.current;
 
       if (!ctx) {
@@ -174,9 +198,9 @@ export default function SlipReader() {
     try {
       if (!previewImage) return null;
 
-      const result = await Tesseract.recognize(previewImage, 'tha+eng', {
+      const result = await Tesseract.recognize(previewImage, "tha+eng", {
         logger: (m) => {
-          if (m.status === 'recognizing text') {
+          if (m.status === "recognizing text") {
             const progressPercent = Math.round(m.progress * 100);
             setProgress({
               message: `กำลังอ่านข้อความ... ${progressPercent}%`,
@@ -189,7 +213,7 @@ export default function SlipReader() {
       setOcrTextFull(result.data.text);
       return extractSlipInfo(result.data.text);
     } catch (err) {
-      console.error('OCR Error:', err);
+      console.error("OCR Error:", err);
       return null;
     }
   };
@@ -197,11 +221,11 @@ export default function SlipReader() {
   const parsePromptPayData = (data: string): QRData | null => {
     try {
       const info: QRData = {
-        merchantID: '',
-        amount: '',
-        reference: '',
-        billPaymentRef1: '',
-        billPaymentRef2: '',
+        merchantID: "",
+        amount: "",
+        reference: "",
+        billPaymentRef1: "",
+        billPaymentRef2: "",
       };
 
       let i = 0;
@@ -215,7 +239,7 @@ export default function SlipReader() {
         const value = data.substring(i, i + length);
         i += length;
 
-        if (tag === '29' && value.length > 0) {
+        if (tag === "29" && value.length > 0) {
           let j = 0;
           while (j < value.length) {
             const subTag = value.substring(j, j + 2);
@@ -225,17 +249,17 @@ export default function SlipReader() {
             const subValue = value.substring(j, j + subLength);
             j += subLength;
 
-            if (subTag === '01') {
+            if (subTag === "01") {
               info.merchantID = formatPromptPayID(subValue);
             }
           }
         }
 
-        if (tag === '54') {
+        if (tag === "54") {
           info.amount = value;
         }
 
-        if (tag === '62' && value.length > 0) {
+        if (tag === "62" && value.length > 0) {
           let j = 0;
           while (j < value.length) {
             const subTag = value.substring(j, j + 2);
@@ -245,13 +269,13 @@ export default function SlipReader() {
             const subValue = value.substring(j, j + subLength);
             j += subLength;
 
-            if (subTag === '05') {
+            if (subTag === "05") {
               info.reference = subValue;
             }
-            if (subTag === '01') {
+            if (subTag === "01") {
               info.billPaymentRef1 = subValue;
             }
-            if (subTag === '02') {
+            if (subTag === "02") {
               info.billPaymentRef2 = subValue;
             }
           }
@@ -265,15 +289,18 @@ export default function SlipReader() {
   };
 
   const formatPromptPayID = (id: string): string => {
-    if (id.length === 15 && id.startsWith('00')) {
+    if (id.length === 15 && id.startsWith("00")) {
       const citizenID = id.substring(2);
-      return citizenID.replace(/(\d{1})(\d{4})(\d{5})(\d{2})(\d{1})/, '$1-$2-$3-$4-$5');
+      return citizenID.replace(
+        /(\d{1})(\d{4})(\d{5})(\d{2})(\d{1})/,
+        "$1-$2-$3-$4-$5"
+      );
     }
-    if (id.length === 13 && id.startsWith('66')) {
-      const phoneNumber = '0' + id.substring(2);
-      return phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+    if (id.length === 13 && id.startsWith("66")) {
+      const phoneNumber = "0" + id.substring(2);
+      return phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
     }
-    if (id.length === 15 && id.startsWith('01')) {
+    if (id.length === 15 && id.startsWith("01")) {
       return id.substring(2);
     }
     return id;
@@ -295,8 +322,8 @@ export default function SlipReader() {
     };
 
     const cleanText = text
-      .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s\.\,\:\-\/\(\)\฿]/g, ' ')
-      .replace(/\s+/g, ' ')
+      .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s\.\,\:\-\/\(\)\฿]/g, " ")
+      .replace(/\s+/g, " ")
       .trim();
 
     // Amount patterns
@@ -312,7 +339,7 @@ export default function SlipReader() {
     for (const pattern of amountPatterns) {
       const match = cleanText.match(pattern);
       if (match) {
-        const amount = match[1].replace(/,/g, '');
+        const amount = match[1].replace(/,/g, "");
         const numAmount = parseFloat(amount);
         if (!isNaN(numAmount) && numAmount >= 0.01 && numAmount <= 10000000) {
           info.amount = amount;
@@ -330,7 +357,7 @@ export default function SlipReader() {
     for (const pattern of feePatterns) {
       const match = cleanText.match(pattern);
       if (match) {
-        const fee = match[1].replace(/,/g, '');
+        const fee = match[1].replace(/,/g, "");
         const numFee = parseFloat(fee);
         if (!isNaN(numFee) && numFee >= 0 && numFee <= 1000) {
           info.fee = fee;
@@ -395,32 +422,55 @@ export default function SlipReader() {
 
     // Transfer type
     const lowerText = text.toLowerCase();
-    if (lowerText.includes('promptpay') || text.includes('พร้อมเพย์')) {
-      info.transferType = 'PromptPay';
-    } else if (text.includes('โอน') || lowerText.includes('transfer')) {
-      info.transferType = 'โอนเงิน';
+    if (lowerText.includes("promptpay") || text.includes("พร้อมเพย์")) {
+      info.transferType = "PromptPay";
+    } else if (text.includes("โอน") || lowerText.includes("transfer")) {
+      info.transferType = "โอนเงิน";
     }
 
     return info;
   };
 
-  const formatDateTime = (dateStr: string | null, timeStr: string | null): string | null => {
+  const formatDateTime = (
+    dateStr: string | null,
+    timeStr: string | null
+  ): string | null => {
     if (!dateStr) return null;
 
     const monthsEN: { [key: string]: string } = {
-      jan: '01', january: '01', feb: '02', february: '02',
-      mar: '03', march: '03', apr: '04', april: '04',
-      may: '05', jun: '06', june: '06', jul: '07',
-      july: '07', aug: '08', august: '08', sep: '09',
-      sept: '09', september: '09', oct: '10', october: '10',
-      nov: '11', november: '11', dec: '12', december: '12',
+      jan: "01",
+      january: "01",
+      feb: "02",
+      february: "02",
+      mar: "03",
+      march: "03",
+      apr: "04",
+      april: "04",
+      may: "05",
+      jun: "06",
+      june: "06",
+      jul: "07",
+      july: "07",
+      aug: "08",
+      august: "08",
+      sep: "09",
+      sept: "09",
+      september: "09",
+      oct: "10",
+      october: "10",
+      nov: "11",
+      november: "11",
+      dec: "12",
+      december: "12",
     };
 
     let day, month, year;
 
-    let match = dateStr.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{4})/i);
+    let match = dateStr.match(
+      /(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{4})/i
+    );
     if (match) {
-      day = match[1].padStart(2, '0');
+      day = match[1].padStart(2, "0");
       month = monthsEN[match[2].toLowerCase()];
       year = match[3];
     }
@@ -428,21 +478,21 @@ export default function SlipReader() {
     if (!month) {
       match = dateStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
       if (match) {
-        day = match[1].padStart(2, '0');
-        month = match[2].padStart(2, '0');
-        year = match[3].length === 2 ? '20' + match[3] : match[3];
+        day = match[1].padStart(2, "0");
+        month = match[2].padStart(2, "0");
+        year = match[3].length === 2 ? "20" + match[3] : match[3];
       }
     }
 
-    if (!month) return dateStr + (timeStr ? ' ' + timeStr : '');
+    if (!month) return dateStr + (timeStr ? " " + timeStr : "");
 
-    let formattedTime = '00:00:00';
+    let formattedTime = "00:00:00";
     if (timeStr) {
       const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
       if (timeMatch) {
-        const hours = timeMatch[1].padStart(2, '0');
+        const hours = timeMatch[1].padStart(2, "0");
         const minutes = timeMatch[2];
-        const seconds = timeMatch[3] || '00';
+        const seconds = timeMatch[3] || "00";
         formattedTime = `${hours}:${minutes}:${seconds}`;
       }
     }
@@ -454,68 +504,111 @@ export default function SlipReader() {
     if (!jsonOutput) return;
 
     const jsonString = JSON.stringify(jsonOutput, null, 2);
-    navigator.clipboard.writeText(jsonString).then(() => {
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    }).catch(() => {
-      alert('ไม่สามารถคัดลอกได้');
-    });
+    navigator.clipboard
+      .writeText(jsonString)
+      .then(() => {
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      })
+      .catch(() => {
+        alert("ไม่สามารถคัดลอกได้");
+      });
   };
 
   const resetUpload = () => {
     setPreviewImage(null);
     setQrData(null);
     setOcrData(null);
-    setOcrTextFull('');
+    setOcrTextFull("");
     setError(null);
     setJsonOutput(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      // Clear the file input value to allow re-uploading the same file
+      fileInputRef.current.value = "";
     }
   };
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center py-4"
-         style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+    <div
+      className="min-vh-100 d-flex align-items-center justify-content-center py-4"
+      style={{
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      }}
+    >
+      {isEmbedded && (
+        <div className="w-100">
+          {" "}
+          {/* Use w-100 to make it take full width in embedded mode */}
+          <div className="row justify-content-center">
+            <div className="col-lg-12">
+              {" "}
+              {/* Adjust column size for embedded */}
+              <div className="card shadow-lg" style={{ borderRadius: "10px" }}>
+                {" "}
+                {/* Smaller border radius for embedded */}
+                <div className="card-body p-3">
+                  {" "}
+                  {/* Smaller padding for embedded */}
+                  {!previewImage && (
+                    <div
+                      className={`border border-3 rounded-3 p-3 text-center ${
+                        dragging ? "border-primary bg-light" : "border-primary"
+                      }`}
+                      style={{
+                        borderStyle: "dashed",
+                        cursor: "pointer",
+                        backgroundColor: dragging ? "#e8ebff" : "#f8f9ff",
+                        transition: "all 0.3s ease",
+                      }}
+                      onClick={() => fileInputRef.current?.click()}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                    >
+                      <div style={{ fontSize: "2em" }} className="mb-2">
+                        📄
+                      </div>{" "}
+                      {/* Smaller icon for embedded */}
+                      <div className="text-primary fw-semibold fs-6 mb-1">
+                        คลิกเพื่ออัปโหลดสลิป หรือลากไฟล์มาวางที่นี่
+                      </div>
+                      <div className="text-muted small">
+                        รองรับไฟล์ JPG, PNG
+                      </div>
+                    </div>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="d-none"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                  />
+                  {loading && (
+                    <p className="text-center mt-2 text-primary">
+                      {progress.message} ({progress.percent}%)
+                    </p>
+                  )}
+                  {error && (
+                    <div className="alert alert-danger mt-2 small" role="alert">
+                      ❌ {error}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-lg-8">
-            <div className="card shadow-lg" style={{ borderRadius: '20px' }}>
+            <div className="card shadow-lg" style={{ borderRadius: "20px" }}>
               <div className="card-body p-4 p-md-5">
                 <h1 className="text-center mb-2">🏦 ตัวอ่านสลิปธนาคาร</h1>
                 <p className="text-center text-muted mb-4">
                   อัปโหลดสลิปเพื่ออ่านข้อมูลด้วย QR Code และ OCR
                 </p>
-
-                <div
-                  className={`border border-3 rounded-4 p-5 text-center ${dragging ? 'border-primary bg-light' : 'border-primary'}`}
-                  style={{
-                    borderStyle: 'dashed',
-                    cursor: 'pointer',
-                    backgroundColor: dragging ? '#e8ebff' : '#f8f9ff',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <div style={{ fontSize: '4em' }} className="mb-3">📄</div>
-                  <div className="text-primary fw-semibold fs-5 mb-2">
-                    คลิกเพื่ออัปโหลดสลิป หรือลากไฟล์มาวางที่นี่
-                  </div>
-                  <div className="text-muted">
-                    รองรับไฟล์ JPG, PNG (อ่าน QR Code, จำนวนเงิน, Ref No., วันที่-เวลา)
-                  </div>
-                </div>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  className="d-none"
-                  accept="image/*"
-                  onChange={handleFileSelect}
-                />
 
                 {previewImage && (
                   <div className="mt-4">
@@ -526,7 +619,7 @@ export default function SlipReader() {
                         src={previewImage}
                         alt="Preview"
                         className="img-fluid rounded shadow"
-                        style={{ maxHeight: '400px' }}
+                        style={{ maxHeight: "400px" }}
                       />
                     </div>
                     <canvas ref={canvasRef} className="d-none"></canvas>
@@ -537,13 +630,14 @@ export default function SlipReader() {
                           <h6 className="text-primary fw-semibold text-center mb-3">
                             {progress.message}
                           </h6>
-                          <div className="progress" style={{ height: '8px' }}>
+                          <div className="progress" style={{ height: "8px" }}>
                             <div
                               className="progress-bar"
                               role="progressbar"
                               style={{
                                 width: `${progress.percent}%`,
-                                background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)'
+                                background:
+                                  "linear-gradient(90deg, #667eea 0%, #764ba2 100%)",
                               }}
                               aria-valuenow={progress.percent}
                               aria-valuemin={0}
@@ -572,70 +666,100 @@ export default function SlipReader() {
 
                           {ocrData.amount && (
                             <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
-                              <small className="text-muted fw-semibold d-block mb-1">💰 จำนวนเงิน</small>
+                              <small className="text-muted fw-semibold d-block mb-1">
+                                💰 จำนวนเงิน
+                              </small>
                               <div className="fs-4 fw-bold text-primary">
-                                {parseFloat(ocrData.amount).toLocaleString('th-TH', {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                })} บาท
+                                {parseFloat(ocrData.amount).toLocaleString(
+                                  "th-TH",
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )}{" "}
+                                บาท
                               </div>
                             </div>
                           )}
 
                           {ocrData.fee && (
                             <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
-                              <small className="text-muted fw-semibold d-block mb-1">💳 ค่าธรรมเนียม</small>
+                              <small className="text-muted fw-semibold d-block mb-1">
+                                💳 ค่าธรรมเนียม
+                              </small>
                               <div className="fs-6">
-                                {parseFloat(ocrData.fee).toLocaleString('th-TH', {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                })} บาท
+                                {parseFloat(ocrData.fee).toLocaleString(
+                                  "th-TH",
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )}{" "}
+                                บาท
                               </div>
                             </div>
                           )}
 
                           {ocrData.date && (
                             <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
-                              <small className="text-muted fw-semibold d-block mb-1">📅 วันที่-เวลาทำรายการ</small>
-                              <div className="fs-6">{formatDateTime(ocrData.date, ocrData.time)}</div>
+                              <small className="text-muted fw-semibold d-block mb-1">
+                                📅 วันที่-เวลาทำรายการ
+                              </small>
+                              <div className="fs-6">
+                                {formatDateTime(ocrData.date, ocrData.time)}
+                              </div>
                             </div>
                           )}
 
                           {ocrData.reference && (
                             <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
-                              <small className="text-muted fw-semibold d-block mb-1">🔖 หมายเลขอ้างอิง</small>
+                              <small className="text-muted fw-semibold d-block mb-1">
+                                🔖 หมายเลขอ้างอิง
+                              </small>
                               <div className="fs-6">
-                                <span className="badge bg-success p-2 font-monospace">{ocrData.reference}</span>
+                                <span className="badge bg-success p-2 font-monospace">
+                                  {ocrData.reference}
+                                </span>
                               </div>
                             </div>
                           )}
 
                           {ocrData.transactionNo && (
                             <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
-                              <small className="text-muted fw-semibold d-block mb-1">🆔 เลขที่ธุรกรรม</small>
+                              <small className="text-muted fw-semibold d-block mb-1">
+                                🆔 เลขที่ธุรกรรม
+                              </small>
                               <div className="fs-6">
-                                <span className="badge bg-success p-2 font-monospace">{ocrData.transactionNo}</span>
+                                <span className="badge bg-success p-2 font-monospace">
+                                  {ocrData.transactionNo}
+                                </span>
                               </div>
                             </div>
                           )}
 
                           {ocrData.transferType && (
                             <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
-                              <small className="text-muted fw-semibold d-block mb-1">📱 ประเภทการโอน</small>
+                              <small className="text-muted fw-semibold d-block mb-1">
+                                📱 ประเภทการโอน
+                              </small>
                               <div className="fs-6">{ocrData.transferType}</div>
                             </div>
                           )}
 
                           {ocrData.fromAccount && (
                             <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
-                              <small className="text-muted fw-semibold d-block mb-1">🏦 บัญชีต้นทาง</small>
+                              <small className="text-muted fw-semibold d-block mb-1">
+                                🏦 บัญชีต้นทาง
+                              </small>
                               <div className="fs-6">{ocrData.fromAccount}</div>
                             </div>
                           )}
 
                           {ocrData.toAccount && (
                             <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
-                              <small className="text-muted fw-semibold d-block mb-1">🏦 บัญชีปลายทาง</small>
+                              <small className="text-muted fw-semibold d-block mb-1">
+                                🏦 บัญชีปลายทาง
+                              </small>
                               <div className="fs-6">{ocrData.toAccount}</div>
                             </div>
                           )}
@@ -646,11 +770,18 @@ export default function SlipReader() {
                                 className="btn btn-link p-0 text-decoration-underline"
                                 onClick={() => setShowOcrText(!showOcrText)}
                               >
-                                📝 {showOcrText ? 'ซ่อน' : 'ดู'}ข้อความที่อ่านได้ทั้งหมด
+                                📝 {showOcrText ? "ซ่อน" : "ดู"}
+                                ข้อความที่อ่านได้ทั้งหมด
                               </button>
                               {showOcrText && (
-                                <pre className="bg-light p-3 rounded mt-2 small text-muted"
-                                     style={{ maxHeight: '200px', overflow: 'auto', whiteSpace: 'pre-wrap' }}>
+                                <pre
+                                  className="bg-light p-3 rounded mt-2 small text-muted"
+                                  style={{
+                                    maxHeight: "200px",
+                                    overflow: "auto",
+                                    whiteSpace: "pre-wrap",
+                                  }}
+                                >
                                   {ocrTextFull}
                                 </pre>
                               )}
@@ -661,53 +792,120 @@ export default function SlipReader() {
                     )}
 
                     {qrData && !loading && (
-                      <div className="card text-white mb-4"
-                           style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                      <div
+                        className="card text-white mb-4"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        }}
+                      >
                         <div className="card-body">
-                          <h5 className="card-title text-center mb-4">📱 ข้อมูลจาก QR Code</h5>
+                          <h5 className="card-title text-center mb-4">
+                            📱 ข้อมูลจาก QR Code
+                          </h5>
 
                           {qrData.amount && (
-                            <div className="mb-3 p-3 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-                              <small className="d-block mb-1" style={{ opacity: 0.9 }}>💰 จำนวนเงิน</small>
+                            <div
+                              className="mb-3 p-3 rounded"
+                              style={{
+                                backgroundColor: "rgba(255,255,255,0.1)",
+                              }}
+                            >
+                              <small
+                                className="d-block mb-1"
+                                style={{ opacity: 0.9 }}
+                              >
+                                💰 จำนวนเงิน
+                              </small>
                               <div className="fs-3 fw-bold">
-                                {parseFloat(qrData.amount).toLocaleString('th-TH', {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                })} บาท
+                                {parseFloat(qrData.amount).toLocaleString(
+                                  "th-TH",
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )}{" "}
+                                บาท
                               </div>
                             </div>
                           )}
 
                           {qrData.merchantID && (
-                            <div className="mb-3 p-3 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-                              <small className="d-block mb-1" style={{ opacity: 0.9 }}>👤 PromptPay ID (ผู้รับเงิน)</small>
+                            <div
+                              className="mb-3 p-3 rounded"
+                              style={{
+                                backgroundColor: "rgba(255,255,255,0.1)",
+                              }}
+                            >
+                              <small
+                                className="d-block mb-1"
+                                style={{ opacity: 0.9 }}
+                              >
+                                👤 PromptPay ID (ผู้รับเงิน)
+                              </small>
                               <div className="fs-6">{qrData.merchantID}</div>
                             </div>
                           )}
 
                           {qrData.reference && (
-                            <div className="mb-3 p-3 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-                              <small className="d-block mb-1" style={{ opacity: 0.9 }}>🔖 เลขอ้างอิง</small>
+                            <div
+                              className="mb-3 p-3 rounded"
+                              style={{
+                                backgroundColor: "rgba(255,255,255,0.1)",
+                              }}
+                            >
+                              <small
+                                className="d-block mb-1"
+                                style={{ opacity: 0.9 }}
+                              >
+                                🔖 เลขอ้างอิง
+                              </small>
                               <div className="fs-6">
-                                <span className="badge bg-light text-primary p-2 font-monospace">{qrData.reference}</span>
+                                <span className="badge bg-light text-primary p-2 font-monospace">
+                                  {qrData.reference}
+                                </span>
                               </div>
                             </div>
                           )}
 
                           {qrData.billPaymentRef1 && (
-                            <div className="mb-3 p-3 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-                              <small className="d-block mb-1" style={{ opacity: 0.9 }}>📋 Ref 1</small>
+                            <div
+                              className="mb-3 p-3 rounded"
+                              style={{
+                                backgroundColor: "rgba(255,255,255,0.1)",
+                              }}
+                            >
+                              <small
+                                className="d-block mb-1"
+                                style={{ opacity: 0.9 }}
+                              >
+                                📋 Ref 1
+                              </small>
                               <div className="fs-6">
-                                <span className="badge bg-light text-primary p-2 font-monospace">{qrData.billPaymentRef1}</span>
+                                <span className="badge bg-light text-primary p-2 font-monospace">
+                                  {qrData.billPaymentRef1}
+                                </span>
                               </div>
                             </div>
                           )}
 
                           {qrData.billPaymentRef2 && (
-                            <div className="mb-3 p-3 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-                              <small className="d-block mb-1" style={{ opacity: 0.9 }}>📋 Ref 2</small>
+                            <div
+                              className="mb-3 p-3 rounded"
+                              style={{
+                                backgroundColor: "rgba(255,255,255,0.1)",
+                              }}
+                            >
+                              <small
+                                className="d-block mb-1"
+                                style={{ opacity: 0.9 }}
+                              >
+                                📋 Ref 2
+                              </small>
                               <div className="fs-6">
-                                <span className="badge bg-light text-primary p-2 font-monospace">{qrData.billPaymentRef2}</span>
+                                <span className="badge bg-light text-primary p-2 font-monospace">
+                                  {qrData.billPaymentRef2}
+                                </span>
                               </div>
                             </div>
                           )}
@@ -719,16 +917,26 @@ export default function SlipReader() {
                       <div className="card bg-dark text-light mb-4">
                         <div className="card-body">
                           <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                            <h6 className="mb-0" style={{ color: '#4ec9b0' }}>📋 JSON Output</h6>
+                            <h6 className="mb-0" style={{ color: "#4ec9b0" }}>
+                              📋 JSON Output
+                            </h6>
                             <button
-                              className={`btn btn-sm ${copySuccess ? 'btn-success' : 'btn-primary'}`}
+                              className={`btn btn-sm ${
+                                copySuccess ? "btn-success" : "btn-primary"
+                              }`}
                               onClick={copyJsonToClipboard}
                             >
-                              {copySuccess ? '✓ Copied!' : '📋 Copy JSON'}
+                              {copySuccess ? "✓ Copied!" : "📋 Copy JSON"}
                             </button>
                           </div>
-                          <pre className="bg-black p-3 rounded text-light mb-0 small"
-                               style={{ maxHeight: '400px', overflow: 'auto', whiteSpace: 'pre-wrap' }}>
+                          <pre
+                            className="bg-black p-3 rounded text-light mb-0 small"
+                            style={{
+                              maxHeight: "400px",
+                              overflow: "auto",
+                              whiteSpace: "pre-wrap",
+                            }}
+                          >
                             {JSON.stringify(jsonOutput, null, 2)}
                           </pre>
                         </div>
@@ -740,8 +948,9 @@ export default function SlipReader() {
                         <button
                           className="btn btn-lg text-white"
                           style={{
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            borderRadius: '25px'
+                            background:
+                              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            borderRadius: "25px",
                           }}
                           onClick={resetUpload}
                         >
@@ -756,6 +965,13 @@ export default function SlipReader() {
           </div>
         </div>
       </div>
+      {/* Only render the full UI if not embedded */}
+      {!isEmbedded && (
+        <div className="container">
+          {" "}
+          {/* Original full UI content goes here */}{" "}
+        </div>
+      )}
     </div>
   );
 }
