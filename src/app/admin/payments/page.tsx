@@ -187,14 +187,27 @@ const AdminPaymentsPage = () => {
           <Button
             key={f}
             // ถ้าปุ่มถูกเลือก ให้ใช้สีจาก map, ถ้าไม่มีให้ใช้สีน้ำเงิน(primary) เหมือนเดิม
-            variant={filter === f ? (filterColors[f] || "primary") : "outline-secondary"}
+            variant={
+              filter === f ? filterColors[f] || "primary" : "outline-secondary"
+            }
             size="sm"
             className="me-2"
             onClick={() => setFilter(f)}
           >
-            <i className={`bi bi-${f === 'pending' ? 'hourglass-split' : f === 'verified' ? 'check2-circle' : f === 'rejected' ? 'x-circle' : 'collection'} me-1`}></i>
+            <i
+              className={`bi bi-${
+                f === "pending"
+                  ? "hourglass-split"
+                  : f === "verified"
+                  ? "check2-circle"
+                  : f === "rejected"
+                  ? "x-circle"
+                  : "collection"
+              } me-1`}
+            ></i>
             {filterLabels[f]}
-            {f === "pending" && `(${payments.filter((p) => p.status === "pending").length})`}
+            {f === "pending" &&
+              `(${payments.filter((p) => p.status === "pending").length})`}
           </Button>
         ))}
       </div>
@@ -206,7 +219,8 @@ const AdminPaymentsPage = () => {
 
     const billAmount = selectedPayment.billId.totalAmount;
     const ocrAmount = selectedPayment.ocrData?.amount;
-    const isAmountMatch = ocrAmount !== undefined && Math.abs(ocrAmount - billAmount) < 0.01;
+    const isAmountMatch =
+      ocrAmount !== undefined && Math.abs(ocrAmount - billAmount) < 0.01;
 
     return (
       <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
@@ -231,7 +245,11 @@ const AdminPaymentsPage = () => {
                 src={selectedPayment.slipImageUrl}
                 className="img-fluid border rounded shadow-sm"
                 alt="Payment slip"
-                style={{ maxHeight: '600px', width: '100%', objectFit: 'contain' }}
+                style={{
+                  maxHeight: "600px",
+                  width: "100%",
+                  objectFit: "contain",
+                }}
               />
             </div>
             <div className="col-md-6">
@@ -278,13 +296,16 @@ const AdminPaymentsPage = () => {
                             })
                           : "N/A"}
                       </strong>
-                      {ocrAmount !== undefined && (
-                        isAmountMatch ? (
-                          <Badge bg="success" className="ms-2">ตรงกัน</Badge>
+                      {ocrAmount !== undefined &&
+                        (isAmountMatch ? (
+                          <Badge bg="success" className="ms-2">
+                            ตรงกัน
+                          </Badge>
                         ) : (
-                          <Badge bg="danger" className="ms-2">ไม่ตรงกัน</Badge>
-                        )
-                      )}
+                          <Badge bg="danger" className="ms-2">
+                            ไม่ตรงกัน
+                          </Badge>
+                        ))}
                     </td>
                   </tr>
                   <tr>
@@ -310,7 +331,7 @@ const AdminPaymentsPage = () => {
               </Table>
 
               {selectedPayment.qrData && (
-                 <>
+                <>
                   <h6 className="mt-3">
                     <i className="bi bi-qr-code me-2"></i>ข้อมูลจาก QR Code
                   </h6>
@@ -320,28 +341,43 @@ const AdminPaymentsPage = () => {
                         <td>จำนวนเงิน</td>
                         <td>
                           {selectedPayment.qrData.amount
-                            ? selectedPayment.qrData.amount.toLocaleString("th-TH", {
-                                style: "currency",
-                                currency: "THB",
-                              })
+                            ? selectedPayment.qrData.amount.toLocaleString(
+                                "th-TH",
+                                {
+                                  style: "currency",
+                                  currency: "THB",
+                                }
+                              )
                             : "N/A"}
                         </td>
                       </tr>
                     </tbody>
                   </Table>
-                 </>
+                </>
               )}
             </div>
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal} disabled={isVerifying}>
+          <Button
+            variant="secondary"
+            onClick={handleCloseModal}
+            disabled={isVerifying}
+          >
             ปิด
           </Button>
-          <Button variant="danger" onClick={handleReject} disabled={isVerifying}>
+          <Button
+            variant="danger"
+            onClick={handleReject}
+            disabled={isVerifying}
+          >
             <i className="bi bi-x-lg me-1"></i>ปฏิเสธ
           </Button>
-          <Button variant="success" onClick={handleApprove} disabled={isVerifying}>
+          <Button
+            variant="success"
+            onClick={handleApprove}
+            disabled={isVerifying}
+          >
             <i className="bi bi-check-lg me-1"></i>อนุมัติ
           </Button>
         </Modal.Footer>
@@ -397,12 +433,18 @@ const AdminPaymentsPage = () => {
                         <td>{p.userId.name}</td>
                         <td>
                           {`เดือน ${p.billId.month}/${p.billId.year}`}
+                          <div className="small text-muted">
+                            {p.billId.totalAmount.toLocaleString("th-TH", {
+                              minimumFractionDigits: 2,
+                            })}{" "}
+                            บาท
+                          </div>
                         </td>
+                        {/* No change here, but showing for context */}
+                        <td>{p.billId.totalAmount.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</td>
+                        {/* No change here, but showing for context */}
                         <td>
-                          {p.billId.totalAmount.toLocaleString("th-TH")}
-                        </td>
-                        <td className={p.ocrData?.amount !== p.billId.totalAmount ? 'text-danger fw-bold' : ''}>
-                          {p.ocrData?.amount?.toLocaleString("th-TH") ?? "N/A"}
+                          {p.ocrData?.amount ? `${p.ocrData.amount.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท` : "N/A"}
                         </td>
                         <td>{getStatusBadge(p.status)}</td>
                         <td>
