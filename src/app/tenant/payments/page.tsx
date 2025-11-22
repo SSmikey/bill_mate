@@ -74,12 +74,13 @@ const TenantPaymentsPage = () => {
 
   const renderFilters = () => {
     const filters: (PaymentStatus | "all")[] = ["all", "pending", "verified", "rejected"];
-    const filterLabels: { [key: string]: string } = {
-      all: "ทั้งหมด",
-      pending: "รอตรวจสอบ",
-      verified: "อนุมัติแล้ว",
-      rejected: "ปฏิเสธ",
-    };
+    // ย้าย filterLabels ออกไปข้างนอกแล้ว
+    // const filterLabels: { [key: string]: string } = {
+    //   all: "ทั้งหมด",
+    //   pending: "รอตรวจสอบ",
+    //   verified: "อนุมัติแล้ว",
+    //   rejected: "ปฏิเสธ",
+    // };
     const filterColors: { [key: string]: string } = {
       all: "dark",
       pending: "warning",
@@ -110,6 +111,13 @@ const TenantPaymentsPage = () => {
         ))}
       </div>
     );
+  };
+
+  const filterLabels: { [key: string]: string } = {
+    all: "ทั้งหมด",
+    pending: "รอตรวจสอบ",
+    verified: "อนุมัติแล้ว",
+    rejected: "ปฏิเสธ",
   };
 
   return (
@@ -154,7 +162,11 @@ const TenantPaymentsPage = () => {
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan={5} className="text-center py-4">ไม่พบข้อมูลในหมวดหมู่นี้</td></tr>
+                    <tr>
+                      <td colSpan={5} className="text-center py-4">
+                        {filter === 'all' ? 'ยังไม่มีประวัติการชำระเงิน' : `ไม่พบรายการที่ "${filterLabels[filter]}"`}
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </Table>

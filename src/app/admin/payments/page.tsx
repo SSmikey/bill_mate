@@ -168,12 +168,13 @@ const AdminPaymentsPage = () => {
       "rejected",
       "all",
     ];
-    const filterLabels: { [key: string]: string } = {
-      pending: "รอตรวจสอบ",
-      verified: "อนุมัติแล้ว",
-      rejected: "ปฏิเสธ",
-      all: "ทั้งหมด",
-    };
+    // ย้าย filterLabels ออกไปข้างนอกแล้ว
+    // const filterLabels: { [key: string]: string } = {
+    //   pending: "รอตรวจสอบ",
+    //   verified: "อนุมัติแล้ว",
+    //   rejected: "ปฏิเสธ",
+    //   all: "ทั้งหมด",
+    // };
     const filterColors: { [key: string]: string } = {
       pending: "warning",
       verified: "success",
@@ -212,6 +213,13 @@ const AdminPaymentsPage = () => {
         ))}
       </div>
     );
+  };
+
+  const filterLabels: { [key: string]: string } = {
+    pending: "รอตรวจสอบ",
+    verified: "อนุมัติแล้ว",
+    rejected: "ปฏิเสธ",
+    all: "ทั้งหมด",
   };
 
   const renderVerificationModal = () => {
@@ -461,7 +469,9 @@ const AdminPaymentsPage = () => {
                   ) : (
                     <tr>
                       <td colSpan={8} className="text-center py-4">
-                        ไม่พบข้อมูลการชำระเงินในหมวดหมู่นี้
+                        {filter === 'all'
+                          ? 'ยังไม่มีข้อมูลการชำระเงิน'
+                          : `ไม่พบรายการที่ "${filterLabels[filter]}"`}
                       </td>
                     </tr>
                   )}
