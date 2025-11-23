@@ -1,88 +1,103 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
-// import bcrypt from 'bcryptjs'; // Not used in this file
-import { validateProfileInput } from '@/lib/validation';
-import { getCache, setCache, CacheKeys, CacheTTL } from '@/lib/caching';
-import { asyncHandler, AuthenticationError, NotFoundError, ValidationError, createSuccessResponse, ErrorMessages, SuccessMessages } from '@/lib/errorHandling';
+import Room from '@/models/Room';
+import { authOptions } from '@/lib/auth';
+import { asyncHandler, createSuccessResponse, NotFoundError, ValidationError } from '@/lib/errorHandling';
+import logger from '@/lib/logger';
 
-// GET - ดึงข้อมูลโปรไฟล์
+// GET user profile
 export const GET = asyncHandler(async (req: NextRequest) => {
   const session = await getServerSession(authOptions);
-
+  
   if (!session) {
-    throw new AuthenticationError(ErrorMessages.UNAUTHORIZED);
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
   }
 
   await connectDB();
-
-  // Try to get from cache first
-  const cacheKey = CacheKeys.USER_PROFILE(session.user?.id || '');
-  let user = getCache(cacheKey);
   
-  if (!user) {
-    user = await User.findById(session.user?.id).select('-password');
-    
-    if (!user) {
-      throw new NotFoundError('User');
-    }
-    
-    // Cache the user data
-    setCache(cacheKey, user, CacheTTL.MEDIUM);
-  }
-
-  return createSuccessResponse({
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    role: user.role
-  });
-});
-
-// PUT - อัปเดตข้อมูลโปรไฟล์
-export const PUT = asyncHandler(async (req: NextRequest) => {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    throw new AuthenticationError(ErrorMessages.UNAUTHORIZED);
-  }
-
-  const body = await req.json();
-  const { name, phone } = body;
-
-  // Validate input using validation utilities
-  const validation = validateProfileInput({ name, phone });
-  
-  if (!validation.isValid) {
-    throw new ValidationError(validation.errors.join(', '), validation.errors);
-  }
-
-  await connectDB();
-
-  const updateData: any = {};
-  if (validation.sanitizedData.name) updateData.name = validation.sanitizedData.name;
-  if (validation.sanitizedData.phone !== undefined) updateData.phone = validation.sanitizedData.phone;
-
-  const user = await User.findByIdAndUpdate(
-    session.user?.id,
-    updateData,
-    { new: true, runValidators: true }
-  ).select('-password');
+  const user = await User.findById(session.user?.id)
+    .select('-password')
+    .populate('roomId', 'roomNumber');
 
   if (!user) {
     throw new NotFoundError('User');
   }
 
-  // Update cache
-  const cacheKey = CacheKeys.USER_PROFILE(session.user?.id || '');
-  setCache(cacheKey, user, CacheTTL.MEDIUM);
-
-  return createSuccessResponse({
+  const profileData = {
+    _id: user._id,
     name: user.name,
     email: user.email,
     phone: user.phone,
-    role: user.role
-  }, SuccessMessages.PROFILE_UPDATED);
+    role: user.role,
+    roomId: user.roomId,
+    roomNumber: (user.roomId as any)?.roomNumber || null,
+  };
+
+  logger.apiRequest('GET', '/api/profile', session.user?.id, 200);
+  return createSuccessResponse(profileData, 'Profile loaded successfully');
+});
+
+// PUT update user profile
+export const PUT = asyncHandler(async (req: NextRequest) => {
+  const session = await getServerSession(authOptions);
+  
+  if (!session) {
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  const body = await req.json();
+  const { name, phone } = body;
+
+  // Validation
+  if (!name || name.trim().length < 2) {
+    throw new ValidationError('Name must be at least 2 characters long');
+  }
+
+  if (phone && !/^[0-9]{10}$/.test(phone)) {
+    throw new ValidationError('Invalid phone number format');
+  }
+
+  await connectDB();
+
+  const user = await User.findById(session.user?.id);
+  
+  if (!user) {
+    throw new NotFoundError('User');
+  }
+
+  // Update user
+  const updatedUser = await User.findByIdAndUpdate(
+    session.user?.id,
+    {
+      name: name.trim(),
+      phone: phone || user.phone,
+    },
+    { new: true, runValidators: true }
+  ).select('-password');
+
+  if (!updatedUser) {
+    throw new Error('Failed to update user');
+  }
+
+  const profileData = {
+    _id: updatedUser._id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    phone: updatedUser.phone,
+    role: updatedUser.role,
+    roomId: updatedUser.roomId,
+  };
+
+  logger.apiRequest('PUT', '/api/profile', session.user?.id, 200);
+  logger.info('Profile updated', 'Profile', { userId: session.user?.id, changes: { name, phone } });
+  
+  return createSuccessResponse(profileData, 'Profile updated successfully');
 });

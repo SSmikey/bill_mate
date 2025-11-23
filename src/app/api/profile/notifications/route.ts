@@ -1,86 +1,143 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
-import { getCache, setCache, deleteCache, CacheKeys, CacheTTL } from '@/lib/caching';
-import { asyncHandler, AuthenticationError, NotFoundError, createSuccessResponse, SuccessMessages } from '@/lib/errorHandling';
+import { authOptions } from '@/lib/auth';
+import { asyncHandler, createSuccessResponse, ValidationError } from '@/lib/errorHandling';
+import logger from '@/lib/logger';
 
-// GET - ดึงข้อมูล notification preferences
+// GET notification preferences
 export const GET = asyncHandler(async (req: NextRequest) => {
   const session = await getServerSession(authOptions);
-
+  
   if (!session) {
-    throw new AuthenticationError('Unauthorized');
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
   }
 
   await connectDB();
-
-  // Try to get from cache first
-  const cacheKey = CacheKeys.USER_NOTIFICATIONS(session.user?.id || '');
-  let user = getCache(cacheKey);
+  
+  const user = await User.findById(session.user?.id);
   
   if (!user) {
-    user = await User.findById(session.user?.id).select('notificationPreferences');
-    
-    if (!user) {
-      throw new NotFoundError('User');
-    }
-    
-    // Cache the user notification preferences
-    setCache(cacheKey, user, CacheTTL.MEDIUM);
+    return NextResponse.json(
+      { success: false, error: 'User not found' },
+      { status: 404 }
+    );
   }
 
-  // Default preferences if not set
-  const defaultPreferences = {
-    emailNotifications: true,
-    reminder5Days: true,
-    reminder1Day: true,
-    overdueNotifications: true
+  // Return default preferences if not set
+  const preferences = user.notificationPreferences || {
+    email: {
+      enabled: true,
+      paymentReminder: true,
+      paymentVerified: true,
+      paymentRejected: true,
+      overdue: true,
+      billGenerated: true
+    },
+    inApp: {
+      enabled: true,
+      paymentReminder: true,
+      paymentVerified: true,
+      paymentRejected: true,
+      overdue: true,
+      billGenerated: true
+    },
+    quietHours: {
+      enabled: false,
+      startTime: '22:00',
+      endTime: '08:00'
+    }
   };
 
-  return createSuccessResponse(user.notificationPreferences || defaultPreferences);
+  logger.apiRequest('GET', '/api/profile/notifications', session.user?.id, 200);
+  return createSuccessResponse(preferences, 'Notification preferences loaded');
 });
 
-// PUT - อัปเดต notification preferences
+// PUT update notification preferences
 export const PUT = asyncHandler(async (req: NextRequest) => {
   const session = await getServerSession(authOptions);
-
+  
   if (!session) {
-    throw new AuthenticationError('Unauthorized');
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
   }
 
   const body = await req.json();
-  const {
-    emailNotifications,
-    reminder5Days,
-    reminder1Day,
-    overdueNotifications
-  } = body;
+  const { email, inApp, quietHours } = body;
 
   // Validation
-  const preferences = {
-    emailNotifications: Boolean(emailNotifications),
-    reminder5Days: Boolean(reminder5Days),
-    reminder1Day: Boolean(reminder1Day),
-    overdueNotifications: Boolean(overdueNotifications)
-  };
+  if (!email || !inApp || !quietHours) {
+    throw new ValidationError('Email, inApp, and quietHours preferences are required');
+  }
+
+  // Validate quiet hours
+  if (quietHours.enabled) {
+    const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+    if (!timeRegex.test(quietHours.startTime) || !timeRegex.test(quietHours.endTime)) {
+      throw new ValidationError('Invalid time format. Use HH:MM format');
+    }
+  }
 
   await connectDB();
 
-  const user = await User.findByIdAndUpdate(
+  const user = await User.findById(session.user?.id);
+  
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: 'User not found' },
+      { status: 404 }
+    );
+  }
+
+  // Update notification preferences
+  const updatedUser = await User.findByIdAndUpdate(
     session.user?.id,
-    { notificationPreferences: preferences },
+    {
+      notificationPreferences: {
+        email: {
+          enabled: email.enabled,
+          paymentReminder: email.paymentReminder,
+          paymentVerified: email.paymentVerified,
+          paymentRejected: email.paymentRejected,
+          overdue: email.overdue,
+          billGenerated: email.billGenerated
+        },
+        inApp: {
+          enabled: inApp.enabled,
+          paymentReminder: inApp.paymentReminder,
+          paymentVerified: inApp.paymentVerified,
+          paymentRejected: inApp.paymentRejected,
+          overdue: inApp.overdue,
+          billGenerated: inApp.billGenerated
+        },
+        quietHours: {
+          enabled: quietHours.enabled,
+          startTime: quietHours.startTime,
+          endTime: quietHours.endTime
+        }
+      }
+    },
     { new: true, runValidators: true }
   );
 
-  if (!user) {
-    throw new NotFoundError('User');
+  if (!updatedUser) {
+    throw new Error('Failed to update notification preferences');
   }
 
-  // Update cache
-  const cacheKey = CacheKeys.USER_NOTIFICATIONS(session.user?.id || '');
-  setCache(cacheKey, { notificationPreferences: preferences }, CacheTTL.MEDIUM);
-
-  return createSuccessResponse(preferences, SuccessMessages.NOTIFICATION_PREFERENCES_UPDATED);
+  logger.apiRequest('PUT', '/api/profile/notifications', session.user?.id, 200);
+  logger.info('Notification preferences updated', 'Profile', { 
+    userId: session.user?.id,
+    preferences: { email, inApp, quietHours }
+  });
+  
+  return createSuccessResponse(
+    updatedUser.notificationPreferences,
+    'Notification preferences updated successfully'
+  );
 });

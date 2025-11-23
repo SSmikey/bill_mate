@@ -1,9 +1,18 @@
-// src/app/profile/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+
+interface UserProfile {
+  name: string;
+  email: string;
+  phone?: string;
+  role: 'admin' | 'tenant';
+  roomId?: string;
+  roomNumber?: string;
+}
 
 interface NotificationPreferences {
   email: {
@@ -29,394 +38,549 @@ interface NotificationPreferences {
   };
 }
 
-interface UserProfile {
-  name: string;
-  email: string;
-  phone?: string;
-  idCard?: string;
-  emergencyContact?: string;
-  notificationPreferences?: NotificationPreferences;
-}
-
 export default function ProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-
+  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'notifications'>('profile');
+  const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'notifications'>('profile');
+  const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
 
-  // Notification preferences state
-  const [notifPrefs, setNotifPrefs] = useState<NotificationPreferences>({
-    email: {
-      enabled: true,
-      paymentReminder: true,
-      paymentVerified: true,
-      paymentRejected: true,
-      overdue: true,
-      billGenerated: true
-    },
-    inApp: {
-      enabled: true,
-      paymentReminder: true,
-      paymentVerified: true,
-      paymentRejected: true,
-      overdue: true,
-      billGenerated: true
-    },
-    quietHours: {
-      enabled: false,
-      startTime: '22:00',
-      endTime: '08:00'
-    }
-  });
+  // Forms
+  const profileForm = useForm<UserProfile>();
+  const passwordForm = useForm<{ 
+    currentPassword: string; 
+    newPassword: string; 
+    confirmPassword: string;
+  }>();
+  const notificationForm = useForm<NotificationPreferences>();
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
-  }, [status, router]);
-
-  // Fetch profile
   useEffect(() => {
     if (status === 'authenticated') {
       fetchProfile();
+      fetchPreferences();
     }
   }, [status]);
 
-  async function fetchProfile() {
+  const fetchProfile = async () => {
     try {
-      setLoading(true);
       const response = await fetch('/api/profile');
-      const result = await response.json();
-
-      if (result.success) {
-        setProfile(result.data);
-        
-        // ตั้งค่า notification preferences
-        if (result.data.notificationPreferences) {
-          setNotifPrefs(result.data.notificationPreferences);
-        }
+      const data = await response.json();
+      
+      if (data.success) {
+        setProfile(data.data);
+        profileForm.reset(data.data);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
-      alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch profile:', error);
+      alert('ไม่สามารถโหลดข้อมูลโปรไฟล์ได้');
     }
-  }
+  };
 
-  // Save notification preferences
-  async function saveNotificationPreferences() {
+  const fetchPreferences = async () => {
     try {
-      setSaving(true);
+      const response = await fetch('/api/profile/notifications');
+      const data = await response.json();
+      
+      if (data.success) {
+        setPreferences(data.data);
+        notificationForm.reset(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch preferences:', error);
+    }
+  };
 
-      const response = await fetch('/api/profile/notifications', {
+  const handleProfileSubmit = async (data: UserProfile) => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notificationPreferences: notifPrefs })
+        body: JSON.stringify(data),
       });
 
       const result = await response.json();
-
+      
       if (result.success) {
-        alert('✅ บันทึกการตั้งค่าสำเร็จ');
-        await fetchProfile();
+        setProfile(result.data);
+        alert('อัปเดตข้อมูลโปรไฟล์เรียบร้อยแล้ว');
       } else {
-        alert(result.error || 'เกิดข้อผิดพลาด');
+        alert(result.error || 'ไม่สามารถอัปเดตข้อมูลได้');
       }
     } catch (error) {
-      console.error('Error saving preferences:', error);
-      alert('เกิดข้อผิดพลาด');
+      console.error('Profile update error:', error);
+      alert('เกิดข้อผิดพลาด กรุณาลองใหม่');
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
-  }
+  };
 
-  // Toggle channel (email/inApp)
-  function toggleChannel(channel: 'email' | 'inApp', enabled: boolean) {
-    setNotifPrefs(prev => ({
-      ...prev,
-      [channel]: {
-        ...prev[channel],
-        enabled
+  const handlePasswordSubmit = async (data: { 
+    currentPassword: string; 
+    newPassword: string; 
+    confirmPassword: string;
+  }) => {
+    if (data.newPassword !== data.confirmPassword) {
+      alert('รหัสผ่านใหม่ไม่ตรงกัน');
+      return;
+    }
+
+    if (data.newPassword.length < 8) {
+      alert('รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('/api/profile/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword,
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว');
+        passwordForm.reset();
+      } else {
+        alert(result.error || 'ไม่สามารถเปลี่ยนรหัสผ่านได้');
       }
-    }));
-  }
+    } catch (error) {
+      console.error('Password change error:', error);
+      alert('เกิดข้อผิดพลาด กรุณาลองใหม่');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Toggle notification type
-  function toggleNotificationType(
-    channel: 'email' | 'inApp',
-    type: 'paymentReminder' | 'paymentVerified' | 'paymentRejected' | 'overdue' | 'billGenerated',
-    enabled: boolean
-  ) {
-    setNotifPrefs(prev => ({
-      ...prev,
-      [channel]: {
-        ...prev[channel],
-        [type]: enabled
+  const handleNotificationSubmit = async (data: NotificationPreferences) => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/profile/notifications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setPreferences(result.data);
+        alert('อัปเดตการตั้งค่าการแจ้งเตือนเรียบร้อยแล้ว');
+      } else {
+        alert(result.error || 'ไม่สามารถอัปเดตการตั้งค่าได้');
       }
-    }));
-  }
+    } catch (error) {
+      console.error('Notification preferences update error:', error);
+      alert('เกิดข้อผิดพลาด กรุณาลองใหม่');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading') {
     return (
-      <div className="container mt-4">
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status"></div>
-          <p className="mt-3">กำลังโหลด...</p>
+      <div className="text-center py-5">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">กำลังโหลด...</span>
         </div>
       </div>
     );
   }
 
-  if (!profile) {
-    return (
-      <div className="container mt-4">
-        <div className="alert alert-danger">ไม่สามารถโหลดข้อมูลได้</div>
-      </div>
-    );
+  if (!session) {
+    router.push('/login');
+    return null;
   }
 
   return (
-    <div className="container mt-4 mb-5">
-      <h2 className="mb-4">
-        <i className="bi bi-person-circle"></i> โปรไฟล์ของฉัน
-      </h2>
-
-      {/* Tabs */}
-      <ul className="nav nav-tabs mb-4">
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`}
-            onClick={() => setActiveTab('profile')}
-          >
-            <i className="bi bi-person"></i> ข้อมูลส่วนตัว
-          </button>
-        </li>
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === 'notifications' ? 'active' : ''}`}
-            onClick={() => setActiveTab('notifications')}
-          >
-            <i className="bi bi-bell"></i> การแจ้งเตือน
-          </button>
-        </li>
-      </ul>
-
-      {/* Profile Tab */}
-      {activeTab === 'profile' && (
-        <div className="card">
-          <div className="card-body">
-            <div className="row">
-              <div className="col-md-6 mb-3">
-                <label className="form-label">ชื่อ-นามสกุล</label>
-                <input type="text" className="form-control" value={profile.name} disabled />
-              </div>
-              <div className="col-md-6 mb-3">
-                <label className="form-label">อีเมล</label>
-                <input type="email" className="form-control" value={profile.email} disabled />
-              </div>
-              <div className="col-md-6 mb-3">
-                <label className="form-label">เบอร์โทร</label>
-                <input type="text" className="form-control" value={profile.phone || '-'} disabled />
-              </div>
-              <div className="col-md-6 mb-3">
-                <label className="form-label">เลขบัตรประชาชน</label>
-                <input type="text" className="form-control" value={profile.idCard || '-'} disabled />
+    <div className="container-fluid py-4">
+      <div className="row">
+        <div className="col-md-3">
+          <div className="card">
+            <div className="card-body">
+              <h5 className="card-title">เมนู</h5>
+              <div className="list-group list-group-flush">
+                <button
+                  className={`list-group-item list-group-item-action ${activeTab === 'profile' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('profile')}
+                >
+                  <i className="bi bi-person me-2"></i>
+                  ข้อมูลส่วนตัว
+                </button>
+                <button
+                  className={`list-group-item list-group-item-action ${activeTab === 'password' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('password')}
+                >
+                  <i className="bi bi-lock me-2"></i>
+                  เปลี่ยนรหัสผ่าน
+                </button>
+                <button
+                  className={`list-group-item list-group-item-action ${activeTab === 'notifications' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('notifications')}
+                >
+                  <i className="bi bi-bell me-2"></i>
+                  การแจ้งเตือน
+                </button>
               </div>
             </div>
           </div>
         </div>
-      )}
 
-      {/* ⭐ Notifications Tab */}
-      {activeTab === 'notifications' && (
-        <div className="card">
-          <div className="card-header">
-            <h5 className="mb-0">ตั้งค่าการแจ้งเตือน</h5>
-          </div>
-          <div className="card-body">
-            
-            {/* Email Notifications */}
-            <div className="mb-4">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h6 className="mb-0">
-                  <i className="bi bi-envelope"></i> การแจ้งเตือนทาง Email
-                </h6>
-                <div className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="emailEnabled"
-                    checked={notifPrefs.email.enabled}
-                    onChange={(e) => toggleChannel('email', e.target.checked)}
-                  />
-                  <label className="form-check-label" htmlFor="emailEnabled">
-                    {notifPrefs.email.enabled ? 'เปิด' : 'ปิด'}
-                  </label>
-                </div>
+        <div className="col-md-9">
+          {/* Profile Tab */}
+          {activeTab === 'profile' && (
+            <div className="card">
+              <div className="card-header">
+                <h5 className="mb-0">ข้อมูลส่วนตัว</h5>
               </div>
-
-              {notifPrefs.email.enabled && (
-                <div className="ms-4">
-                  {[
-                    { key: 'paymentReminder', label: '🔔 เตือนการชำระค่าเช่า', desc: 'แจ้งเตือนก่อนครบกำหนดชำระ' },
-                    { key: 'paymentVerified', label: '✅ การชำระได้รับการอนุมัติ', desc: 'แจ้งเมื่อการชำระได้รับการอนุมัติ' },
-                    { key: 'paymentRejected', label: '❌ การชำระถูกปฏิเสธ', desc: 'แจ้งเมื่อการชำระถูกปฏิเสธ' },
-                    { key: 'overdue', label: '⚠️ เกินกำหนดชำระ', desc: 'แจ้งเมื่อค้างชำระเกินกำหนด' },
-                    { key: 'billGenerated', label: '📄 บิลใหม่ออกแล้ว', desc: 'แจ้งเมื่อมีบิลใหม่' }
-                  ].map(item => (
-                    <div key={item.key} className="form-check mb-2">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id={`email-${item.key}`}
-                        checked={notifPrefs.email[item.key as keyof typeof notifPrefs.email] as boolean}
-                        onChange={(e) => toggleNotificationType('email', item.key as any, e.target.checked)}
-                      />
-                      <label className="form-check-label" htmlFor={`email-${item.key}`}>
-                        <strong>{item.label}</strong>
-                        <br />
-                        <small className="text-muted">{item.desc}</small>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <hr />
-
-            {/* In-App Notifications */}
-            <div className="mb-4">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h6 className="mb-0">
-                  <i className="bi bi-bell-fill"></i> การแจ้งเตือนในแอป
-                </h6>
-                <div className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="inAppEnabled"
-                    checked={notifPrefs.inApp.enabled}
-                    onChange={(e) => toggleChannel('inApp', e.target.checked)}
-                  />
-                  <label className="form-check-label" htmlFor="inAppEnabled">
-                    {notifPrefs.inApp.enabled ? 'เปิด' : 'ปิด'}
-                  </label>
-                </div>
-              </div>
-
-              {notifPrefs.inApp.enabled && (
-                <div className="ms-4">
-                  {[
-                    { key: 'paymentReminder', label: '🔔 เตือนการชำระค่าเช่า' },
-                    { key: 'paymentVerified', label: '✅ การชำระได้รับการอนุมัติ' },
-                    { key: 'paymentRejected', label: '❌ การชำระถูกปฏิเสธ' },
-                    { key: 'overdue', label: '⚠️ เกินกำหนดชำระ' },
-                    { key: 'billGenerated', label: '📄 บิลใหม่ออกแล้ว' }
-                  ].map(item => (
-                    <div key={item.key} className="form-check mb-2">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id={`inApp-${item.key}`}
-                        checked={notifPrefs.inApp[item.key as keyof typeof notifPrefs.inApp] as boolean}
-                        onChange={(e) => toggleNotificationType('inApp', item.key as any, e.target.checked)}
-                      />
-                      <label className="form-check-label" htmlFor={`inApp-${item.key}`}>
-                        {item.label}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <hr />
-
-            {/* Quiet Hours */}
-            <div className="mb-4">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h6 className="mb-0">
-                  <i className="bi bi-moon"></i> ช่วงเวลาไม่รับการแจ้งเตือน (Quiet Hours)
-                </h6>
-                <div className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="quietHoursEnabled"
-                    checked={notifPrefs.quietHours.enabled}
-                    onChange={(e) => setNotifPrefs(prev => ({
-                      ...prev,
-                      quietHours: { ...prev.quietHours, enabled: e.target.checked }
-                    }))}
-                  />
-                  <label className="form-check-label" htmlFor="quietHoursEnabled">
-                    {notifPrefs.quietHours.enabled ? 'เปิด' : 'ปิด'}
-                  </label>
-                </div>
-              </div>
-
-              {notifPrefs.quietHours.enabled && (
-                <div className="ms-4">
+              <div className="card-body">
+                <form onSubmit={profileForm.handleSubmit(handleProfileSubmit)}>
                   <div className="row">
                     <div className="col-md-6 mb-3">
-                      <label className="form-label">เวลาเริ่มต้น</label>
+                      <label className="form-label">ชื่อ</label>
                       <input
-                        type="time"
+                        type="text"
                         className="form-control"
-                        value={notifPrefs.quietHours.startTime}
-                        onChange={(e) => setNotifPrefs(prev => ({
-                          ...prev,
-                          quietHours: { ...prev.quietHours, startTime: e.target.value }
-                        }))}
+                        {...profileForm.register('name', { required: true })}
+                      />
+                      {profileForm.formState.errors.name && (
+                        <div className="text-danger small">
+                          {profileForm.formState.errors.name.message}
+                        </div>
+                      )}
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">อีเมล</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        value={profile?.email || ''}
+                        disabled
+                      />
+                      <small className="text-muted">ไม่สามารถเปลี่ยนอีเมลได้</small>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">เบอร์โทรศัพท์</label>
+                      <input
+                        type="tel"
+                        className="form-control"
+                        {...profileForm.register('phone')}
                       />
                     </div>
                     <div className="col-md-6 mb-3">
-                      <label className="form-label">เวลาสิ้นสุด</label>
+                      <label className="form-label">บทบาท</label>
                       <input
-                        type="time"
+                        type="text"
                         className="form-control"
-                        value={notifPrefs.quietHours.endTime}
-                        onChange={(e) => setNotifPrefs(prev => ({
-                          ...prev,
-                          quietHours: { ...prev.quietHours, endTime: e.target.value }
-                        }))}
+                        value={profile?.role || ''}
+                        disabled
                       />
                     </div>
                   </div>
-                  <small className="text-muted">
-                    <i className="bi bi-info-circle"></i> จะไม่ส่ง email ในช่วงเวลานี้ (ใช้กับ email เท่านั้น)
-                  </small>
-                </div>
-              )}
+                  {profile?.roomNumber && (
+                    <div className="mb-3">
+                      <label className="form-label">ห้องพัก</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={profile.roomNumber}
+                        disabled
+                      />
+                    </div>
+                  )}
+                  <div className="d-flex justify-content-end">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2"></span>
+                          กำลังบันทึก...
+                        </>
+                      ) : (
+                        'บันทึกข้อมูล'
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
+          )}
 
-          </div>
-          <div className="card-footer">
-            <button
-              className="btn btn-success"
-              onClick={saveNotificationPreferences}
-              disabled={saving}
-            >
-              {saving ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2"></span>
-                  กำลังบันทึก...
-                </>
-              ) : (
-                <>
-                  <i className="bi bi-check-circle"></i> บันทึกการตั้งค่า
-                </>
-              )}
-            </button>
-          </div>
+          {/* Password Tab */}
+          {activeTab === 'password' && (
+            <div className="card">
+              <div className="card-header">
+                <h5 className="mb-0">เปลี่ยนรหัสผ่าน</h5>
+              </div>
+              <div className="card-body">
+                <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}>
+                  <div className="mb-3">
+                    <label className="form-label">รหัสผ่านเดิม</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      {...passwordForm.register('currentPassword', { required: true })}
+                    />
+                    {passwordForm.formState.errors.currentPassword && (
+                      <div className="text-danger small">
+                        {passwordForm.formState.errors.currentPassword.message}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">รหัสผ่านใหม่</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      {...passwordForm.register('newPassword', { 
+                        required: true,
+                        minLength: 8
+                      })}
+                    />
+                    {passwordForm.formState.errors.newPassword && (
+                      <div className="text-danger small">
+                        {passwordForm.formState.errors.newPassword.message}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">ยืนยันรหัสผ่านใหม่</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      {...passwordForm.register('confirmPassword', { required: true })}
+                    />
+                    {passwordForm.formState.errors.confirmPassword && (
+                      <div className="text-danger small">
+                        {passwordForm.formState.errors.confirmPassword.message}
+                      </div>
+                    )}
+                  </div>
+                  <div className="d-flex justify-content-end">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2"></span>
+                          กำลังเปลี่ยนรหัสผ่าน...
+                        </>
+                      ) : (
+                        'เปลี่ยนรหัสผ่าน'
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Notifications Tab */}
+          {activeTab === 'notifications' && preferences && (
+            <div className="card">
+              <div className="card-header">
+                <h5 className="mb-0">การตั้งค่าการแจ้งเตือน</h5>
+              </div>
+              <div className="card-body">
+                <form onSubmit={notificationForm.handleSubmit(handleNotificationSubmit)}>
+                  {/* Email Notifications */}
+                  <div className="mb-4">
+                    <h6>การแจ้งเตือนทางอีเมล</h6>
+                    <div className="form-check form-switch mb-2">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        {...notificationForm.register('email.enabled')}
+                      />
+                      <label className="form-check-label">
+                        เปิดใช้งานการแจ้งเตือนทางอีเมล
+                      </label>
+                    </div>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            {...notificationForm.register('email.paymentReminder')}
+                          />
+                          <label className="form-check-label">
+                            แจ้งเตือนก่อนครบกำหนด
+                          </label>
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            {...notificationForm.register('email.paymentVerified')}
+                          />
+                          <label className="form-check-label">
+                            แจ้งเตือนเมื่อยืนยันการชำระเงิน
+                          </label>
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            {...notificationForm.register('email.paymentRejected')}
+                          />
+                          <label className="form-check-label">
+                            แจ้งเตือนเมื่อปฏิเสธการชำระเงิน
+                          </label>
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            {...notificationForm.register('email.overdue')}
+                          />
+                          <label className="form-check-label">
+                            แจ้งเตือนเมื่อเกินกำหนดชำระ
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* In-App Notifications */}
+                  <div className="mb-4">
+                    <h6>การแจ้งเตือนในแอป</h6>
+                    <div className="form-check form-switch mb-2">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        {...notificationForm.register('inApp.enabled')}
+                      />
+                      <label className="form-check-label">
+                        เปิดใช้งานการแจ้งเตือนในแอป
+                      </label>
+                    </div>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            {...notificationForm.register('inApp.paymentReminder')}
+                          />
+                          <label className="form-check-label">
+                            แจ้งเตือนก่อนครบกำหนด
+                          </label>
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            {...notificationForm.register('inApp.paymentVerified')}
+                          />
+                          <label className="form-check-label">
+                            แจ้งเตือนเมื่อยืนยันการชำระเงิน
+                          </label>
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            {...notificationForm.register('inApp.paymentRejected')}
+                          />
+                          <label className="form-check-label">
+                            แจ้งเตือนเมื่อปฏิเสธการชำระเงิน
+                          </label>
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            {...notificationForm.register('inApp.overdue')}
+                          />
+                          <label className="form-check-label">
+                            แจ้งเตือนเมื่อเกินกำหนดชำระ
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quiet Hours */}
+                  <div className="mb-4">
+                    <h6>ช่วงเวลาเงียบ</h6>
+                    <div className="form-check form-switch mb-2">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        {...notificationForm.register('quietHours.enabled')}
+                      />
+                      <label className="form-check-label">
+                        เปิดใช้งานช่วงเวลาเงียบ
+                      </label>
+                    </div>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <label className="form-label">เวลาเริ่มต้น</label>
+                        <input
+                          type="time"
+                          className="form-control"
+                          {...notificationForm.register('quietHours.startTime')}
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label">เวลาสิ้นสุด</label>
+                        <input
+                          type="time"
+                          className="form-control"
+                          {...notificationForm.register('quietHours.endTime')}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="d-flex justify-content-end">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2"></span>
+                          กำลังบันทึก...
+                        </>
+                      ) : (
+                        'บันทึกการตั้งค่า'
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
