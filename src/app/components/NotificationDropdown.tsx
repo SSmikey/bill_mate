@@ -76,42 +76,51 @@ export default function NotificationDropdown({ className = '' }: NotificationDro
   return (
     <div className={`dropdown ${className}`} ref={dropdownRef}>
       <button
-        className="btn btn-outline-secondary position-relative"
+        className="btn btn-light position-relative border-0 shadow-sm"
         type="button"
         onClick={toggleDropdown}
         aria-expanded={isOpen}
+        style={{ width: '40px', height: '40px', borderRadius: '50%' }}
       >
-        <i className="bi bi-bell"></i>
+        <i className="bi bi-bell text-muted"></i>
         {unreadCount > 0 && (
-          <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+          <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-2 border-white">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
-      <div className={`dropdown-menu dropdown-menu-end p-0 ${isOpen ? 'show' : ''}`} style={{ width: '350px', maxHeight: '400px' }}>
-        <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
-          <h6 className="mb-0">การแจ้งเตือน</h6>
+      <div className={`dropdown-menu dropdown-menu-end p-0 shadow-lg border-0 ${isOpen ? 'show' : ''}`} style={{ width: '380px', maxHeight: '450px', borderRadius: 'var(--radius-lg)' }}>
+        <div className="d-flex justify-content-between align-items-center p-4 border-bottom bg-light">
+          <div className="d-flex align-items-center">
+            <i className="bi bi-bell-fill text-primary me-2"></i>
+            <h6 className="mb-0 fw-semibold">การแจ้งเตือน</h6>
+            {unreadCount > 0 && (
+              <span className="badge bg-primary ms-2">{unreadCount}</span>
+            )}
+          </div>
           {unreadCount > 0 && (
-            <button 
-              className="btn btn-sm btn-outline-primary"
+            <button
+              className="btn btn-sm btn-outline-primary rounded-pill"
               onClick={markAllAsRead}
             >
+              <i className="bi bi-check-all me-1"></i>
               อ่านทั้งหมด
             </button>
           )}
         </div>
         
-        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-          <NotificationList 
-            limit={5} 
+        <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+          <NotificationList
+            limit={5}
             showRead={false}
             refreshTrigger={refreshTrigger}
           />
         </div>
         
-        <div className="p-2 border-top text-center">
-          <a href="/notifications" className="btn btn-sm btn-link text-decoration-none">
+        <div className="p-3 border-top bg-light">
+          <a href="/notifications" className="btn btn-sm btn-outline-primary w-100 rounded-pill text-decoration-none">
+            <i className="bi bi-arrow-right me-1"></i>
             ดูการแจ้งเตือนทั้งหมด
           </a>
         </div>

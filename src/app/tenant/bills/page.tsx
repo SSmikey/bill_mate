@@ -56,43 +56,148 @@ const TenantBillsListPage = () => {
   };
 
   return (
-    <div className="container-fluid mt-4">
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="bi bi-journal-richtext me-2"></i>บิลทั้งหมดของฉัน</h3>
-          <p className="text-muted">รายการบิลค่าเช่าและค่าบริการต่างๆ</p>
+    <div className="fade-in">
+      {/* Header */}
+      <div className="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <h2 className="fw-bold mb-1">
+            <i className="bi bi-journal-richtext me-2 text-primary"></i>
+            บิลทั้งหมดของฉัน
+          </h2>
+          <p className="text-muted mb-0">รายการบิลค่าเช่าและค่าบริการต่างๆ</p>
         </div>
-        <div className="card-body">
-          {loading && <div className="text-center py-5"><Spinner animation="border" /></div>}
-          {error && <Alert variant="danger">{error}</Alert>}
+        <div className="d-flex gap-2">
+          <button className="btn btn-outline-secondary">
+            <i className="bi bi-filter me-2"></i>
+            กรอง
+          </button>
+          <button className="btn btn-outline-primary">
+            <i className="bi bi-download me-2"></i>
+            ดาวน์โหลด
+          </button>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="row mb-4">
+        <div className="col-md-3 mb-3">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center">
+                <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                  <i className="bi bi-receipt text-primary"></i>
+                </div>
+                <div>
+                  <div className="text-muted small">ทั้งหมด</div>
+                  <div className="fw-bold">{bills.length}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3 mb-3">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center">
+                <div className="bg-warning bg-opacity-10 rounded-circle p-2 me-3">
+                  <i className="bi bi-clock text-warning"></i>
+                </div>
+                <div>
+                  <div className="text-muted small">รอชำระ</div>
+                  <div className="fw-bold text-warning">{bills.filter(b => b.status === 'pending' || b.status === 'overdue').length}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3 mb-3">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center">
+                <div className="bg-info bg-opacity-10 rounded-circle p-2 me-3">
+                  <i className="bi bi-hourglass-split text-info"></i>
+                </div>
+                <div>
+                  <div className="text-muted small">รอตรวจสอบ</div>
+                  <div className="fw-bold text-info">{bills.filter(b => b.status === 'paid').length}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3 mb-3">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center">
+                <div className="bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                  <i className="bi bi-check-circle text-success"></i>
+                </div>
+                <div>
+                  <div className="text-muted small">ชำระแล้ว</div>
+                  <div className="fw-bold text-success">{bills.filter(b => b.status === 'verified').length}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bills Table */}
+      <div className="card border-0 shadow-sm">
+        <div className="card-body p-0">
+          {loading && (
+            <div className="text-center py-5">
+              <Spinner animation="border" className="text-primary" />
+              <p className="text-muted mt-3">กำลังโหลดข้อมูลบิล...</p>
+            </div>
+          )}
+          {error && (
+            <div className="p-4">
+              <Alert variant="danger" className="d-flex align-items-center">
+                <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                {error}
+              </Alert>
+            </div>
+          )}
           {!loading && !error && (
             <div className="table-responsive">
-              <Table hover striped>
-                <thead className="table-light">
+              <Table hover className="mb-0">
+                <thead className="bg-light">
                   <tr>
-                    <th>เดือน/ปี</th>
-                    <th>ยอดรวม</th>
-                    <th>ครบกำหนด</th>
-                    <th>สถานะ</th>
-                    <th>การจัดการ</th>
+                    <th className="fw-semibold border-0">เดือน/ปี</th>
+                    <th className="fw-semibold border-0">ยอดรวม</th>
+                    <th className="fw-semibold border-0">ครบกำหนด</th>
+                    <th className="fw-semibold border-0">สถานะ</th>
+                    <th className="fw-semibold text-center border-0">การจัดการ</th>
                   </tr>
                 </thead>
                 <tbody>
                   {bills.length > 0 ? (
                     bills.map(b => (
-                      <tr key={b._id}>
-                        <td>{b.month}/{b.year}</td>
-                        <td>{b.totalAmount.toLocaleString()} บาท</td>
-                        <td>{format(new Date(b.dueDate), 'dd MMM yy', { locale: th })}</td>
-                        <td>{getBillStatusBadge(b.status)}</td>
+                      <tr key={b._id} className="align-middle">
                         <td>
+                          <div className="fw-semibold">
+                            {format(new Date(b.year, b.month - 1), 'MMMM yyyy', { locale: th })}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="fw-bold">{b.totalAmount.toLocaleString()} บาท</div>
+                        </td>
+                        <td>
+                          <div className={new Date(b.dueDate) < new Date() && b.status !== 'verified' ? 'text-danger' : ''}>
+                            {format(new Date(b.dueDate), 'dd MMM yyyy', { locale: th })}
+                          </div>
+                        </td>
+                        <td>{getBillStatusBadge(b.status)}</td>
+                        <td className="text-center">
                           <Link href={`/tenant/bills/${b._id}`} passHref>
-                            <Button 
-                              variant={b.status === 'pending' || b.status === 'overdue' ? 'primary' : 'link'} 
+                            <Button
+                              variant={b.status === 'pending' || b.status === 'overdue' ? 'primary' : 'outline-primary'}
                               size="sm"
+                              className="rounded-pill"
                             >
-                              {b.status === 'pending' || b.status === 'overdue' ? 
-                                <><i className="bi bi-wallet2 me-1"></i>ชำระเงิน</> : 
+                              {b.status === 'pending' || b.status === 'overdue' ?
+                                <><i className="bi bi-wallet2 me-1"></i>ชำระเงิน</> :
                                 <><i className="bi bi-eye me-1"></i>ดูรายละเอียด</>}
                             </Button>
                           </Link>
@@ -100,7 +205,15 @@ const TenantBillsListPage = () => {
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan={5} className="text-center py-4">ยังไม่มีรายการบิล</td></tr>
+                    <tr>
+                      <td colSpan={5} className="text-center py-5">
+                        <div className="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
+                          <i className="bi bi-inbox fs-2 text-muted"></i>
+                        </div>
+                        <h6 className="text-muted">ยังไม่มีรายการบิล</h6>
+                        <p className="text-muted small">บิลของคุณจะแสดงที่นี่เมื่อมีการสร้างบิล</p>
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </Table>

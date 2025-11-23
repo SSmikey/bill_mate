@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import BootstrapClient from './components/BootstrapClient';
 import SessionWrapper from './components/SessionWrapper';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -9,19 +10,23 @@ import { initializeDatabase } from '@/lib/mongodb';
 import logger from '@/lib/logger';
 import { initializeCronJobs } from '@/services/cronService';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Bill Mate - ระบบจัดการค่าเช่าหอพัก",
-  description: "ระบบจัดการค่าเช่า ค่าน้ำ ค่าไฟ และตรวจสอบการชำระเงิน",
+  title: {
+    default: "Bill Mate - ระบบจัดการค่าเช่าหอพัก",
+    template: "%s | Bill Mate"
+  },
+  description: "ระบบจัดการค่าเช่า ค่าน้ำ ค่าไฟ และตรวจสอบการชำระเงินที่ทันสมัยและใช้งานง่าย",
+  keywords: ["ค่าเช่าหอพัก", "ระบบจัดการหอพัก", "ค่าน้ำค่าไฟ", "บิลค่าเช่า", "ระบบชำระเงิน"],
+  authors: [{ name: "Bill Mate Team" }],
+  viewport: "width=device-width, initial-scale=1",
+  themeColor: "#4361ee",
+  colorScheme: "light",
 };
 
 // Initialize database on app startup
@@ -56,14 +61,17 @@ export default function RootLayout({
   });
   
   return (
-    <html lang="th">
+    <html lang="th" className={inter.variable}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="antialiased"
+        style={{ fontFamily: 'var(--font-family)' }}
       >
         <SessionWrapper>
           <BootstrapClient />
           <ErrorBoundary>
-            {children}
+            <div className="min-vh-100 d-flex flex-column">
+              {children}
+            </div>
           </ErrorBoundary>
         </SessionWrapper>
       </body>

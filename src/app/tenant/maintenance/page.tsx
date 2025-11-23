@@ -197,21 +197,24 @@ export default function MaintenancePage() {
   }
 
   return (
-    <div className="container-fluid">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+    <div className="fade-in">
+      {/* Header */}
+      <div className="d-flex align-items-center justify-content-between mb-4">
         <div>
-          <h2>
-            <i className="bi bi-tools me-2"></i>
+          <h2 className="fw-bold mb-1">
+            <i className="bi bi-tools me-2 text-primary"></i>
             แจ้งซ่อมบำรุง
           </h2>
-          <small className="text-muted">
+          <p className="text-muted mb-0">
+            <i className="bi bi-house-door me-2"></i>
             {userRoom ? `ห้อง ${userRoom.roomNumber}` : 'ไม่พบข้อมูลห้องพัก'}
-          </small>
+          </p>
         </div>
         <button
-          className="btn btn-primary"
+          className="btn btn-primary shadow-hover"
           onClick={() => setShowForm(!showForm)}
           disabled={!userRoom}
+          style={{ borderRadius: 'var(--radius-lg)' }}
         >
           <i className="bi bi-plus-circle me-2"></i>
           แจ้งซ่อมใหม่
@@ -220,20 +223,27 @@ export default function MaintenancePage() {
 
       {/* Maintenance Request Form */}
       {showForm && (
-        <div className="card mb-4">
-          <div className="card-header">
-            <h5 className="card-title mb-0">แจ้งซ่อมบำรุงใหม่</h5>
+        <div className="card border-0 shadow-sm mb-4 fade-in">
+          <div className="card-header bg-white border-bottom p-4">
+            <h5 className="card-title mb-0 fw-semibold">
+              <i className="bi bi-wrench me-2 text-primary"></i>
+              แจ้งซ่อมบำรุงใหม่
+            </h5>
           </div>
-          <div className="card-body">
+          <div className="card-body p-4">
             <form onSubmit={handleSubmit}>
               <div className="row">
                 <div className="col-md-6 mb-3">
-                  <label className="form-label">ประเภท</label>
+                  <label className="form-label fw-semibold">
+                    <i className="bi bi-tag me-2 text-muted"></i>
+                    ประเภท
+                  </label>
                   <select
                     className="form-select"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     required
+                    style={{ borderRadius: 'var(--radius-md)' }}
                   >
                     {categories.map((cat) => (
                       <option key={cat.value} value={cat.value}>
@@ -243,12 +253,16 @@ export default function MaintenancePage() {
                   </select>
                 </div>
                 <div className="col-md-6 mb-3">
-                  <label className="form-label">ความสำคัญ</label>
+                  <label className="form-label fw-semibold">
+                    <i className="bi bi-exclamation-triangle me-2 text-muted"></i>
+                    ความสำคัญ
+                  </label>
                   <select
                     className="form-select"
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                     required
+                    style={{ borderRadius: 'var(--radius-md)' }}
                   >
                     {priorities.map((pri) => (
                       <option key={pri.value} value={pri.value}>
@@ -259,7 +273,10 @@ export default function MaintenancePage() {
                 </div>
               </div>
               <div className="mb-3">
-                <label className="form-label">หัวข้อ</label>
+                <label className="form-label fw-semibold">
+                  <i className="bi bi-chat-left-text me-2 text-muted"></i>
+                  หัวข้อ
+                </label>
                 <input
                   type="text"
                   className="form-control"
@@ -267,10 +284,14 @@ export default function MaintenancePage() {
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="ระบุหัวข้อการแจ้งซ่อม"
                   required
+                  style={{ borderRadius: 'var(--radius-md)' }}
                 />
               </div>
-              <div className="mb-3">
-                <label className="form-label">รายละเอียด</label>
+              <div className="mb-4">
+                <label className="form-label fw-semibold">
+                  <i className="bi bi-text-paragraph me-2 text-muted"></i>
+                  รายละเอียด
+                </label>
                 <textarea
                   className="form-control"
                   value={formData.description}
@@ -278,17 +299,19 @@ export default function MaintenancePage() {
                   placeholder="อธิบายปัญหาที่พบโดยละเอียด"
                   rows={4}
                   required
+                  style={{ borderRadius: 'var(--radius-md)' }}
                 />
               </div>
               <div className="d-flex gap-2">
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary shadow-hover" style={{ borderRadius: 'var(--radius-lg)' }}>
                   <i className="bi bi-send me-2"></i>
                   ส่งคำขอ
                 </button>
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="btn btn-outline-secondary"
                   onClick={() => setShowForm(false)}
+                  style={{ borderRadius: 'var(--radius-lg)' }}
                 >
                   ยกเลิก
                 </button>
@@ -299,44 +322,56 @@ export default function MaintenancePage() {
       )}
 
       {/* Maintenance Requests List */}
-      <div className="card">
-        <div className="card-header">
-          <h5 className="card-title mb-0">ประวัติการแจ้งซ่อม</h5>
+      <div className="card border-0 shadow-sm">
+        <div className="card-header bg-white border-bottom p-4">
+          <h5 className="card-title mb-0 fw-semibold">
+            <i className="bi bi-clock-history me-2 text-primary"></i>
+            ประวัติการแจ้งซ่อม
+          </h5>
         </div>
-        <div className="card-body">
+        <div className="card-body p-0">
           {requests.length === 0 ? (
-            <div className="text-center py-4">
-              <i className="bi bi-tools display-4 text-muted"></i>
-              <p className="text-muted mt-3">ยังไม่มีประวัติการแจ้งซ่อม</p>
+            <div className="text-center py-5">
+              <div className="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
+                <i className="bi bi-tools fs-2 text-muted"></i>
+              </div>
+              <h6 className="text-muted">ยังไม่มีประวัติการแจ้งซ่อม</h6>
+              <p className="text-muted small">คำขอแจ้งซ่อมของคุณจะแสดงที่นี่</p>
             </div>
           ) : (
             <div className="table-responsive">
-              <table className="table table-hover">
-                <thead>
+              <table className="table table-hover mb-0">
+                <thead className="bg-light">
                   <tr>
-                    <th>วันที่แจ้ง</th>
-                    <th>หัวข้อ</th>
-                    <th>ประเภท</th>
-                    <th>ความสำคัญ</th>
-                    <th>สถานะ</th>
-                    <th>ผู้รับผิดชอบ</th>
+                    <th className="fw-semibold border-0">วันที่แจ้ง</th>
+                    <th className="fw-semibold border-0">หัวข้อ</th>
+                    <th className="fw-semibold border-0">ประเภท</th>
+                    <th className="fw-semibold border-0">ความสำคัญ</th>
+                    <th className="fw-semibold border-0">สถานะ</th>
+                    <th className="fw-semibold border-0">ผู้รับผิดชอบ</th>
                   </tr>
                 </thead>
                 <tbody>
                   {requests.map((request) => (
-                    <tr key={request._id}>
-                      <td>{formatDate(request.createdAt)}</td>
+                    <tr key={request._id} className="align-middle">
                       <td>
-                        <strong>{request.title}</strong>
-                        <br />
+                        <div className="text-muted small">
+                          {formatDate(request.createdAt)}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="fw-semibold">{request.title}</div>
                         <small className="text-muted">
+                          <i className="bi bi-house-door me-1"></i>
                           {request.roomId.roomNumber}
                           {request.roomId.floor && ` (ชั้น ${request.roomId.floor})`}
                         </small>
                       </td>
                       <td>
-                        {categories.find((c) => c.value === request.category)?.label ||
-                          request.category}
+                        <span className="badge bg-light text-dark">
+                          {categories.find((c) => c.value === request.category)?.label ||
+                            request.category}
+                        </span>
                       </td>
                       <td>
                         <span className={`badge bg-${
@@ -357,8 +392,13 @@ export default function MaintenancePage() {
                         </span>
                       </td>
                       <td>
-                        {request.assignedTo || (
-                          <span className="text-muted">ยังไม่มีผู้รับผิดชอบ</span>
+                        {request.assignedTo ? (
+                          <span className="text-muted">{request.assignedTo}</span>
+                        ) : (
+                          <span className="text-muted">
+                            <i className="bi bi-person-dash me-1"></i>
+                            ยังไม่มีผู้รับผิดชอบ
+                          </span>
                         )}
                       </td>
                     </tr>

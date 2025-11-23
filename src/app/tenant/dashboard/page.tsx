@@ -62,37 +62,72 @@ export default function TenantDashboard() {
   }
 
   return (
-    <div>
-      <div className="mb-4">
-        <h2 className="fw-bold">สวัสดี, {session?.user?.name}</h2>
-        <p className="text-muted">ห้องของคุณ: <span className="badge bg-primary">รอดึงข้อมูล</span></p>
+    <div className="fade-in">
+      {/* Welcome Section */}
+      <div className="mb-5">
+        <div className="d-flex align-items-center justify-content-between">
+          <div>
+            <h1 className="fw-bold mb-2">สวัสดี, {session?.user?.name}</h1>
+            <p className="text-muted mb-0">
+              <i className="bi bi-house-door me-2"></i>
+              ห้องของคุณ: <span className="badge bg-primary bg-opacity-10 text-primary">รอดึงข้อมูล</span>
+            </p>
+          </div>
+          <div className="text-end">
+            <div className="text-muted small">วันนี้</div>
+            <div className="fw-semibold">
+              {new Date().toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="row mb-4">
-        <div className="col-md-4 mb-3">
-          <div className="card border-0 shadow-sm bg-light">
-            <div className="card-body">
-              <h6 className="card-title text-muted">บิลทั้งหมด</h6>
-              <h2 className="mb-0">{bills.length}</h2>
+      <div className="row mb-5">
+        <div className="col-md-4 mb-4">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center">
+                <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                  <i className="bi bi-receipt text-primary fs-4"></i>
+                </div>
+                <div className="flex-grow-1">
+                  <h6 className="text-muted mb-1">บิลทั้งหมด</h6>
+                  <h2 className="mb-0 fw-bold">{bills.length}</h2>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-4 mb-3">
-          <div className="card border-0 shadow-sm bg-success bg-opacity-10">
-            <div className="card-body">
-              <h6 className="card-title text-success">ชำระแล้ว</h6>
-              <h2 className="mb-0 text-success">{bills.filter(b => b.status === 'verified').length}</h2>
+        <div className="col-md-4 mb-4">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center">
+                <div className="bg-success bg-opacity-10 rounded-circle p-3 me-3">
+                  <i className="bi bi-check-circle text-success fs-4"></i>
+                </div>
+                <div className="flex-grow-1">
+                  <h6 className="text-muted mb-1">ชำระแล้ว</h6>
+                  <h2 className="mb-0 fw-bold text-success">{bills.filter(b => b.status === 'verified').length}</h2>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-4 mb-3">
-          <div className="card border-0 shadow-sm bg-warning bg-opacity-10">
-            <div className="card-body">
-              <h6 className="card-title text-warning">รอชำระ</h6>
-              <h2 className="mb-0 text-warning">{bills.filter(b => b.status === 'pending').length}</h2>
+        <div className="col-md-4 mb-4">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center">
+                <div className="bg-warning bg-opacity-10 rounded-circle p-3 me-3">
+                  <i className="bi bi-clock text-warning fs-4"></i>
+                </div>
+                <div className="flex-grow-1">
+                  <h6 className="text-muted mb-1">รอชำระ</h6>
+                  <h2 className="mb-0 fw-bold text-warning">{bills.filter(b => b.status === 'pending').length}</h2>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -100,49 +135,72 @@ export default function TenantDashboard() {
 
       {/* Bills List */}
       <div className="card border-0 shadow-sm">
-        <div className="card-header bg-white border-bottom">
-          <h5 className="mb-0 fw-bold">บิลของฉัน</h5>
+        <div className="card-header bg-white border-bottom p-4">
+          <div className="d-flex align-items-center justify-content-between">
+            <h5 className="mb-0 fw-semibold">
+              <i className="bi bi-file-text me-2 text-primary"></i>
+              บิลของฉัน
+            </h5>
+            <Link href="/tenant/bills" className="btn btn-sm btn-outline-primary rounded-pill">
+              ดูทั้งหมด
+              <i className="bi bi-arrow-right ms-1"></i>
+            </Link>
+          </div>
         </div>
         <div className="card-body p-0">
           {bills.length === 0 ? (
-            <div className="text-center py-5 text-muted">
-              <i className="bi bi-inbox fs-3 d-block mb-3"></i>
-              ไม่มีบิล
+            <div className="text-center py-5">
+              <div className="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
+                <i className="bi bi-inbox fs-2 text-muted"></i>
+              </div>
+              <h6 className="text-muted">ยังไม่มีบิล</h6>
+              <p className="text-muted small">บิลของคุณจะแสดงที่นี่เมื่อมีการสร้างบิล</p>
             </div>
           ) : (
             <div className="table-responsive">
               <table className="table table-hover mb-0">
                 <thead className="bg-light">
                   <tr>
-                    <th>เดือน</th>
-                    <th>ห้อง</th>
-                    <th>จำนวนเงิน</th>
-                    <th>ครบกำหนด</th>
-                    <th>สถานะ</th>
-                    <th></th>
+                    <th className="fw-semibold">เดือน</th>
+                    <th className="fw-semibold">ห้อง</th>
+                    <th className="fw-semibold">จำนวนเงิน</th>
+                    <th className="fw-semibold">ครบกำหนด</th>
+                    <th className="fw-semibold">สถานะ</th>
+                    <th className="fw-semibold text-center">การจัดการ</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {bills.map((bill) => (
-                    <tr key={bill._id}>
+                  {bills.slice(0, 5).map((bill) => (
+                    <tr key={bill._id} className="align-middle">
                       <td>
-                        <strong>
+                        <div className="fw-semibold">
                           {new Date(bill.year, bill.month - 1).toLocaleDateString('th-TH', {
                             month: 'long',
                             year: 'numeric',
                           })}
-                        </strong>
+                        </div>
                       </td>
-                      <td>{bill.roomId.roomNumber}</td>
+                      <td>
+                        <span className="badge bg-light text-dark">{bill.roomId.roomNumber}</span>
+                      </td>
                       <td className="fw-bold">{bill.totalAmount.toLocaleString('th-TH')} บาท</td>
                       <td>
-                        {new Date(bill.dueDate).toLocaleDateString('th-TH')}
+                        <div className="text-muted">
+                          {new Date(bill.dueDate).toLocaleDateString('th-TH')}
+                        </div>
                       </td>
                       <td>{getStatusBadge(bill.status)}</td>
-                      <td>
+                      <td className="text-center">
                         {bill.status === 'pending' && (
-                          <Link href={`/tenant/bills/${bill._id}`} className="btn btn-sm btn-primary">
+                          <Link href={`/tenant/bills/${bill._id}`} className="btn btn-sm btn-primary rounded-pill">
+                            <i className="bi bi-wallet2 me-1"></i>
                             ชำระเงิน
+                          </Link>
+                        )}
+                        {bill.status === 'verified' && (
+                          <Link href={`/tenant/bills/${bill._id}`} className="btn btn-sm btn-outline-primary rounded-pill">
+                            <i className="bi bi-eye me-1"></i>
+                            ดูรายละเอียด
                           </Link>
                         )}
                       </td>
