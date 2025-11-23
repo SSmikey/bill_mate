@@ -1,16 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    const message = searchParams.get('message');
+    if (message === 'registration-success') {
+      setSuccessMessage('สมัครสมาชิกสำเร็จแล้ว กรุณาเข้าสู่ระบบ');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,11 +36,19 @@ export default function LoginPage() {
       if (result?.error) {
         setError(result.error);
       } else if (result?.ok) {
-        // Redirect based on user role
-        const response = await fetch('/api/auth/session');
-        const session = await response.json();
+        // Get session after successful login
+        const sessionRes = await fetch('/api/auth/session');
 
-        if (session?.user?.role === 'admin') {
+        if (!sessionRes.ok) {
+          setError('เกิดข้อผิดพลาดในการดึงข้อมูลเซสชัน');
+          setLoading(false);
+          return;
+        }
+
+        const session = await sessionRes.json();
+        const userRole = session?.user?.role;
+
+        if (userRole === 'admin') {
           router.push('/admin/dashboard');
         } else {
           router.push('/tenant/dashboard');
@@ -61,6 +78,18 @@ export default function LoginPage() {
                   type="button"
                   className="btn-close"
                   onClick={() => setError('')}
+                  aria-label="Close"
+                ></button>
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="alert alert-success alert-dismissible fade show" role="alert">
+                {successMessage}
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setSuccessMessage('')}
                   aria-label="Close"
                 ></button>
               </div>

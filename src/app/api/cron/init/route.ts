@@ -2,7 +2,8 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { initializeCronJobs } from '@/services/cronService';
+import { initializeCronJobs, getCronJobStatus, getNextRunTimes } from '@/services/cronService';
+import logger from '@/lib/logger';
 
 // Flag เพื่อป้องกันการ initialize ซ้ำ
 let cronJobsInitialized = false;
@@ -28,41 +29,55 @@ export async function GET() {
 
     // ถ้ายัง initialize ให้ทำการ initialize
     if (!cronJobsInitialized) {
-      initializeCronJobs();
-      cronJobsInitialized = true;
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Cron jobs initialized successfully',
-        timestamp: new Date().toISOString(),
-        timezone: 'Asia/Bangkok',
-        jobs: [
+      try {
+        initializeCronJobs();
+        cronJobsInitialized = true;
+        
+        logger.info('Cron jobs initialized via API', 'CronAPI');
+        
+        return NextResponse.json({
+          success: true,
+          message: 'Cron jobs initialized successfully',
+          timestamp: new Date().toISOString(),
+          timezone: 'Asia/Bangkok',
+          jobs: [
+            {
+              name: '5-day payment reminder',
+              schedule: '0 9 * * *',
+              time: '09:00 daily',
+              description: 'ส่งแจ้งเตือนก่อนครบกำหนด 5 วัน'
+            },
+            {
+              name: '1-day payment reminder',
+              schedule: '0 18 * * *',
+              time: '18:00 daily',
+              description: 'ส่งแจ้งเตือนก่อนครบกำหนด 1 วัน'
+            },
+            {
+              name: 'Overdue notifications',
+              schedule: '0 10 * * *',
+              time: '10:00 daily',
+              description: 'ส่งแจ้งเตือนเมื่อเกินกำหนดชำระ'
+            },
+            {
+              name: 'Notification cleanup',
+              schedule: '0 1 * * 0',
+              time: '01:00 every Sunday',
+              description: 'ลบ notifications ที่อ่านแล้วและเก่ากว่า 30 วัน'
+            }
+          ]
+        });
+      } catch (error) {
+        logger.error('Failed to initialize cron jobs via API', error as Error, 'CronAPI');
+        return NextResponse.json(
           {
-            name: '5-day payment reminder',
-            schedule: '0 9 * * *',
-            time: '09:00 daily',
-            description: 'ส่งแจ้งเตือนก่อนครบกำหนด 5 วัน'
+            success: false,
+            error: 'Failed to initialize cron jobs',
+            details: error instanceof Error ? error.message : 'Unknown error'
           },
-          {
-            name: '1-day payment reminder',
-            schedule: '0 18 * * *',
-            time: '18:00 daily',
-            description: 'ส่งแจ้งเตือนก่อนครบกำหนด 1 วัน'
-          },
-          {
-            name: 'Overdue notifications',
-            schedule: '0 10 * * *',
-            time: '10:00 daily',
-            description: 'ส่งแจ้งเตือนเมื่อเกินกำหนดชำระ'
-          },
-          {
-            name: 'Notification cleanup',
-            schedule: '0 1 * * 0',
-            time: '01:00 every Sunday',
-            description: 'ลบ notifications ที่อ่านแล้วและเก่ากว่า 30 วัน'
-          }
-        ]
-      });
+          { status: 500 }
+        );
+      }
     }
 
     // ถ้า initialize แล้ว
@@ -74,10 +89,10 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error('❌ Error initializing cron jobs:', error);
+    logger.error('Error in cron init API', error as Error, 'CronAPI');
     
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to initialize cron jobs',
         details: error instanceof Error ? error.message : 'Unknown error'
@@ -125,10 +140,10 @@ export async function POST() {
     });
 
   } catch (error) {
-    console.error('❌ Error checking cron status:', error);
+    logger.error('Error checking cron status', error as Error, 'CronAPI');
     
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to check cron status',
         details: error instanceof Error ? error.message : 'Unknown error'
@@ -167,10 +182,10 @@ export async function DELETE() {
     });
 
   } catch (error) {
-    console.error('❌ Error stopping cron jobs:', error);
+    logger.error('Error stopping cron jobs', error as Error, 'CronAPI');
     
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to stop cron jobs',
         details: error instanceof Error ? error.message : 'Unknown error'

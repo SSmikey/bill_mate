@@ -57,7 +57,18 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token,
+      authorized: ({ token, req }) => {
+        // Allow access to registration route without authentication
+        if (req.nextUrl.pathname === '/api/users' && req.method === 'POST') {
+          return true;
+        }
+        // Allow access to auth routes without authentication
+        if (req.nextUrl.pathname.startsWith('/api/auth/')) {
+          return true;
+        }
+        // Require authentication for all other protected routes
+        return !!token;
+      },
     },
   }
 );
@@ -66,7 +77,7 @@ export const config = {
   matcher: [
     '/admin/:path*',
     '/tenant/:path*',
-    '/api/:path*',
+    '/api/:path*',  // Include all API routes
     '/profile'
   ],
 };

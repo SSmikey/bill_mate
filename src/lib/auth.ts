@@ -19,7 +19,7 @@ export const authOptions: NextAuthOptions = {
 
         try {
           await connectDB();
-          const user = await User.findOne({ email: credentials.email });
+          const user = await User.findOne({ email: credentials.email }).select('+password');
 
           if (!user) {
             throw new Error('ไม่พบผู้ใช้งานนี้');

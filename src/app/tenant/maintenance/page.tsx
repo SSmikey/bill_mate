@@ -1,0 +1,374 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+
+interface MaintenanceRequest {
+  _id: string;
+  roomId: {
+    _id: string;
+    roomNumber: string;
+    floor?: number;
+  };
+  category: string;
+  title: string;
+  description: string;
+  priority: string;
+  status: string;
+  reportedDate: string;
+  scheduledDate?: string;
+  completedDate?: string;
+  cost?: number;
+  assignedTo?: string;
+  notes?: string;
+  images?: string[];
+  createdBy: {
+    userId: string;
+    name: string;
+    role: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface UserRoom {
+  _id: string;
+  roomNumber: string;
+  floor?: number;
+}
+
+export default function MaintenancePage() {
+  const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
+  const [userRoom, setUserRoom] = useState<UserRoom | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    category: 'other',
+    title: '',
+    description: '',
+    priority: 'medium',
+  });
+
+  const categories = [
+    { value: 'electrical', label: 'ไฟฟ้า' },
+    { value: 'plumbing', label: 'ประปา' },
+    { value: 'air-conditioning', label: 'แอร์' },
+    { value: 'furniture', label: 'เฟอร์นิเจอร์' },
+    { value: 'cleaning', label: 'ทำความสะอาด' },
+    { value: 'security', label: 'ความปลอดภัย' },
+    { value: 'other', label: 'อื่นๆ' },
+  ];
+
+  const priorities = [
+    { value: 'low', label: 'ต่ำ', color: 'success' },
+    { value: 'medium', label: 'ปานกลาง', color: 'warning' },
+    { value: 'high', label: 'สูง', color: 'danger' },
+    { value: 'urgent', label: 'เร่งด่วน', color: 'dark' },
+  ];
+
+  const statusLabels = {
+    'pending': 'รอดำเนินการ',
+    'in-progress': 'กำลังดำเนินการ',
+    'completed': 'เสร็จสิ้น',
+    'cancelled': 'ยกเลิก',
+  };
+
+  const statusColors = {
+    'pending': 'secondary',
+    'in-progress': 'primary',
+    'completed': 'success',
+    'cancelled': 'danger',
+  };
+
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    if (session) {
+      fetchUserData();
+      fetchMaintenanceRequests();
+    }
+  }, [session]);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch('/api/profile');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data.roomId) {
+          setUserRoom(data.data.roomId);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
+
+  const fetchMaintenanceRequests = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/maintenance');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Filter requests for current user only
+          const userRequests = data.data.filter((req: MaintenanceRequest) =>
+            req.createdBy.userId === session?.user?.id
+          );
+          setRequests(userRequests);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching maintenance requests:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!userRoom) {
+      alert('ไม่พบข้อมูลห้องพักของคุณ');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/maintenance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          roomId: userRoom._id,
+          category: formData.category,
+          title: formData.title,
+          description: formData.description,
+          priority: formData.priority,
+          createdBy: {
+            userId: session?.user?.id,
+            name: session?.user?.name || 'ผู้เช่า',
+            role: 'tenant',
+          },
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          alert('ส่งคำขอแจ้งซ่อมเรียบร้อยแล้ว');
+          setShowForm(false);
+          setFormData({
+            category: 'other',
+            title: '',
+            description: '',
+            priority: 'medium',
+          });
+          fetchMaintenanceRequests();
+        }
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'เกิดข้อผิดพลาดในการส่งคำขอ');
+      }
+    } catch (error) {
+      console.error('Error submitting maintenance request:', error);
+      alert('เกิดข้อผิดพลาดในการส่งคำขอ');
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">กำลังโหลด...</span>
+        </div>
+        <p className="mt-3 text-muted">กำลังโหลดข้อมูล...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container-fluid">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>
+            <i className="bi bi-tools me-2"></i>
+            แจ้งซ่อมบำรุง
+          </h2>
+          <small className="text-muted">
+            {userRoom ? `ห้อง ${userRoom.roomNumber}` : 'ไม่พบข้อมูลห้องพัก'}
+          </small>
+        </div>
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowForm(!showForm)}
+          disabled={!userRoom}
+        >
+          <i className="bi bi-plus-circle me-2"></i>
+          แจ้งซ่อมใหม่
+        </button>
+      </div>
+
+      {/* Maintenance Request Form */}
+      {showForm && (
+        <div className="card mb-4">
+          <div className="card-header">
+            <h5 className="card-title mb-0">แจ้งซ่อมบำรุงใหม่</h5>
+          </div>
+          <div className="card-body">
+            <form onSubmit={handleSubmit}>
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">ประเภท</label>
+                  <select
+                    className="form-select"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    required
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">ความสำคัญ</label>
+                  <select
+                    className="form-select"
+                    value={formData.priority}
+                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                    required
+                  >
+                    {priorities.map((pri) => (
+                      <option key={pri.value} value={pri.value}>
+                        {pri.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="mb-3">
+                <label className="form-label">หัวข้อ</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="ระบุหัวข้อการแจ้งซ่อม"
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">รายละเอียด</label>
+                <textarea
+                  className="form-control"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="อธิบายปัญหาที่พบโดยละเอียด"
+                  rows={4}
+                  required
+                />
+              </div>
+              <div className="d-flex gap-2">
+                <button type="submit" className="btn btn-primary">
+                  <i className="bi bi-send me-2"></i>
+                  ส่งคำขอ
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowForm(false)}
+                >
+                  ยกเลิก
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Maintenance Requests List */}
+      <div className="card">
+        <div className="card-header">
+          <h5 className="card-title mb-0">ประวัติการแจ้งซ่อม</h5>
+        </div>
+        <div className="card-body">
+          {requests.length === 0 ? (
+            <div className="text-center py-4">
+              <i className="bi bi-tools display-4 text-muted"></i>
+              <p className="text-muted mt-3">ยังไม่มีประวัติการแจ้งซ่อม</p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="table table-hover">
+                <thead>
+                  <tr>
+                    <th>วันที่แจ้ง</th>
+                    <th>หัวข้อ</th>
+                    <th>ประเภท</th>
+                    <th>ความสำคัญ</th>
+                    <th>สถานะ</th>
+                    <th>ผู้รับผิดชอบ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {requests.map((request) => (
+                    <tr key={request._id}>
+                      <td>{formatDate(request.createdAt)}</td>
+                      <td>
+                        <strong>{request.title}</strong>
+                        <br />
+                        <small className="text-muted">
+                          {request.roomId.roomNumber}
+                          {request.roomId.floor && ` (ชั้น ${request.roomId.floor})`}
+                        </small>
+                      </td>
+                      <td>
+                        {categories.find((c) => c.value === request.category)?.label ||
+                          request.category}
+                      </td>
+                      <td>
+                        <span className={`badge bg-${
+                          priorities.find((p) => p.value === request.priority)?.color ||
+                          'secondary'
+                        }`}>
+                          {priorities.find((p) => p.value === request.priority)?.label ||
+                            request.priority}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`badge bg-${
+                          statusColors[request.status as keyof typeof statusColors] ||
+                          'secondary'
+                        }`}>
+                          {statusLabels[request.status as keyof typeof statusLabels] ||
+                            request.status}
+                        </span>
+                      </td>
+                      <td>
+                        {request.assignedTo || (
+                          <span className="text-muted">ยังไม่มีผู้รับผิดชอบ</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

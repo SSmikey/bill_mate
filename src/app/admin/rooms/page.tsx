@@ -18,6 +18,12 @@ interface Room {
     name: string;
     email: string;
   };
+  moveInDate?: string;
+  moveOutDate?: string;
+  rentDueDate?: number;
+  depositAmount?: number;
+  assignmentNotes?: string;
+  rentalAgreement?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -287,6 +293,39 @@ export default function AdminRoomsPage() {
     setAssigningRoom(null);
     setSuccess('มอบหมายห้องสำเร็จ');
     setTimeout(() => setSuccess(''), 3000);
+  };
+
+  // ฟังก์ชัน Checkout (unassign tenant)
+  const handleCheckout = async (room: Room) => {
+    const confirmed = window.confirm(
+      `ต้องการให้ผู้เช่า ${room.tenantId?.name} ออกจากห้อง ${room.roomNumber} ใช่หรือไม่?\n\nการดำเนินการนี้จะทำให้ห้องกลายเป็นห้องว่าง`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setError('');
+      setLoading(true);
+
+      const response = await fetch(`/api/rooms/${room._id}/assign`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'ไม่สามารถปลดผู้เช่าออกจากห้องได้');
+      }
+
+      await fetchRooms();
+      setSuccess(`ปลดผู้เช่าออกจากห้อง ${room.roomNumber} สำเร็จ`);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      console.error('Error checking out tenant:', err);
+      setError(err.message || 'เกิดข้อผิดพลาดในการปลดผู้เช่า');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ฟังก์ชัน Export to CSV
@@ -680,7 +719,38 @@ export default function AdminRoomsPage() {
                                   <>
                                     <span className="badge bg-warning text-dark">มีผู้เช่า</span>
                                     {room.tenantId && (
-                                      <div className="small text-muted mt-1">{room.tenantId.name}</div>
+                                      <>
+                                        <div className="small text-muted mt-1">{room.tenantId.name}</div>
+                                        <div className="small text-muted">{room.tenantId.email}</div>
+                                        {room.moveInDate && (
+                                          <div className="small text-muted">
+                                            เข้าพัก: {new Date(room.moveInDate).toLocaleDateString('th-TH')}
+                                          </div>
+                                        )}
+                                        {room.rentDueDate && (
+                                          <div className="small text-muted">
+                                            ครบกำหนด: วันที่ {room.rentDueDate} ของเดือน
+                                          </div>
+                                        )}
+                                        {room.depositAmount && (
+                                          <div className="small text-muted">
+                                            มัดจำ: {room.depositAmount.toLocaleString('th-TH')} ฿
+                                          </div>
+                                        )}
+                                        {room.rentalAgreement && (
+                                          <div className="mt-1">
+                                            <a
+                                              href={room.rentalAgreement}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="btn btn-sm btn-outline-primary"
+                                            >
+                                              <i className="bi bi-file-earmark-text me-1"></i>
+                                              ดูสัญญาเช่า
+                                            </a>
+                                          </div>
+                                        )}
+                                      </>
                                     )}
                                   </>
                                 ) : (
@@ -697,6 +767,16 @@ export default function AdminRoomsPage() {
                                     >
                                       <i className="bi bi-person-plus-fill me-1"></i>
                                       มอบหมาย
+                                    </button>
+                                  )}
+                                  {room.isOccupied && (
+                                    <button
+                                      className="btn btn-warning btn-sm"
+                                      onClick={() => handleCheckout(room)}
+                                      title="ปลดผู้เช่าออกจากห้อง"
+                                    >
+                                      <i className="bi bi-person-dash-fill me-1"></i>
+                                      ปลดผู้เช่า
                                     </button>
                                   )}
                                   <button

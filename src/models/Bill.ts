@@ -6,8 +6,10 @@ export interface IBill extends mongoose.Document {
   month: number;
   year: number;
   rentAmount: number;
-  waterAmount: number;
-  electricityAmount: number;
+  waterUnits: number; // Changed from waterAmount to waterUnits
+  waterAmount: number; // Calculated amount based on units and rate
+  electricityUnits: number; // Changed from electricityAmount to electricityUnits
+  electricityAmount: number; // Calculated amount based on units and rate
   totalAmount: number;
   dueDate: Date;
   status: 'pending' | 'paid' | 'overdue' | 'verified';
@@ -22,7 +24,9 @@ const BillSchema = new Schema<IBill>(
     month: { type: Number, required: true, min: 1, max: 12 },
     year: { type: Number, required: true },
     rentAmount: { type: Number, required: true, min: 0 },
+    waterUnits: { type: Number, required: true, min: 0 },
     waterAmount: { type: Number, required: true, min: 0 },
+    electricityUnits: { type: Number, required: true, min: 0 },
     electricityAmount: { type: Number, required: true, min: 0 },
     totalAmount: { type: Number, required: true, min: 0 },
     dueDate: { type: Date, required: true },

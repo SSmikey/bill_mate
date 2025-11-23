@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import jsQR from "jsqr";
-import Tesseract from "tesseract.js";
+import * as Tesseract from "tesseract.js";
 
  export interface QRData {
   merchantID: string;
@@ -59,6 +59,7 @@ export default function SlipReader({
   const [jsonOutput, setJsonOutput] = useState<SlipData | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [tesseractLoaded, setTesseractLoaded] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -126,9 +127,26 @@ export default function SlipReader({
     }
   }, [jsonOutput, onScanComplete, previewImage, isEmbedded]);
 
+  useEffect(() => {
+    // Check if Tesseract is available
+    try {
+      if (Tesseract && typeof Tesseract.recognize === 'function') {
+        setTesseractLoaded(true);
+        console.log("Tesseract loaded successfully");
+      } else {
+        console.warn("Tesseract recognize function not available");
+        setTesseractLoaded(false);
+      }
+    } catch (err) {
+      console.error("Error checking Tesseract:", err);
+      setTesseractLoaded(false);
+    }
+  }, []);
+
   const processImage = async () => {
     setLoading(true);
     setProgress({ message: "กำลังประมวลผล...", percent: 0 });
+    setError(null); // Clear any previous errors
 
     try {
       // Step 1: Read QR Code
@@ -136,10 +154,24 @@ export default function SlipReader({
       const qr = await scanQRCode();
       setQrData(qr);
 
-      // Step 2: OCR
-      setProgress({ message: "กำลังอ่านข้อความจากสลิป...", percent: 50 });
-      const ocr = await performOCR();
-      setOcrData(ocr);
+      // Step 2: OCR (with fallback handling)
+      if (tesseractLoaded) {
+        setProgress({ message: "กำลังอ่านข้อความจากสลิป...", percent: 50 });
+      } else {
+        setProgress({ message: "OCR ไม่พร้อมใช้งาน ข้ามไปใช้ QR Code...", percent: 50 });
+      }
+      
+      let ocr: OCRData | null = null;
+      let ocrError: Error | null = null;
+      
+      try {
+        ocr = await performOCR();
+        setOcrData(ocr);
+      } catch (err) {
+        ocrError = err as Error;
+        console.warn("OCR failed, but continuing with QR data if available:", err);
+        // Don't set error state here, we'll handle it below
+      }
 
       // Step 3: Create JSON output
       setProgress({ message: "กำลังประมวลผลข้อมูล...", percent: 90 });
@@ -155,10 +187,25 @@ export default function SlipReader({
       };
       setJsonOutput(output);
 
-      setProgress({ message: "เสร็จสิ้น!", percent: 100 });
+      // Set appropriate message based on results
+      if (qr && !ocr) {
+        setProgress({ message: "อ่าน QR Code สำเร็จ (OCR ล้มเหลว)", percent: 100 });
+      } else if (!qr && !ocr) {
+        setProgress({ message: "ไม่สามารถอ่านข้อมูลได้", percent: 100 });
+      } else {
+        setProgress({ message: "เสร็จสิ้น!", percent: 100 });
+      }
+      
       setTimeout(() => setLoading(false), 1000);
+      
+      // If both failed, show error
+      if (!qr && !ocr && ocrError) {
+        setError("ไม่สามารถอ่านข้อมูลจากสลิปได้ กรุณาลองใหม่หรือใช้รูปภาพที่ชัดเจนขึ้น");
+      }
     } catch (err) {
-      setError("เกิดข้อผิดพลาดในการประมวลผล: " + (err as Error).message);
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      console.error("Process Image Error:", err);
+      setError("เกิดข้อผิดพลาดในการประมวลผล: " + errorMessage);
       setLoading(false);
     }
   };
@@ -196,24 +243,75 @@ export default function SlipReader({
 
   const performOCR = async (): Promise<OCRData | null> => {
     try {
-      if (!previewImage) return null;
+      if (!previewImage) {
+        console.warn("No preview image available for OCR");
+        return null;
+      }
 
-      const result = await Tesseract.recognize(previewImage, "tha+eng", {
-        logger: (m) => {
-          if (m.status === "recognizing text") {
-            const progressPercent = Math.round(m.progress * 100);
-            setProgress({
-              message: `กำลังอ่านข้อความ... ${progressPercent}%`,
-              percent: 50 + progressPercent * 0.4,
+      // Check if Tesseract is loaded and available
+      if (!tesseractLoaded) {
+        console.warn("Tesseract not loaded, skipping OCR");
+        return null;
+      }
+
+      console.log("Starting OCR processing...");
+      
+      // Add timeout and retry logic for OCR
+      const OCR_TIMEOUT = 30000; // 30 seconds timeout
+      
+      const result = await Promise.race([
+        (async () => {
+          try {
+            const ocrResult = await Tesseract.recognize(previewImage, "tha+eng", {
+              logger: (m: any) => {
+                console.log("OCR Progress:", m);
+                if (m.status === "recognizing text") {
+                  const progressPercent = Math.round(m.progress * 100);
+                  setProgress({
+                    message: `กำลังอ่านข้อความ... ${progressPercent}%`,
+                    percent: 50 + progressPercent * 0.4,
+                  });
+                } else if (m.status === "loading language traineddata") {
+                  setProgress({
+                    message: `กำลังโหลดข้อมูลภาษา...`,
+                    percent: 45,
+                  });
+                }
+              },
             });
+            console.log("OCR completed successfully:", ocrResult);
+            return ocrResult;
+          } catch (innerErr) {
+            console.error("Inner OCR error:", innerErr);
+            throw innerErr;
           }
-        },
-      });
+        })(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("OCR timeout - กรุณาลองใหม่")), OCR_TIMEOUT)
+        )
+      ]) as any;
 
+      if (!result || !result.data) {
+        console.error("Invalid OCR result:", result);
+        throw new Error("OCR failed to process image - no data returned");
+      }
+
+      console.log("OCR text extracted:", result.data.text);
       setOcrTextFull(result.data.text);
       return extractSlipInfo(result.data.text);
     } catch (err) {
-      console.error("OCR Error:", err);
+      // Enhanced error logging
+      console.error("OCR Error Details:", {
+        error: err,
+        errorMessage: err instanceof Error ? err.message : 'Unknown error',
+        errorStack: err instanceof Error ? err.stack : 'No stack trace',
+        errorType: typeof err,
+        hasPreviewImage: !!previewImage,
+        tesseractLoaded
+      });
+      
+      // Don't set error state here, let the parent handle it
+      // Just log and return null so the process can continue with QR data
       return null;
     }
   };

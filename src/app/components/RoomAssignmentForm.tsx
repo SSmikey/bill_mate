@@ -31,6 +31,7 @@ interface AssignmentData {
   rentDueDate: number;
   depositAmount: number;
   notes?: string;
+  rentalAgreement?: File;
 }
 
 export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAssignmentFormProps) {
@@ -45,6 +46,7 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
     rentDueDate: 1,
     depositAmount: room.rentPrice,
     notes: '',
+    rentalAgreement: undefined,
   });
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -116,12 +118,22 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
       setLoading(true);
       setError('');
 
+      // Create FormData for file upload
+      const submitData = new FormData();
+      submitData.append('tenantId', formData.tenantId);
+      submitData.append('moveInDate', formData.moveInDate);
+      submitData.append('rentDueDate', formData.rentDueDate.toString());
+      submitData.append('depositAmount', formData.depositAmount.toString());
+      if (formData.notes) {
+        submitData.append('notes', formData.notes);
+      }
+      if (formData.rentalAgreement) {
+        submitData.append('rentalAgreement', formData.rentalAgreement);
+      }
+
       const response = await fetch(`/api/rooms/${room._id}/assign`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: submitData,
       });
 
       const result = await response.json();
@@ -357,6 +369,34 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
                 <i className="bi bi-info-circle me-1"></i>
                 ค่าเริ่มต้น = ค่าเช่า 1 เดือน ({room.rentPrice.toLocaleString('th-TH')} ฿)
               </div>
+            </div>
+
+            {/* Rental Agreement Upload */}
+            <div className="mb-3">
+              <label htmlFor="rentalAgreement" className="form-label">
+                <i className="bi bi-file-earmark-text me-2"></i>
+                สัญญาเช่า (PDF, JPG, PNG) - ไม่จำเป็น
+              </label>
+              <input
+                type="file"
+                className="form-control"
+                id="rentalAgreement"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => handleChange('rentalAgreement', e.target.files?.[0])}
+                disabled={loading}
+              />
+              <div className="form-text">
+                <i className="bi bi-info-circle me-1"></i>
+                อัปโหลดสัญญาเช่าหอพัก (ขนาดไม่เกิน 5MB)
+              </div>
+              {formData.rentalAgreement && (
+                <div className="mt-2">
+                  <span className="badge bg-success">
+                    <i className="bi bi-check-circle me-1"></i>
+                    {formData.rentalAgreement.name}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Notes */}

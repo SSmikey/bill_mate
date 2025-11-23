@@ -27,6 +27,9 @@ interface Bill {
 interface Room {
   _id: string;
   roomNumber: string;
+  rentPrice: number;
+  waterPrice: number;
+  electricityPrice: number;
   tenantId?: {
     _id: string;
     name: string;
@@ -41,6 +44,7 @@ const AdminBillsPage = () => {
   const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState<string>('');
   const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'danger' }>({ show: false, message: '', type: 'success' });
 
   useEffect(() => {
@@ -108,8 +112,8 @@ const AdminBillsPage = () => {
       tenantId: selectedRoom?.tenantId?._id,
       month: Number(formData.get('month')),
       year: Number(formData.get('year')),
-      waterAmount: Number(formData.get('waterAmount')),
-      electricityAmount: Number(formData.get('electricityAmount')),
+      waterUnits: Number(formData.get('waterUnits')),
+      electricityUnits: Number(formData.get('electricityUnits')),
     };
 
     if (!billData.tenantId) {
@@ -154,7 +158,12 @@ const AdminBillsPage = () => {
         <Modal.Body>
           <Form.Group className="mb-3" controlId="roomId">
             <Form.Label>ห้อง</Form.Label>
-            <Form.Select name="roomId" required disabled={rooms.length === 0}>
+            <Form.Select
+              name="roomId"
+              required
+              disabled={rooms.length === 0}
+              onChange={(e) => setSelectedRoomId(e.target.value)}
+            >
               <option value="">-- เลือกห้อง --</option>
               {rooms.map(room => (
                 <option key={room._id} value={room._id}>
@@ -170,13 +179,39 @@ const AdminBillsPage = () => {
               <Form.Control name="year" type="number" placeholder="ปี (ค.ศ.)" required min="2020" defaultValue={new Date().getFullYear()} />
             </div>
           </Form.Group>
-          <Form.Group className="mb-3" controlId="waterAmount">
-            <Form.Label>ค่าน้ำ (บาท)</Form.Label>
-            <Form.Control name="waterAmount" type="number" placeholder="0.00" required step="0.01" />
+          <Form.Group className="mb-3" controlId="waterUnits">
+            <Form.Label>หน่วยน้ำ (ลบ.ม.)</Form.Label>
+            <Form.Control
+              name="waterUnits"
+              type="number"
+              placeholder="0.00"
+              required
+              step="0.01"
+              min="0"
+            />
+            <Form.Text className="text-muted">
+              {(() => {
+                const selectedRoom = rooms.find(r => r._id === selectedRoomId);
+                return selectedRoom ? `อัตราค่าน้ำ: ${selectedRoom.waterPrice || 0} บาท/ลบ.ม.` : 'กรุณาเลือกห้องเพื่อแสดงอัตราค่าน้ำ';
+              })()}
+            </Form.Text>
           </Form.Group>
-          <Form.Group className="mb-3" controlId="electricityAmount">
-            <Form.Label>ค่าไฟ (บาท)</Form.Label>
-            <Form.Control name="electricityAmount" type="number" placeholder="0.00" required step="0.01" />
+          <Form.Group className="mb-3" controlId="electricityUnits">
+            <Form.Label>หน่วยไฟฟ้า (kWh)</Form.Label>
+            <Form.Control
+              name="electricityUnits"
+              type="number"
+              placeholder="0.00"
+              required
+              step="0.01"
+              min="0"
+            />
+            <Form.Text className="text-muted">
+              {(() => {
+                const selectedRoom = rooms.find(r => r._id === selectedRoomId);
+                return selectedRoom ? `อัตราค่าไฟ: ${selectedRoom.electricityPrice || 0} บาท/หน่วย` : 'กรุณาเลือกห้องเพื่อแสดงอัตราค่าไฟ';
+              })()}
+            </Form.Text>
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
