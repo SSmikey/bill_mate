@@ -32,6 +32,7 @@
     "**/*.ts",
     "**/*.tsx",
     "types/**/*.d.ts",
+    "src/types/**/*.d.ts",
     ".next/dev/types/**/*.ts",
     ".next/types/**/*.ts",
     "next-env.d.ts",
@@ -40,7 +41,8 @@
   ],
   "typeRoots": [
     "node_modules/@types",
-    "types"
+    "types",
+    "src/types"
   ],
   "exclude": [
     "node_modules"
