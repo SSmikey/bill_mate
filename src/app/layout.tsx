@@ -5,6 +5,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import BootstrapClient from './components/BootstrapClient';
 import SessionProvider from './components/SessionProvider';
 import ErrorBoundary from './components/ErrorBoundary';
+import { initializeDatabase } from '@/lib/mongodb';
+import logger from '@/lib/logger';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,11 +23,32 @@ export const metadata: Metadata = {
   description: "ระบบจัดการค่าเช่า ค่าน้ำ ค่าไฟ และตรวจสอบการชำระเงิน",
 };
 
+// Initialize database on app startup
+let dbInitialized = false;
+
+async function initializeApp() {
+  if (!dbInitialized) {
+    try {
+      await initializeDatabase();
+      dbInitialized = true;
+    } catch (error) {
+      logger.error('Failed to initialize database', error as Error, 'AppInitialization');
+      // In production, you might want to show an error page
+      // For now, we'll let the app continue and handle DB errors individually
+    }
+  }
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Initialize database when layout renders
+  initializeApp().catch((error) => {
+    logger.error('Failed to initialize app', error as Error, 'AppInitialization');
+  });
+  
   return (
     <html lang="th">
       <body
