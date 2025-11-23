@@ -53,6 +53,10 @@ const AdminPaymentsPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
+  // State for editing OCR data
+  const [isEditingOcr, setIsEditingOcr] = useState(false);
+  const [editableOcrData, setEditableOcrData] = useState<Payment['ocrData'] | null>(null);
+
   const fetchPayments = async () => {
     setLoading(true);
     setError(null);
@@ -83,12 +87,15 @@ const AdminPaymentsPage = () => {
 
   const handleShowModal = (payment: Payment) => {
     setSelectedPayment(payment);
+    setEditableOcrData(JSON.parse(JSON.stringify(payment.ocrData))); // Deep copy for editing
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedPayment(null);
+    setIsEditingOcr(false); // Reset editing state on close
+    setEditableOcrData(null);
   };
 
   const handleApprove = async () => {
@@ -141,6 +148,43 @@ const AdminPaymentsPage = () => {
       alert("ปฏิเสธการชำระเงินเรียบร้อยแล้ว");
       await fetchPayments();
       handleCloseModal();
+    } catch (err: any) {
+      alert(`เกิดข้อผิดพลาด: ${err.message}`);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleOcrInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!editableOcrData) return;
+    const { name, value } = e.target;
+    setEditableOcrData({
+      ...editableOcrData,
+      [name]: name === 'amount' ? parseFloat(value) || 0 : value,
+    });
+  };
+
+  const handleSaveOcr = async () => {
+    if (!selectedPayment || !editableOcrData) return;
+    setIsVerifying(true);
+    try {
+      const response = await fetch(`/api/payments/${selectedPayment._id}/ocr`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ocrData: editableOcrData }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'การอัปเดตข้อมูล OCR ล้มเหลว');
+      }
+
+      alert('อัปเดตข้อมูล OCR สำเร็จ');
+      // Refresh data and exit edit mode
+      await fetchPayments();
+      setIsEditingOcr(false);
+      // Manually update the selected payment to reflect changes immediately in the modal
+      setSelectedPayment(prev => prev ? { ...prev, ocrData: editableOcrData } : null);
     } catch (err: any) {
       alert(`เกิดข้อผิดพลาด: ${err.message}`);
     } finally {
@@ -226,7 +270,7 @@ const AdminPaymentsPage = () => {
     if (!selectedPayment) return null;
 
     const billAmount = selectedPayment.billId.totalAmount;
-    const ocrAmount = selectedPayment.ocrData?.amount;
+    const ocrAmount = isEditingOcr ? editableOcrData?.amount : selectedPayment.ocrData?.amount;
     const isAmountMatch =
       ocrAmount !== undefined && Math.abs(ocrAmount - billAmount) < 0.01;
 
@@ -288,55 +332,101 @@ const AdminPaymentsPage = () => {
                 </tbody>
               </Table>
 
-              <h6 className="mt-3">
-                <i className="bi bi-search me-2"></i>ข้อมูลจาก OCR
-              </h6>
+              <div className="d-flex justify-content-between align-items-center mt-3">
+                <h6>
+                  <i className="bi bi-search me-2"></i>ข้อมูลจาก OCR
+                </h6>
+                {!isEditingOcr && selectedPayment.status === 'pending' && (
+                  <Button variant="outline-primary" size="sm" onClick={() => setIsEditingOcr(true)}>
+                    <i className="bi bi-pencil-square me-1"></i> แก้ไข
+                  </Button>
+                )}
+              </div>
               <Table bordered size="sm">
                 <tbody>
                   <tr>
                     <td>จำนวนเงิน</td>
                     <td>
-                      <strong>
-                        {ocrAmount
-                          ? ocrAmount.toLocaleString("th-TH", {
-                              style: "currency",
-                              currency: "THB",
-                            })
-                          : "N/A"}
-                      </strong>
-                      {ocrAmount !== undefined &&
-                        (isAmountMatch ? (
-                          <Badge bg="success" className="ms-2">
-                            ตรงกัน
-                          </Badge>
-                        ) : (
-                          <Badge bg="danger" className="ms-2">
-                            ไม่ตรงกัน
-                          </Badge>
-                        ))}
+                      {isEditingOcr ? (
+                        <input
+                          type="number"
+                          name="amount"
+                          className="form-control form-control-sm"
+                          value={editableOcrData?.amount || ''}
+                          onChange={handleOcrInputChange}
+                        />
+                      ) : (
+                        <>
+                          <strong>
+                            {ocrAmount
+                              ? ocrAmount.toLocaleString("th-TH", {
+                                  style: "currency",
+                                  currency: "THB",
+                                })
+                              : "N/A"}
+                          </strong>
+                          {ocrAmount !== undefined &&
+                            (isAmountMatch ? (
+                              <Badge bg="success" className="ms-2">
+                                ตรงกัน
+                              </Badge>
+                            ) : (
+                              <Badge bg="danger" className="ms-2">
+                                ไม่ตรงกัน
+                              </Badge>
+                            ))}
+                        </>
+                      )}
                     </td>
                   </tr>
                   <tr>
                     <td>วันที่-เวลา</td>
                     <td>
-                      {selectedPayment.ocrData.date || "N/A"} -{" "}
-                      {selectedPayment.ocrData.time || "N/A"}
+                      {isEditingOcr ? (
+                        <div className="d-flex">
+                          <input type="text" name="date" className="form-control form-control-sm me-1" value={editableOcrData?.date || ''} onChange={handleOcrInputChange} placeholder="DD/MM/YYYY" />
+                          <input type="text" name="time" className="form-control form-control-sm" value={editableOcrData?.time || ''} onChange={handleOcrInputChange} placeholder="HH:MM" />
+                        </div>
+                      ) : (
+                        `${selectedPayment.ocrData.date || "N/A"} - ${selectedPayment.ocrData.time || "N/A"}`
+                      )}
                     </td>
                   </tr>
                   <tr>
                     <td>จากบัญชี</td>
-                    <td>{selectedPayment.ocrData.fromAccount || "N/A"}</td>
+                    <td>
+                      {isEditingOcr ? (
+                        <input type="text" name="fromAccount" className="form-control form-control-sm" value={editableOcrData?.fromAccount || ''} onChange={handleOcrInputChange} />
+                      ) : (
+                        selectedPayment.ocrData.fromAccount || "N/A"
+                      )}
+                    </td>
                   </tr>
                   <tr>
                     <td>ไปบัญชี</td>
-                    <td>{selectedPayment.ocrData.toAccount || "N/A"}</td>
+                    <td>
+                      {isEditingOcr ? (
+                        <input type="text" name="toAccount" className="form-control form-control-sm" value={editableOcrData?.toAccount || ''} onChange={handleOcrInputChange} />
+                      ) : (
+                        selectedPayment.ocrData.toAccount || "N/A"
+                      )}
+                    </td>
                   </tr>
                   <tr>
                     <td>เลขที่อ้างอิง</td>
-                    <td>{selectedPayment.ocrData.reference || "N/A"}</td>
+                    <td>
+                      {isEditingOcr ? (
+                        <input type="text" name="reference" className="form-control form-control-sm" value={editableOcrData?.reference || ''} onChange={handleOcrInputChange} />
+                      ) : (
+                        selectedPayment.ocrData.reference || "N/A"
+                      )}
+                    </td>
                   </tr>
                 </tbody>
               </Table>
+              {isEditingOcr && (
+                <div className="text-end"><Button variant="link" size="sm" onClick={() => setIsEditingOcr(false)}>ยกเลิก</Button><Button variant="primary" size="sm" onClick={handleSaveOcr} disabled={isVerifying}>{isVerifying ? 'กำลังบันทึก...' : 'บันทึก'}</Button></div>
+              )}
 
               {selectedPayment.qrData && (
                 <>
@@ -367,27 +457,31 @@ const AdminPaymentsPage = () => {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={handleCloseModal}
-            disabled={isVerifying}
-          >
-            ปิด
-          </Button>
-          <Button
-            variant="danger"
-            onClick={handleReject}
-            disabled={isVerifying}
-          >
-            <i className="bi bi-x-lg me-1"></i>ปฏิเสธ
-          </Button>
-          <Button
-            variant="success"
-            onClick={handleApprove}
-            disabled={isVerifying}
-          >
-            <i className="bi bi-check-lg me-1"></i>อนุมัติ
-          </Button>
+          {!isEditingOcr && (
+            <>
+              <Button
+                variant="secondary"
+                onClick={handleCloseModal}
+                disabled={isVerifying}
+              >
+                ปิด
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleReject}
+                disabled={isVerifying || selectedPayment.status !== 'pending'}
+              >
+                <i className="bi bi-x-lg me-1"></i>ปฏิเสธ
+              </Button>
+              <Button
+                variant="success"
+                onClick={handleApprove}
+                disabled={isVerifying || selectedPayment.status !== 'pending'}
+              >
+                <i className="bi bi-check-lg me-1"></i>อนุมัติ
+              </Button>
+            </>
+          )}
         </Modal.Footer>
       </Modal>
     );
