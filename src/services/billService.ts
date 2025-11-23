@@ -26,7 +26,7 @@ export async function generateMonthlyBills() {
     const year = now.getFullYear();
 
     // 1. Find all rooms that are occupied and have a tenant assigned.
-    const occupiedRooms = await Room.find({ status: 'occupied', tenantId: { $ne: null } }).populate('tenantId');
+    const occupiedRooms = await Room.find({ isOccupied: true, tenantId: { $ne: null } }).populate('tenantId');
 
     if (occupiedRooms.length === 0) {
       console.log('No occupied rooms found. No bills to generate.');

@@ -10,6 +10,8 @@
     "create-admin": "node scripts/init-db.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.937.0",
+    "@google-cloud/vision": "^5.3.4",
     "bcryptjs": "^2.4.3",
     "bootstrap": "^5.3.8",
     "date-fns": "^3.6.0",
