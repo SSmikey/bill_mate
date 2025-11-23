@@ -36,11 +36,19 @@ export default function LoginPage() {
       if (result?.error) {
         setError(result.error);
       } else if (result?.ok) {
-        // Redirect based on user role
-        const response = await fetch('/api/auth/session');
-        const session = await response.json();
+        // Get session after successful login
+        const sessionRes = await fetch('/api/auth/session');
 
-        if (session?.user?.role === 'admin') {
+        if (!sessionRes.ok) {
+          setError('เกิดข้อผิดพลาดในการดึงข้อมูลเซสชัน');
+          setLoading(false);
+          return;
+        }
+
+        const data = await sessionRes.json();
+        const userRole = data?.session?.user?.role;
+
+        if (userRole === 'admin') {
           router.push('/admin/dashboard');
         } else {
           router.push('/tenant/dashboard');
