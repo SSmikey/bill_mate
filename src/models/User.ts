@@ -1,5 +1,4 @@
-// src/models/User.ts
-import mongoose, { Schema, model, models } from 'mongoose';
+import { Schema, model, models, Document, Model, Types } from 'mongoose';
 
 // Interface สำหรับ Notification Preferences
 export interface INotificationPreferences {
@@ -26,8 +25,10 @@ export interface INotificationPreferences {
   };
 }
 
+type NotificationKey = 'paymentReminder' | 'paymentVerified' | 'paymentRejected' | 'overdue' | 'billGenerated';
+
 export interface IUser {
-  _id: string;
+  _id?: Types.ObjectId | string;
   name: string;
   email: string;
   password: string;
@@ -35,15 +36,35 @@ export interface IUser {
   phone?: string;
   idCard?: string;
   emergencyContact?: string;
+
+  // ⭐ เพิ่ม roomId (เพื่อรองรับ populate)
+  roomId?: Types.ObjectId | string | null;
   
   // ⭐ เพิ่ม notification preferences
   notificationPreferences?: INotificationPreferences;
   
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const UserSchema = new Schema<IUser>(
+// Document type (instance methods)
+export interface IUserDocument extends IUser, Document {
+  shouldSendNotification(
+    type: 'email' | 'inApp',
+    notificationType: NotificationKey
+  ): boolean;
+}
+
+// Model type (statics)
+export interface IUserModel extends Model<IUserDocument> {
+  findUsersForNotification(
+    userIds: (string | Types.ObjectId)[],
+    type: 'email' | 'inApp',
+    notificationType: NotificationKey
+  ): Promise<IUserDocument[]>;
+}
+
+const UserSchema = new Schema<IUserDocument, IUserModel>(
   {
     name: {
       type: String,
@@ -77,6 +98,13 @@ const UserSchema = new Schema<IUser>(
     emergencyContact: {
       type: String,
       trim: true
+    },
+
+    // ⭐ room reference เพื่อให้ populate('roomId') ทำงานได้
+    roomId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Room',
+      default: null
     },
     
     // ⭐ เพิ่ม notification preferences schema
@@ -135,14 +163,15 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-// Index
-UserSchema.index({ email: 1 });
+// NOTE: เอา index ซ้ำของ email ออก (email มี unique: true อยู่แล้ว)
+// UserSchema.index({ email: 1 }); // <-- removed to avoid duplicate index warning
 UserSchema.index({ role: 1 });
 
 // ⭐ Method: ตรวจสอบว่าควรส่งการแจ้งเตือนหรือไม่
-UserSchema.methods.shouldSendNotification = function(
+UserSchema.methods.shouldSendNotification = function thisShouldSend(
+  this: IUserDocument,
   type: 'email' | 'inApp',
-  notificationType: 'paymentReminder' | 'paymentVerified' | 'paymentRejected' | 'overdue' | 'billGenerated'
+  notificationType: NotificationKey
 ): boolean {
   const prefs = this.notificationPreferences;
   
@@ -152,10 +181,11 @@ UserSchema.methods.shouldSendNotification = function(
   if (!prefs[type].enabled) return false;
   
   // ตรวจสอบว่าประเภทการแจ้งเตือนนี้เปิดใช้งานหรือไม่
-  if (!prefs[type][notificationType]) return false;
+  // ใช้ cast เพื่อให้ TS เข้าใจ key access
+  if (!(prefs[type] as any)[notificationType]) return false;
   
   // ตรวจสอบ quiet hours (เฉพาะ email)
-  if (type === 'email' && prefs.quietHours.enabled) {
+  if (type === 'email' && prefs.quietHours?.enabled) {
     const now = new Date();
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     const { startTime, endTime } = prefs.quietHours;
@@ -177,18 +207,19 @@ UserSchema.methods.shouldSendNotification = function(
 };
 
 // ⭐ Static Method: หา users ที่ควรได้รับการแจ้งเตือน
-UserSchema.statics.findUsersForNotification = async function(
-  userIds: string[],
+UserSchema.statics.findUsersForNotification = async function thisFind(
+  this: IUserModel,
+  userIds: (string | Types.ObjectId)[],
   type: 'email' | 'inApp',
-  notificationType: 'paymentReminder' | 'paymentVerified' | 'paymentRejected' | 'overdue' | 'billGenerated'
+  notificationType: NotificationKey
 ) {
-  const users = await this.find({ _id: { $in: userIds } });
+  const users = (await this.find({ _id: { $in: userIds } })) as IUserDocument[];
   
   return users.filter(user => 
     user.shouldSendNotification(type, notificationType)
   );
 };
 
-const User = models.User || model<IUser>('User', UserSchema);
+const User = (models.User as IUserModel) || model<IUserDocument, IUserModel>('User', UserSchema);
 
 export default User;
