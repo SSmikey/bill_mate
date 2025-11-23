@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import MaintenanceModel, { type IMaintenanceDocument } from '@/models/Maintenance';
+import connectDB from '@/lib/mongodb';
+import Maintenance from '@/models/Maintenance';
+import { Types } from 'mongoose';
 
 /**
  * GET /api/maintenance
@@ -25,9 +25,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const skip = (page - 1) * limit;
 
-    const client = await clientPromise;
-    const db = client.db('bill_mate');
-    const maintenanceCollection = db.collection<IMaintenanceDocument>('maintenance');
+    await connectDB();
 
     // Build query
     const query: any = {};
@@ -44,12 +42,12 @@ export async function GET(request: NextRequest) {
       query.category = category;
     }
 
-    if (roomId && ObjectId.isValid(roomId)) {
-      query.roomId = new ObjectId(roomId);
+    if (roomId && Types.ObjectId.isValid(roomId)) {
+      query.roomId = new Types.ObjectId(roomId);
     }
 
-    if (tenantId && ObjectId.isValid(tenantId)) {
-      query.tenantId = new ObjectId(tenantId);
+    if (tenantId && Types.ObjectId.isValid(tenantId)) {
+      query.tenantId = new Types.ObjectId(tenantId);
     }
 
     if (fromDate) {
@@ -63,63 +61,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Count total documents
-    const total = await maintenanceCollection.countDocuments(query);
+    const total = await Maintenance.countDocuments(query);
 
     // Fetch maintenance requests with room and tenant info
-    const maintenance = await maintenanceCollection
-      .aggregate([
-        { $match: query },
-        { $sort: { createdAt: -1 } },
-        { $skip: skip },
-        { $limit: limit },
-        // Lookup room info
-        {
-          $lookup: {
-            from: 'rooms',
-            localField: 'roomId',
-            foreignField: '_id',
-            as: 'roomInfo',
-          },
-        },
-        { $unwind: { path: '$roomInfo', preserveNullAndEmptyArrays: true } },
-        // Lookup tenant info
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'tenantId',
-            foreignField: '_id',
-            as: 'tenantInfo',
-          },
-        },
-        { $unwind: { path: '$tenantInfo', preserveNullAndEmptyArrays: true } },
-        // Project fields
-        {
-          $project: {
-            category: 1,
-            title: 1,
-            description: 1,
-            priority: 1,
-            status: 1,
-            reportedDate: 1,
-            scheduledDate: 1,
-            completedDate: 1,
-            cost: 1,
-            assignedTo: 1,
-            notes: 1,
-            images: 1,
-            createdBy: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            'roomInfo._id': 1,
-            'roomInfo.roomNumber': 1,
-            'roomInfo.floor': 1,
-            'tenantInfo._id': 1,
-            'tenantInfo.name': 1,
-            'tenantInfo.email': 1,
-          },
-        },
-      ])
-      .toArray();
+    const maintenance = await Maintenance.find(query)
+      .populate('roomId', 'roomNumber floor')
+      .populate('tenantId', 'name email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
 
     return NextResponse.json(
       {
@@ -164,7 +115,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate required fields
-    if (!roomId || !ObjectId.isValid(roomId)) {
+    if (!roomId || !Types.ObjectId.isValid(roomId)) {
       return NextResponse.json({ error: 'รหัสห้องไม่ถูกต้อง' }, { status: 400 });
     }
 
@@ -182,94 +133,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const now = new Date();
+    await connectDB();
 
     // Create maintenance document
-    const maintenanceDoc: IMaintenanceDocument = {
-      roomId: new ObjectId(roomId),
-      tenantId: tenantId && ObjectId.isValid(tenantId) ? new ObjectId(tenantId) : undefined,
+    const maintenanceData = {
+      roomId: new Types.ObjectId(roomId),
+      tenantId: tenantId && Types.ObjectId.isValid(tenantId) ? new Types.ObjectId(tenantId) : undefined,
       category,
       title: title.trim(),
       description: description.trim(),
       priority,
       status: 'pending',
-      reportedDate: now,
+      reportedDate: new Date(),
       scheduledDate: scheduledDate ? new Date(scheduledDate) : undefined,
       assignedTo: assignedTo?.trim() || undefined,
       notes: notes?.trim() || undefined,
       createdBy: {
-        userId: new ObjectId(createdBy.userId),
+        userId: new Types.ObjectId(createdBy.userId),
         name: createdBy.name,
         role: createdBy.role,
       },
-      createdAt: now,
-      updatedAt: now,
     };
 
-    // Validate
-    const validation = MaintenanceModel.validate(maintenanceDoc);
+    const maintenance = await Maintenance.create(maintenanceData);
 
-    if (!validation.valid) {
-      return NextResponse.json(
-        { error: validation.errors.join(', ') },
-        { status: 400 }
-      );
-    }
-
-    const client = await clientPromise;
-    const db = client.db('bill_mate');
-    const maintenanceCollection = db.collection<IMaintenanceDocument>('maintenance');
-
-    // Insert
-    const result = await maintenanceCollection.insertOne(maintenanceDoc);
-
-    if (!result.insertedId) {
-      return NextResponse.json(
-        { error: 'ไม่สามารถสร้างรายการแจ้งซ่อมได้' },
-        { status: 500 }
-      );
-    }
-
-    // Fetch created maintenance with room info
-    const created = await maintenanceCollection
-      .aggregate([
-        { $match: { _id: result.insertedId } },
-        {
-          $lookup: {
-            from: 'rooms',
-            localField: 'roomId',
-            foreignField: '_id',
-            as: 'roomInfo',
-          },
-        },
-        { $unwind: '$roomInfo' },
-        {
-          $project: {
-            category: 1,
-            title: 1,
-            description: 1,
-            priority: 1,
-            status: 1,
-            reportedDate: 1,
-            scheduledDate: 1,
-            assignedTo: 1,
-            notes: 1,
-            createdBy: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            'roomInfo._id': 1,
-            'roomInfo.roomNumber': 1,
-            'roomInfo.floor': 1,
-          },
-        },
-      ])
-      .toArray();
+    // Populate references for response
+    await maintenance.populate([
+      { path: 'roomId', select: 'roomNumber floor' },
+      { path: 'tenantId', select: 'name email' },
+    ]);
 
     return NextResponse.json(
       {
         success: true,
         message: 'สร้างรายการแจ้งซ่อมสำเร็จ',
-        data: created[0] || null,
+        data: maintenance,
       },
       { status: 201 }
     );
@@ -306,20 +204,18 @@ export async function PUT(request: NextRequest) {
     }
 
     // Validate ObjectIds
-    const objectIds = ids.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id));
+    const objectIds = ids
+      .filter((id) => Types.ObjectId.isValid(id))
+      .map((id) => new Types.ObjectId(id));
 
     if (objectIds.length === 0) {
       return NextResponse.json({ error: 'รหัสรายการไม่ถูกต้อง' }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db('bill_mate');
-    const maintenanceCollection = db.collection<IMaintenanceDocument>('maintenance');
+    await connectDB();
 
     // Build update object
-    const updateObj: any = {
-      updatedAt: new Date(),
-    };
+    const updateObj: any = {};
 
     if (updates.status) updateObj.status = updates.status;
     if (updates.priority) updateObj.priority = updates.priority;
@@ -330,7 +226,7 @@ export async function PUT(request: NextRequest) {
     if (updates.notes) updateObj.notes = updates.notes;
 
     // Update
-    const result = await maintenanceCollection.updateMany(
+    const result = await Maintenance.updateMany(
       { _id: { $in: objectIds } },
       { $set: updateObj }
     );
@@ -369,17 +265,17 @@ export async function DELETE(request: NextRequest) {
     }
 
     const ids = idsParam.split(',');
-    const objectIds = ids.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id));
+    const objectIds = ids
+      .filter((id) => Types.ObjectId.isValid(id))
+      .map((id) => new Types.ObjectId(id));
 
     if (objectIds.length === 0) {
       return NextResponse.json({ error: 'รหัสรายการไม่ถูกต้อง' }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db('bill_mate');
-    const maintenanceCollection = db.collection<IMaintenanceDocument>('maintenance');
+    await connectDB();
 
-    const result = await maintenanceCollection.deleteMany({
+    const result = await Maintenance.deleteMany({
       _id: { $in: objectIds },
     });
 
