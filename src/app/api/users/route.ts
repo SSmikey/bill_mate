@@ -14,8 +14,25 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const role = searchParams.get('role');
+    const available = searchParams.get('available');
+
     await connectDB();
-    const users = await User.find().select('-password').populate('roomId');
+    
+    let query: any = {};
+    
+    // Filter by role if specified
+    if (role) {
+      query.role = role;
+    }
+    
+    // Filter by availability if specified (only tenants without rooms)
+    if (available === 'true' && role === 'tenant') {
+      query.roomId = null;
+    }
+    
+    const users = await User.find(query).select('-password').populate('roomId');
 
     return NextResponse.json({ success: true, data: users });
   } catch (error) {
