@@ -14,18 +14,37 @@ import logger from './logger';
 
 // Configuration
 const isDevelopment = process.env.NODE_ENV === 'development';
-const useCloudStorage = process.env.USE_CLOUD_STORAGE === 'true' || !isDevelopment;
+const useCloudStorage = process.env.USE_CLOUD_STORAGE === 'true';
 
 // S3 Client (only initialized if needed)
 let s3Client: S3Client | null = null;
 
 if (useCloudStorage && process.env.AWS_S3_BUCKET_NAME) {
-  s3Client = new S3Client({
-    region: process.env.AWS_S3_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
+  // Check if all required AWS credentials are available
+  if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_S3_REGION) {
+    console.warn('AWS S3 credentials not fully configured. Missing:', {
+      accessKeyId: !!process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: !!process.env.AWS_SECRET_ACCESS_KEY,
+      region: !!process.env.AWS_S3_REGION,
+      bucketName: process.env.AWS_S3_BUCKET_NAME
+    });
+  } else {
+    s3Client = new S3Client({
+      region: process.env.AWS_S3_REGION,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      },
+    });
+    console.log('S3 client initialized successfully', {
+      region: process.env.AWS_S3_REGION,
+      bucketName: process.env.AWS_S3_BUCKET_NAME
+    });
+  }
+} else {
+  console.warn('Cloud storage disabled or S3 bucket not configured', {
+    useCloudStorage,
+    bucketName: process.env.AWS_S3_BUCKET_NAME
   });
 }
 
@@ -173,7 +192,7 @@ async function uploadToS3(
 }
 
 /**
- * Upload file to local storage
+ * Upload file to local storage (database only - no actual file storage)
  */
 async function uploadToLocal(
   buffer: Buffer,
@@ -181,22 +200,20 @@ async function uploadToLocal(
   contentType: string,
   folder: string
 ): Promise<FileUploadResult> {
-  const uploadDir = path.join(process.cwd(), 'public', folder);
-  
-  // Ensure upload directory exists
-  await fs.mkdir(uploadDir, { recursive: true });
-  
-  const filePath = path.join(uploadDir, fileName);
-  await fs.writeFile(filePath, buffer);
-
+  // Generate a mock URL for database storage
   const url = `/${folder}/${fileName}`;
-
-  logger.info('File uploaded locally', 'FileStorage', {
-    filePath,
+  
+  // Log that we're storing in database only
+  logger.info('File stored in database only (no physical file created)', 'FileStorage', {
+    fileName,
+    folder,
+    url,
     size: buffer.length,
-    contentType
+    contentType,
+    note: 'Physical file not created - data stored in database only'
   });
 
+  // Return the URL without actually creating the file
   return {
     url,
     size: buffer.length,
