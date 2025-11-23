@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import BootstrapClient from './components/BootstrapClient';
-import SessionProvider from './components/SessionProvider';
+import SessionWrapper from './components/SessionWrapper';
 import ErrorBoundary from './components/ErrorBoundary';
 import { initializeDatabase } from '@/lib/mongodb';
 import logger from '@/lib/logger';
@@ -60,12 +60,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider>
+        <SessionWrapper>
           <BootstrapClient />
           <ErrorBoundary>
             {children}
           </ErrorBoundary>
-        </SessionProvider>
+        </SessionWrapper>
       </body>
     </html>
   );

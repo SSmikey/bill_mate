@@ -83,16 +83,21 @@ export default function RegisterPage() {
       }
 
       // Auto login after registration
-      const signInResult = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
-      });
+      try {
+        const signInResult = await signIn('credentials', {
+          email: formData.email,
+          password: formData.password,
+          redirect: false,
+        });
 
-      if (signInResult?.ok) {
-        router.push('/tenant/dashboard');
-      } else {
-        router.push('/login');
+        if (signInResult?.ok) {
+          router.push('/tenant/dashboard');
+        } else {
+          router.push('/login?message=registration-success');
+        }
+      } catch (signInError) {
+        console.error('Sign in error after registration:', signInError);
+        router.push('/login?message=registration-success');
       }
     } catch (err) {
       setError('เกิดข้อผิดพลาดในการสมัครสมาชิก');

@@ -85,7 +85,8 @@ const UserSchema = new Schema<IUserDocument, IUserModel>(
     },
     password: {
       type: String,
-      required: true
+      required: true,
+      select: false
     },
     role: {
       type: String,
