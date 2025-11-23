@@ -80,7 +80,7 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
   } | null => {
     if (!slipImageBase64) return { message: "กรุณาอัปโหลดรูปสลิป" };
     if (!ocrData && !qrData)
-      return { message: "ไม่สามารถอ่านข้อมูลจากสลิปได้" };
+      return { message: "ไม่สามารถอ่านข้อมูลจากสลิปได้ กรุณาลองใหม่หรือใช้รูปภาพที่ชัดเจนขึ้น" };
 
     // Validate file type
     const fileInfo = parseBase64File(slipImageBase64);
@@ -88,12 +88,30 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
       return { message: "ประเภทไฟล์ไม่ถูกต้อง กรุณาอัปโหลดรูปภาพเท่านั้น" };
     }
 
-    // Convert ocrData.amount to number for comparison
-    const ocrAmount = ocrData?.amount ? parseFloat(ocrData.amount) : null;
-    if (ocrAmount !== null && Math.abs(ocrAmount - billAmount) > 100) {
+    // Try to get amount from OCR first, then from QR data
+    let amountToCompare: number | null = null;
+    let amountSource = "";
+    
+    if (ocrData?.amount) {
+      amountToCompare = parseFloat(ocrData.amount);
+      amountSource = "OCR";
+    } else if (qrData?.amount) {
+      amountToCompare = parseFloat(qrData.amount);
+      amountSource = "QR Code";
+    }
+
+    if (amountToCompare !== null && Math.abs(amountToCompare - billAmount) > 100) {
       return {
         type: "warning", // Indicate this is a warning, not a hard error
-        message: `จำนวนเงินที่อ่านได้ (${ocrData?.amount ?? 'N/A'} บาท) ไม่ตรงกับบิล (${billAmount} บาท)`,
+        message: `จำนวนเงินที่อ่านได้จาก${amountSource} (${amountToCompare.toFixed(2)} บาท) ไม่ตรงกับบิล (${billAmount} บาท)`,
+      };
+    }
+
+    // If only QR data is available and no OCR, show info message
+    if (!ocrData && qrData) {
+      return {
+        type: "warning",
+        message: "อ่านข้อมูลจาก QR Code สำเร็จ แต่ไม่สามารถอ่านข้อความจากสลิปได้ กรุณาตรวจสอบข้อมูลให้ถูกต้อง",
       };
     }
 
@@ -121,10 +139,15 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
               <tbody>
                 <tr>
                   <td>จำนวนเงิน:</td>
-                  <td>{ocrData?.amount || "N/A"} บาท</td>
+                  <td>
+                    {ocrData?.amount || qrData?.amount || "N/A"} บาท
+                    {!ocrData && qrData?.amount && (
+                      <small className="text-muted d-block">(จาก QR Code)</small>
+                    )}
+                  </td>
                   <td className="text-end">
-                    {ocrData?.amount ? (
-                      parseFloat(ocrData.amount) === billAmount ? (
+                    {(ocrData?.amount || qrData?.amount) ? (
+                      parseFloat(ocrData?.amount || qrData?.amount || "0") === billAmount ? (
                         <span className="badge bg-success">ตรงกับบิล</span>
                       ) : (
                         <span className="badge bg-warning">ไม่ตรงกับบิล</span>
@@ -140,6 +163,14 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
                   <td>เวลา:</td>
                   <td>{ocrData?.time || "N/A"}</td>
                 </tr>
+                {qrData?.reference && (
+                  <tr>
+                    <td>เลขอ้างอิง (QR):</td>
+                    <td colSpan={2}>
+                      <small className="font-monospace">{qrData.reference}</small>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
             {/* Display warning if amount doesn't match but we allow submission */}
