@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Modal, Button, Spinner, Alert, Badge, Table } from "react-bootstrap";
+import Link from 'next/link';
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
 import { rejects } from "assert";
@@ -490,13 +491,22 @@ const AdminPaymentsPage = () => {
   return (
     <div className="container-fluid mt-4">
       <div className="card">
-        <div className="card-header bg-light">
-          <h3>
-            <i className="bi bi-check2-circle me-2"></i>ยืนยันการชำระเงิน
-          </h3>
-          <p className="text-muted">
-            ตรวจสอบและยืนยันสลิปการชำระเงินที่ผู้เช่าอัปโหลด
-          </p>
+        <div className="card-header bg-light d-flex justify-content-between align-items-center">
+          <div>
+            <h3>
+              <i className="bi bi-check2-circle me-2"></i>ยืนยันการชำระเงิน
+            </h3>
+            <p className="text-muted mb-0">
+              ตรวจสอบและยืนยันสลิปการชำระเงินที่ผู้เช่าอัปโหลด
+            </p>
+          </div>
+          <div>
+            <Link href="/admin/payments/analytics" passHref>
+              <Button variant="outline-primary">
+                <i className="bi bi-bar-chart-line-fill me-2"></i>ดูข้อมูลวิเคราะห์
+              </Button>
+            </Link>
+          </div>
         </div>
         <div className="card-body">
           {renderFilters()}
