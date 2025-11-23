@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import SlipReader, { OCRData, QRData } from "./SlipReader"; // Import OCRData and QRData
-import { parseBase64File, isValidImageType } from "@/lib/fileStorage";
+import { parseBase64File, isValidImageType } from "@/lib/fileUtils";
 
 interface PaymentUploadFormProps {
   billId: string;

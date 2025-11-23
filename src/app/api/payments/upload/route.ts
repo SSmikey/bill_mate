@@ -5,7 +5,8 @@ import Payment from '@/models/Payment';
 import Bill from '@/models/Bill';
 import { authOptions } from '@/lib/auth';
 import { performOCR } from '@/services/ocrService';
-import { uploadFile, parseBase64File, isValidImageType } from '@/lib/fileStorage';
+import { uploadFile } from '@/lib/fileStorage';
+import { parseBase64File, isValidImageType } from '@/lib/fileUtils';
 import logger from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
