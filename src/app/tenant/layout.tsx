@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Navbar from '@/app/components/Navbar';
 import Link from 'next/link';
+import SessionProvider from '@/app/components/SessionProvider';
 
 export default async function TenantLayout({
   children,
@@ -17,7 +18,7 @@ export default async function TenantLayout({
   }
 
   return (
-    <>
+    <SessionProvider session={session}>
       <Navbar />
       <div className="d-flex" style={{ minHeight: 'calc(100vh - 60px)' }}>
         {/* Sidebar */}
@@ -53,6 +54,14 @@ export default async function TenantLayout({
               <i className="bi bi-credit-card me-3"></i>
               ประวัติการชำระ
             </Link>
+
+            <Link
+              href="/tenant/maintenance"
+              className="nav-link text-dark d-flex align-items-center px-3 py-2 mb-2"
+            >
+              <i className="bi bi-tools me-3"></i>
+              แจ้งซ่อมบำรุง
+            </Link>
           </div>
 
           <hr className="mx-3" />
@@ -77,6 +86,6 @@ export default async function TenantLayout({
           {children}
         </main>
       </div>
-    </>
+    </SessionProvider>
   );
 }
