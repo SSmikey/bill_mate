@@ -11,21 +11,44 @@ export interface OCRData {
   transactionNo?: string;
 }
 
-export async function performOCR(imageBase64: string): Promise<OCRData | null> {
-  try {
-    const result = await Tesseract.recognize(imageBase64, 'tha+eng', {
-      logger: (m) => console.log('OCR Progress:', m),
-    });
+/**
+ * Main function to perform OCR. It orchestrates different OCR engines.
+ * Currently, it only uses Tesseract.
+ */
+export async function performOCR(imageBase64: string): Promise<OCRData> {
+  // In the future, we can call multiple engines here and merge the results.
+  // const tesseractResult = await runTesseract(imageBase64);
+  // const googleVisionResult = await runGoogleVision(imageBase64);
+  // const finalResult = mergeOcrResults([tesseractResult, googleVisionResult]);
 
-    const text = result.data.text;
-    return extractSlipInfo(text);
+  try {
+    const tesseractResult = await runTesseract(imageBase64);
+    return tesseractResult;
   } catch (error) {
     console.error('OCR Error:', error);
-    return null;
+    // Return empty object on failure to avoid breaking the caller
+    return {};
   }
 }
 
-function extractSlipInfo(text: string): OCRData {
+/**
+ * Runs OCR using Tesseract.js.
+ * @param imageBase64 The base64 encoded image string.
+ * @returns The extracted OCR data.
+ */
+async function runTesseract(imageBase64: string): Promise<OCRData> {
+  const result = await Tesseract.recognize(imageBase64, 'tha+eng', {
+    logger: (m) => console.log('Tesseract Progress:', m),
+  });
+
+  const text = result.data.text;
+  return extractSlipInfoFromText(text);
+}
+
+/**
+ * Extracts structured information from raw OCR text using regex patterns.
+ */
+function extractSlipInfoFromText(text: string): OCRData {
   const data: OCRData = {};
 
   // Amount patterns
