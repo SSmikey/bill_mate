@@ -55,10 +55,10 @@ export default function NotificationList({
       });
 
       const response = await fetch(`/api/notifications?${params}`);
-      const data = await response.json();
+      const result = await response.json();
 
-      if (data.success) {
-        setNotifications(data.data);
+      if (result.success) {
+        setNotifications(result.data?.notifications || []);
       }
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
