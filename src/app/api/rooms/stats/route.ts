@@ -38,6 +38,8 @@ export async function GET(request: NextRequest) {
     const occupancyRate = totalRooms > 0 ? ((occupiedRooms / totalRooms) * 100).toFixed(2) : '0';
 
     // 2. Revenue statistics based on verified payments
+    let paymentMatchStage: any = { status: 'verified' };
+    
     const revenueStats = await Payment.aggregate([
       {
         $lookup: {
@@ -48,7 +50,13 @@ export async function GET(request: NextRequest) {
         },
       },
       { $unwind: '$billInfo' },
-      { $match: { status: 'verified', ...billDateFilter } },
+      { $match: paymentMatchStage },
+      ...(Object.keys(billDateFilter).length > 0 ? [{
+        $match: Object.entries(billDateFilter).reduce((acc, [key, value]) => {
+          acc[`billInfo.${key}`] = value;
+          return acc;
+        }, {} as any)
+      }] : []),
       {
         $group: {
           _id: null,
@@ -72,7 +80,13 @@ export async function GET(request: NextRequest) {
         },
       },
       { $unwind: '$billInfo' },
-      { $match: { status: 'verified', ...billDateFilter } },
+      { $match: paymentMatchStage },
+      ...(Object.keys(billDateFilter).length > 0 ? [{
+        $match: Object.entries(billDateFilter).reduce((acc, [key, value]) => {
+          acc[`billInfo.${key}`] = value;
+          return acc;
+        }, {} as any)
+      }] : []),
       {
         $group: {
           _id: '$billInfo.roomId',
@@ -209,13 +223,22 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // 9. Top revenue rooms (all time)
-    const topRevenueRooms = await Bill.aggregate([
-      { $match: { status: 'paid' } },
+    // 9. Top revenue rooms (all time) based on verified payments
+    const topRevenueRooms = await Payment.aggregate([
+      { $match: { status: 'verified' } },
+      {
+        $lookup: {
+          from: 'bills',
+          localField: 'billId',
+          foreignField: '_id',
+          as: 'billInfo',
+        },
+      },
+      { $unwind: '$billInfo' },
       {
         $group: {
-          _id: '$roomId',
-          totalRevenue: { $sum: '$totalAmount' },
+          _id: '$billInfo.roomId',
+          totalRevenue: { $sum: '$billInfo.totalAmount' },
           billCount: { $sum: 1 },
         },
       },
