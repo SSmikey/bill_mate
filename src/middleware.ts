@@ -77,7 +77,7 @@ export const config = {
   matcher: [
     '/admin/:path*',
     '/tenant/:path*',
-    '/api/:path*',
+    '/api/:path*',  // Include all API routes
     '/profile'
   ],
 };

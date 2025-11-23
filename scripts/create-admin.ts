@@ -1,7 +1,11 @@
 import bcryptjs from 'bcryptjs';
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 import User from '../src/models/User';
 import connectDB from '../src/lib/mongodb';
+
+// Load environment variables from .env.local
+dotenv.config({ path: '.env.local' });
 
 async function createAdmin() {
   try {
