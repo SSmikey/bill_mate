@@ -28,7 +28,6 @@ export interface INotificationPreferences {
 type NotificationKey = 'paymentReminder' | 'paymentVerified' | 'paymentRejected' | 'overdue' | 'billGenerated';
 
 export interface IUser {
-  _id?: Types.ObjectId | string;
   name: string;
   email: string;
   password: string;
@@ -39,6 +38,12 @@ export interface IUser {
 
   // ⭐ เพิ่ม roomId (เพื่อรองรับ populate)
   roomId?: Types.ObjectId | string | null;
+  
+  // ⭐ เพิ่มข้อมูลการเข้าพัก
+  moveInDate?: Date;
+  moveOutDate?: Date;
+  rentDueDate?: number; // 1-31
+  depositAmount?: number;
   
   // ⭐ เพิ่ม notification preferences
   notificationPreferences?: INotificationPreferences;
@@ -106,6 +111,12 @@ const UserSchema = new Schema<IUserDocument, IUserModel>(
       ref: 'Room',
       default: null
     },
+    
+    // ⭐ เพิ่มข้อมูลการเข้าพัก
+    moveInDate: { type: Date },
+    moveOutDate: { type: Date },
+    rentDueDate: { type: Number, min: 1, max: 31 },
+    depositAmount: { type: Number, min: 0 },
     
     // ⭐ เพิ่ม notification preferences schema
     notificationPreferences: {

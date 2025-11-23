@@ -47,6 +47,22 @@ export default async function AdminLayout({
             </Link>
 
             <Link
+              href="/admin/rooms/stats"
+              className="nav-link text-dark d-flex align-items-center px-3 py-2 mb-2"
+            >
+              <i className="bi bi-graph-up me-3"></i>
+              สถิติห้องพัก
+            </Link>
+
+            <Link
+              href="/admin/rooms/maintenance"
+              className="nav-link text-dark d-flex align-items-center px-3 py-2 mb-2"
+            >
+              <i className="bi bi-tools me-3"></i>
+              จัดการการแจ้งซ่อม
+            </Link>
+
+            <Link
               href="/admin/users"
               className="nav-link text-dark d-flex align-items-center px-3 py-2 mb-2"
             >

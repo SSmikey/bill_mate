@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
+import connectDB from '@/lib/mongodb';
+import Room from '@/models/Room';
+import User from '@/models/User';
+import { authOptions } from '@/lib/auth';
+import { getServerSession } from 'next-auth';
+import { handleApiError } from '@/lib/errorHandling';
+import logger from '@/lib/logger';
+import { Types } from 'mongoose';
+import { writeFile, mkdir } from 'fs/promises';
+import path from 'path';
 
 export async function POST(
   request: NextRequest,
@@ -10,15 +18,21 @@ export async function POST(
     const { id } = params;
 
     // Validate ObjectId
-    if (!ObjectId.isValid(id)) {
+    if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: 'รหัสห้องไม่ถูกต้อง' },
         { status: 400 }
       );
     }
 
-    const body = await request.json();
-    const { tenantId, moveInDate, rentDueDate, depositAmount, notes } = body;
+    // Handle form data (for file upload)
+    const formData = await request.formData();
+    const tenantId = formData.get('tenantId') as string;
+    const moveInDate = formData.get('moveInDate') as string;
+    const rentDueDate = parseInt(formData.get('rentDueDate') as string);
+    const depositAmount = parseFloat(formData.get('depositAmount') as string);
+    const notes = formData.get('notes') as string;
+    const rentalAgreement = formData.get('rentalAgreement') as File | null;
 
     // Validation
     if (!tenantId) {
@@ -28,7 +42,7 @@ export async function POST(
       );
     }
 
-    if (!ObjectId.isValid(tenantId)) {
+    if (!Types.ObjectId.isValid(tenantId)) {
       return NextResponse.json(
         { error: 'รหัสผู้เช่าไม่ถูกต้อง' },
         { status: 400 }
@@ -56,153 +70,171 @@ export async function POST(
       );
     }
 
-    const client = await clientPromise;
-    const db = client.db('bill_mate');
-    const roomsCollection = db.collection('rooms');
-    const usersCollection = db.collection('users');
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: 'ไม่ได้รับอนุญาต' },
+        { status: 401 }
+      );
+    }
+
+    // Only admins can assign rooms
+    if (session.user.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, error: 'ไม่มีสิทธิ์ดำเนินการ' },
+        { status: 403 }
+      );
+    }
+
+    await connectDB();
 
     // Check if room exists and is available
-    const room = await roomsCollection.findOne({ _id: new ObjectId(id) });
+    const room = await Room.findById(id);
 
     if (!room) {
       return NextResponse.json(
-        { error: 'ไม่พบห้องที่ระบุ' },
+        { success: false, error: 'ไม่พบห้องที่ระบุ' },
         { status: 404 }
       );
     }
 
     if (room.isOccupied) {
       return NextResponse.json(
-        { error: 'ห้องนี้มีผู้เช่าอยู่แล้ว' },
+        { success: false, error: 'ห้องนี้มีผู้เช่าอยู่แล้ว' },
         { status: 400 }
       );
     }
 
     // Check if tenant exists and is available
-    const tenant = await usersCollection.findOne({
-      _id: new ObjectId(tenantId),
-      role: 'tenant',
-    });
+    const tenant = await User.findById(tenantId);
 
     if (!tenant) {
       return NextResponse.json(
-        { error: 'ไม่พบผู้เช่าที่ระบุ' },
+        { success: false, error: 'ไม่พบผู้เช่าที่ระบุ' },
         { status: 404 }
+      );
+    }
+
+    if (tenant.role !== 'tenant') {
+      return NextResponse.json(
+        { success: false, error: 'ผู้ใช้งานนี้ไม่ใช่ผู้เช่า' },
+        { status: 400 }
       );
     }
 
     if (tenant.roomId) {
       return NextResponse.json(
-        { error: 'ผู้เช่านี้มีห้องอยู่แล้ว' },
+        { success: false, error: 'ผู้เช่านี้มีห้องอยู่แล้ว' },
         { status: 400 }
       );
+    }
+
+    // Handle rental agreement upload
+    let rentalAgreementPath = '';
+    if (rentalAgreement) {
+      // Validate file size (5MB max)
+      if (rentalAgreement.size > 5 * 1024 * 1024) {
+        return NextResponse.json(
+          { error: 'ขนาดไฟล์สัญญาเช่าต้องไม่เกิน 5MB' },
+          { status: 400 }
+        );
+      }
+
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(rentalAgreement.type)) {
+        return NextResponse.json(
+          { error: 'ประเภทไฟล์สัญญาเช่าไม่รองรับ กรุณาอัปโหลด PDF, JPG หรือ PNG' },
+          { status: 400 }
+        );
+      }
+
+      // Create uploads directory if it doesn't exist
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'rental-agreements');
+      try {
+        await mkdir(uploadsDir, { recursive: true });
+      } catch (error) {
+        // Directory might already exist
+      }
+
+      // Generate unique filename
+      const timestamp = Date.now();
+      const fileExtension = rentalAgreement.name.split('.').pop();
+      const filename = `room_${id}_${tenantId}_${timestamp}.${fileExtension}`;
+      const filepath = path.join(uploadsDir, filename);
+
+      // Write file
+      const buffer = Buffer.from(await rentalAgreement.arrayBuffer());
+      await writeFile(filepath, buffer);
+
+      // Store relative path for database
+      rentalAgreementPath = `/uploads/rental-agreements/${filename}`;
     }
 
     // Start transaction-like operations
     const now = new Date();
 
     // Update room
-    const roomUpdateResult = await roomsCollection.updateOne(
-      { _id: new ObjectId(id) },
+    const updatedRoom = await Room.findByIdAndUpdate(
+      id,
       {
-        $set: {
-          isOccupied: true,
-          tenantId: new ObjectId(tenantId),
-          moveInDate: new Date(moveInDate),
-          rentDueDate: rentDueDate,
-          depositAmount: depositAmount,
-          assignmentNotes: notes || '',
-          updatedAt: now,
-        },
-      }
-    );
+        isOccupied: true,
+        tenantId: tenantId,
+        moveInDate: new Date(moveInDate),
+        rentDueDate: rentDueDate,
+        depositAmount: depositAmount,
+        assignmentNotes: notes || '',
+        rentalAgreement: rentalAgreementPath,
+        updatedAt: now,
+      },
+      { new: true }
+    ).populate('tenantId');
 
-    if (roomUpdateResult.modifiedCount === 0) {
+    if (!updatedRoom) {
       return NextResponse.json(
-        { error: 'ไม่สามารถอัปเดตห้องได้' },
+        { success: false, error: 'ไม่สามารถอัปเดตห้องได้' },
         { status: 500 }
       );
     }
 
     // Update tenant
-    const tenantUpdateResult = await usersCollection.updateOne(
-      { _id: new ObjectId(tenantId) },
+    const updatedTenant = await User.findByIdAndUpdate(
+      tenantId,
       {
-        $set: {
-          roomId: new ObjectId(id),
-          moveInDate: new Date(moveInDate),
-          rentDueDate: rentDueDate,
-          depositAmount: depositAmount,
-          updatedAt: now,
-        },
-      }
+        roomId: id,
+        moveInDate: new Date(moveInDate),
+        rentDueDate: rentDueDate,
+        depositAmount: depositAmount,
+        updatedAt: now,
+      },
+      { new: true }
     );
 
-    if (tenantUpdateResult.modifiedCount === 0) {
+    if (!updatedTenant) {
       // Rollback room update
-      await roomsCollection.updateOne(
-        { _id: new ObjectId(id) },
-        {
-          $set: {
-            isOccupied: false,
-            updatedAt: now,
-          },
-          $unset: {
-            tenantId: '',
-            moveInDate: '',
-            rentDueDate: '',
-            depositAmount: '',
-            assignmentNotes: '',
-          },
-        }
-      );
+      await Room.findByIdAndUpdate(id, {
+        isOccupied: false,
+        updatedAt: now,
+      });
 
       return NextResponse.json(
-        { error: 'ไม่สามารถอัปเดตข้อมูลผู้เช่าได้' },
+        { success: false, error: 'ไม่สามารถอัปเดตข้อมูลผู้เช่าได้' },
         { status: 500 }
       );
     }
 
-    // Fetch updated room with tenant info
-    const updatedRoom = await roomsCollection
-      .aggregate([
-        { $match: { _id: new ObjectId(id) } },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'tenantId',
-            foreignField: '_id',
-            as: 'tenantInfo',
-          },
-        },
-        { $unwind: '$tenantInfo' },
-        {
-          $project: {
-            roomNumber: 1,
-            floor: 1,
-            rentPrice: 1,
-            waterPrice: 1,
-            electricityPrice: 1,
-            isOccupied: 1,
-            moveInDate: 1,
-            rentDueDate: 1,
-            depositAmount: 1,
-            assignmentNotes: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            'tenantInfo._id': 1,
-            'tenantInfo.name': 1,
-            'tenantInfo.email': 1,
-          },
-        },
-      ])
-      .toArray();
+    logger.info('Room assigned successfully', 'API', {
+      roomId: id,
+      tenantId,
+      assignedBy: session.user?.id
+    });
 
     return NextResponse.json(
       {
         success: true,
         message: 'มอบหมายห้องสำเร็จ',
-        data: updatedRoom[0] || null,
+        data: updatedRoom,
       },
       { status: 200 }
     );
@@ -224,31 +256,45 @@ export async function DELETE(
     const { id } = params;
 
     // Validate ObjectId
-    if (!ObjectId.isValid(id)) {
+    if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: 'รหัสห้องไม่ถูกต้อง' },
         { status: 400 }
       );
     }
 
-    const client = await clientPromise;
-    const db = client.db('bill_mate');
-    const roomsCollection = db.collection('rooms');
-    const usersCollection = db.collection('users');
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: 'ไม่ได้รับอนุญาต' },
+        { status: 401 }
+      );
+    }
+
+    // Only admins can unassign rooms
+    if (session.user.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, error: 'ไม่มีสิทธิ์ดำเนินการ' },
+        { status: 403 }
+      );
+    }
+
+    await connectDB();
 
     // Find room
-    const room = await roomsCollection.findOne({ _id: new ObjectId(id) });
+    const room = await Room.findById(id);
 
     if (!room) {
       return NextResponse.json(
-        { error: 'ไม่พบห้องที่ระบุ' },
+        { success: false, error: 'ไม่พบห้องที่ระบุ' },
         { status: 404 }
       );
     }
 
     if (!room.isOccupied || !room.tenantId) {
       return NextResponse.json(
-        { error: 'ห้องนี้ไม่มีผู้เช่าอยู่' },
+        { success: false, error: 'ห้องนี้ไม่มีผู้เช่าอยู่' },
         { status: 400 }
       );
     }
@@ -257,38 +303,47 @@ export async function DELETE(
     const tenantId = room.tenantId;
 
     // Update room (checkout)
-    await roomsCollection.updateOne(
-      { _id: new ObjectId(id) },
+    const updatedRoom = await Room.findByIdAndUpdate(
+      id,
       {
-        $set: {
-          isOccupied: false,
-          moveOutDate: now,
-          updatedAt: now,
-        },
-        $unset: {
-          tenantId: '',
-          moveInDate: '',
-          rentDueDate: '',
-          assignmentNotes: '',
-        },
-      }
+        isOccupied: false,
+        tenantId: null,
+        moveOutDate: now,
+        updatedAt: now,
+      },
+      { new: true }
     );
 
+    if (!updatedRoom) {
+      return NextResponse.json(
+        { success: false, error: 'ไม่สามารถอัปเดตห้องได้' },
+        { status: 500 }
+      );
+    }
+
     // Update tenant
-    await usersCollection.updateOne(
-      { _id: new ObjectId(tenantId) },
+    const updatedTenant = await User.findByIdAndUpdate(
+      tenantId,
       {
-        $set: {
-          moveOutDate: now,
-          updatedAt: now,
-        },
-        $unset: {
-          roomId: '',
-          moveInDate: '',
-          rentDueDate: '',
-        },
-      }
+        roomId: null,
+        moveOutDate: now,
+        updatedAt: now,
+      },
+      { new: true }
     );
+
+    if (!updatedTenant) {
+      return NextResponse.json(
+        { success: false, error: 'ไม่สามารถอัปเดตข้อมูลผู้เช่าได้' },
+        { status: 500 }
+      );
+    }
+
+    logger.info('Room unassigned successfully', 'API', {
+      roomId: id,
+      tenantId,
+      unassignedBy: session.user?.id
+    });
 
     return NextResponse.json(
       {
@@ -297,11 +352,8 @@ export async function DELETE(
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error('Error unassigning room:', error);
-    return NextResponse.json(
-      { error: 'เกิดข้อผิดพลาดในการปลดผู้เช่า: ' + error.message },
-      { status: 500 }
-    );
+  } catch (error) {
+    logger.error('Room unassignment failed', error instanceof Error ? error : new Error(String(error)), 'API');
+    return handleApiError(error);
   }
 }
