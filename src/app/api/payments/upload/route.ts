@@ -5,44 +5,8 @@ import Payment from '@/models/Payment';
 import Bill from '@/models/Bill';
 import { authOptions } from '@/lib/auth';
 import { performOCR } from '@/services/ocrService';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-
-const s3Client = new S3Client({
-  region: process.env.AWS_S3_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
-
-/**
- * Uploads a base64 encoded image to AWS S3 and returns the public URL.
- * @param base64Image The base64 encoded image string (e.g., "data:image/jpeg;base64,...")
- * @returns The public URL of the uploaded file.
- */
-async function uploadToCloudStorage(base64Image: string): Promise<string> {
-  const bucketName = process.env.AWS_S3_BUCKET_NAME;
-
-  // Extract content type and base64 data
-  const match = base64Image.match(/^data:(image\/\w+);base64,(.+)$/);
-  if (!match) throw new Error('Invalid base64 image string');
-  const contentType = match[1];
-  const base64Data = match[2];
-  const buffer = Buffer.from(base64Data, 'base64');
-
-  const fileName = `slips/${Date.now()}-${Math.round(Math.random() * 1E9)}.${contentType.split('/')[1]}`;
-
-  const command = new PutObjectCommand({
-    Bucket: bucketName,
-    Key: fileName,
-    Body: buffer,
-    ContentType: contentType,
-  });
-
-  await s3Client.send(command);
-
-  return `https://${bucketName}.s3.${process.env.AWS_S3_REGION}.amazonaws.com/${fileName}`;
-}
+import { uploadFile, parseBase64File, isValidImageType } from '@/lib/fileStorage';
+import logger from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   try {
@@ -62,6 +26,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validate file type
+    const fileInfo = parseBase64File(slipImageBase64);
+    if (!fileInfo || !isValidImageType(fileInfo.contentType)) {
+      return NextResponse.json(
+        { error: 'ประเภทไฟล์ไม่ถูกต้อง กรุณาอัปโหลดรูปภาพเท่านั้น' },
+        { status: 400 }
+      );
+    }
+
     await connectDB();
 
     // Verify bill exists and belongs to user (if tenant)
@@ -74,15 +47,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // --- การเปลี่ยนแปลงเริ่มที่นี่ ---
-    // 1. อัปโหลดไฟล์ Base64 ไปยัง Cloud Storage
-    const imageUrl = await uploadToCloudStorage(slipImageBase64);
+    // Upload file using optimized storage service
+    const uploadResult = await uploadFile(slipImageBase64, {
+      folder: 'slips',
+      contentType: fileInfo.contentType,
+      maxSize: 5 * 1024 * 1024, // 5MB limit for payment slips
+    });
+
+    logger.info('Payment slip uploaded', 'API', {
+      userId: session.user?.id,
+      billId,
+      fileSize: uploadResult.size,
+      contentType: uploadResult.contentType
+    });
 
     // Create payment record
     const payment = await Payment.create({
       billId,
       userId: session.user?.id,
-      slipImageUrl: imageUrl, // 2. บันทึก URL ที่ได้จาก Cloud Storage แทน Base64
+      slipImageUrl: uploadResult.url,
       ocrData: ocrData || {},
       qrData: qrData || {},
       status: 'pending',
@@ -100,7 +83,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Upload error:', error);
+    logger.error('Payment upload failed', error instanceof Error ? error : new Error(String(error)), 'API');
     return NextResponse.json({ error: 'Failed to upload slip' }, { status: 500 });
   }
 }

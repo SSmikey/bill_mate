@@ -7,6 +7,7 @@ import SessionProvider from './components/SessionProvider';
 import ErrorBoundary from './components/ErrorBoundary';
 import { initializeDatabase } from '@/lib/mongodb';
 import logger from '@/lib/logger';
+import { initializeCronJobs } from '@/services/cronService';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,11 @@ async function initializeApp() {
   if (!dbInitialized) {
     try {
       await initializeDatabase();
+      
+      // Initialize cron jobs after database is ready
+      initializeCronJobs();
+      logger.info('Cron jobs initialized on app startup', 'AppInitialization');
+      
       dbInitialized = true;
     } catch (error) {
       logger.error('Failed to initialize database', error as Error, 'AppInitialization');

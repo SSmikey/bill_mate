@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import SlipReader, { OCRData, QRData } from "./SlipReader"; // Import OCRData and QRData
+import { parseBase64File, isValidImageType } from "@/lib/fileStorage";
 
 interface PaymentUploadFormProps {
   billId: string;
@@ -80,6 +81,12 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
     if (!slipImageBase64) return { message: "กรุณาอัปโหลดรูปสลิป" };
     if (!ocrData && !qrData)
       return { message: "ไม่สามารถอ่านข้อมูลจากสลิปได้" };
+
+    // Validate file type
+    const fileInfo = parseBase64File(slipImageBase64);
+    if (fileInfo && !isValidImageType(fileInfo.contentType)) {
+      return { message: "ประเภทไฟล์ไม่ถูกต้อง กรุณาอัปโหลดรูปภาพเท่านั้น" };
+    }
 
     // Convert ocrData.amount to number for comparison
     const ocrAmount = ocrData?.amount ? parseFloat(ocrData.amount) : null;
