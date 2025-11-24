@@ -47,91 +47,203 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="text-center py-5">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">กำลังโหลด...</span>
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh' }}>
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}>
+            <span className="visually-hidden">กำลังโหลด...</span>
+          </div>
+          <h5 className="text-muted">กำลังโหลดข้อมูล...</h5>
         </div>
       </div>
     );
   }
 
+  const occupancyRate = stats?.totalRooms ? Math.round(((stats.occupiedRooms / stats.totalRooms) * 100)) : 0;
+  const paymentRate = stats?.totalBills ? Math.round(((stats.paidBills / stats.totalBills) * 100)) : 0;
+
   return (
     <div className="fade-in">
-      {/* Header */}
-      <div className="d-flex align-items-center justify-content-between mb-4">
-        <div>
-          <h1 className="fw-bold mb-1">แดชบอร์ด</h1>
-          <p className="text-muted mb-0">ภาพรวมของระบบจัดการหอพัก</p>
-        </div>
-        <div className="text-end">
-          <div className="text-muted small">อัพเดทล่าสุด</div>
-          <div className="fw-semibold">
-            {new Date().toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+      {/* Header with gradient background */}
+      <div className="rounded-4 p-5 mb-5 animate-slide-in-top" style={{
+        background: 'linear-gradient(135deg, #213555 0%, #3E5879 100%)',
+        boxShadow: '0 10px 30px rgba(33, 53, 85, 0.4)',
+        color: '#F5EFE7'
+      }}>
+        <div className="d-flex align-items-center justify-content-between">
+          <div>
+            <h1 className="fw-bold mb-2 display-5" style={{ color: '#F5EFE7' }}>แดชบอร์ด</h1>
+            <p className="mb-0 opacity-90 fs-5" style={{ color: '#F5EFE7' }}>ภาพรวมของระบบจัดการหอพัก</p>
+          </div>
+          <div className="text-end">
+            <div className="opacity-75 small" style={{ color: '#F5EFE7' }}>อัพเดทล่าสุด</div>
+            <div className="fw-semibold fs-5" style={{ color: '#F5EFE7' }}>
+              {new Date().toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="row mb-5">
-        <div className="col-md-3 mb-4">
-          <div className="card border-0 shadow-sm h-100">
+      {/* Stats Cards with modern design */}
+      <div className="row mb-5 g-4">
+        <div className="col-lg-3 col-md-6">
+          <div className="stat-card card border-0 h-100 overflow-hidden animate-slide-in-left" style={{
+            borderRadius: '1rem',
+            background: '#213555',
+            boxShadow: '0 10px 25px rgba(33, 53, 85, 0.4)'
+          }}>
             <div className="card-body p-4">
-              <div className="d-flex align-items-center">
-                <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                  <i className="bi bi-house-fill text-primary fs-4"></i>
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h6 className="mb-2" style={{ color: '#F5EFE7' }}>ห้องทั้งหมด</h6>
+                  <h2 className="mb-0 fw-bold" style={{ color: '#F5EFE7' }}>{stats?.totalRooms || 0}</h2>
                 </div>
-                <div className="flex-grow-1">
-                  <h6 className="text-muted mb-1">ห้องทั้งหมด</h6>
-                  <h2 className="mb-0 fw-bold">{stats?.totalRooms || 0}</h2>
+                <div className="rounded-circle p-3" style={{ backgroundColor: 'rgba(245, 239, 231, 0.2)' }}>
+                  <i className="bi bi-house-fill fs-3" style={{ color: '#F5EFE7' }}></i>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-3 mb-4">
-          <div className="card border-0 shadow-sm h-100">
+        <div className="col-lg-3 col-md-6">
+          <div className="stat-card card border-0 h-100 overflow-hidden animate-slide-in-left" style={{
+            borderRadius: '1rem',
+            background: '#3E5879',
+            boxShadow: '0 10px 25px rgba(62, 88, 121, 0.4)',
+            animationDelay: '0.1s'
+          }}>
             <div className="card-body p-4">
-              <div className="d-flex align-items-center">
-                <div className="bg-success bg-opacity-10 rounded-circle p-3 me-3">
-                  <i className="bi bi-door-closed text-success fs-4"></i>
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h6 className="mb-2" style={{ color: '#F5EFE7' }}>ห้องว่าง</h6>
+                  <h2 className="mb-0 fw-bold" style={{ color: '#F5EFE7' }}>{(stats?.totalRooms || 0) - (stats?.occupiedRooms || 0)}</h2>
                 </div>
-                <div className="flex-grow-1">
-                  <h6 className="text-muted mb-1">ห้องว่าง</h6>
-                  <h2 className="mb-0 fw-bold text-success">{(stats?.totalRooms || 0) - (stats?.occupiedRooms || 0)}</h2>
+                <div className="rounded-circle p-3" style={{ backgroundColor: 'rgba(245, 239, 231, 0.2)' }}>
+                  <i className="bi bi-door-closed fs-3" style={{ color: '#F5EFE7' }}></i>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-3 mb-4">
-          <div className="card border-0 shadow-sm h-100">
+        <div className="col-lg-3 col-md-6">
+          <div className="stat-card card border-0 h-100 overflow-hidden animate-slide-in-left" style={{
+            borderRadius: '1rem',
+            background: '#D8C4B6',
+            boxShadow: '0 10px 25px rgba(216, 196, 182, 0.4)',
+            animationDelay: '0.2s'
+          }}>
             <div className="card-body p-4">
-              <div className="d-flex align-items-center">
-                <div className="bg-info bg-opacity-10 rounded-circle p-3 me-3">
-                  <i className="bi bi-exclamation-circle text-info fs-4"></i>
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h6 className="mb-2" style={{ color: '#213555' }}>ค้างชำระ</h6>
+                  <h2 className="mb-0 fw-bold" style={{ color: '#213555' }}>{stats?.pendingBills || 0}</h2>
                 </div>
-                <div className="flex-grow-1">
-                  <h6 className="text-muted mb-1">ค้างชำระ</h6>
-                  <h2 className="mb-0 fw-bold text-info">{stats?.pendingBills || 0}</h2>
+                <div className="rounded-circle p-3" style={{ backgroundColor: 'rgba(33, 53, 85, 0.2)' }}>
+                  <i className="bi bi-exclamation-circle fs-3" style={{ color: '#213555' }}></i>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-3 mb-4">
-          <div className="card border-0 shadow-sm h-100">
+        <div className="col-lg-3 col-md-6">
+          <div className="stat-card card border-0 h-100 overflow-hidden animate-slide-in-left" style={{
+            borderRadius: '1rem',
+            background: '#F5EFE7',
+            boxShadow: '0 10px 25px rgba(245, 239, 231, 0.4)',
+            animationDelay: '0.3s'
+          }}>
             <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h6 className="mb-2" style={{ color: '#213555' }}>ชำระแล้ว</h6>
+                  <h2 className="mb-0 fw-bold" style={{ color: '#213555' }}>{stats?.paidBills || 0}</h2>
+                </div>
+                <div className="rounded-circle p-3" style={{ backgroundColor: 'rgba(62, 88, 121, 0.2)' }}>
+                  <i className="bi bi-check-circle fs-3" style={{ color: '#3E5879' }}></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress Cards */}
+      <div className="row mb-5 g-4">
+        <div className="col-md-6">
+          <div className="info-card card border-0 h-100 animate-slide-in-left" style={{
+            borderRadius: '1rem',
+            background: '#D8C4B6',
+            boxShadow: '0 5px 20px rgba(216, 196, 182, 0.4)',
+            animationDelay: '0.4s'
+          }}>
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center mb-3">
+                <div className="rounded-circle p-3 me-3" style={{ backgroundColor: '#213555' }}>
+                  <i className="bi bi-house-door-fill fs-4" style={{ color: '#F5EFE7' }}></i>
+                </div>
+                <div>
+                  <h5 className="mb-0 fw-semibold" style={{ color: '#213555' }}>อัตราการเข้าพัก</h5>
+                  <p className="mb-0 small opacity-75" style={{ color: '#213555' }}>สัดส่วนห้องที่ถูกเช่า</p>
+                </div>
+              </div>
               <div className="d-flex align-items-center">
-                <div className="bg-warning bg-opacity-10 rounded-circle p-3 me-3">
-                  <i className="bi bi-check-circle text-warning fs-4"></i>
-                </div>
+                <h2 className="mb-0 fw-bold me-3" style={{ color: '#213555' }}>{occupancyRate}%</h2>
                 <div className="flex-grow-1">
-                  <h6 className="text-muted mb-1">ชำระแล้ว</h6>
-                  <h2 className="mb-0 fw-bold text-warning">{stats?.paidBills || 0}</h2>
+                  <div className="progress" style={{ height: '10px', borderRadius: '5px', backgroundColor: 'rgba(33, 53, 85, 0.2)' }}>
+                    <div
+                      className="progress-bar progress-bar-animated"
+                      style={{
+                        width: `${occupancyRate}%`,
+                        background: '#3E5879'
+                      }}
+                    ></div>
+                  </div>
                 </div>
+              </div>
+              <div className="d-flex justify-content-between mt-2">
+                <small style={{ color: '#213555', opacity: '0.75' }}>{stats?.occupiedRooms || 0} ห้อง</small>
+                <small style={{ color: '#213555', opacity: '0.75' }}>จาก {stats?.totalRooms || 0} ห้อง</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-6">
+          <div className="info-card card border-0 h-100 animate-slide-in-left" style={{
+            borderRadius: '1rem',
+            background: '#3E5879',
+            boxShadow: '0 5px 20px rgba(62, 88, 121, 0.4)',
+            animationDelay: '0.5s'
+          }}>
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center mb-3">
+                <div className="rounded-circle p-3 me-3" style={{ backgroundColor: '#F5EFE7' }}>
+                  <i className="bi bi-credit-card-fill fs-4" style={{ color: '#213555' }}></i>
+                </div>
+                <div>
+                  <h5 className="mb-0 fw-semibold" style={{ color: '#F5EFE7' }}>อัตราการชำระเงิน</h5>
+                  <p className="mb-0 small opacity-75" style={{ color: '#F5EFE7' }}>สัดส่วนบิลที่ชำระแล้ว</p>
+                </div>
+              </div>
+              <div className="d-flex align-items-center">
+                <h2 className="mb-0 fw-bold me-3" style={{ color: '#F5EFE7' }}>{paymentRate}%</h2>
+                <div className="flex-grow-1">
+                  <div className="progress" style={{ height: '10px', borderRadius: '5px', backgroundColor: 'rgba(245, 239, 231, 0.2)' }}>
+                    <div
+                      className="progress-bar progress-bar-animated"
+                      style={{
+                        width: `${paymentRate}%`,
+                        background: '#D8C4B6'
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div className="d-flex justify-content-between mt-2">
+                <small style={{ color: '#F5EFE7', opacity: '0.75' }}>{stats?.paidBills || 0} บิล</small>
+                <small style={{ color: '#F5EFE7', opacity: '0.75' }}>จาก {stats?.totalBills || 0} บิล</small>
               </div>
             </div>
           </div>
@@ -139,27 +251,53 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions & Important Info */}
-      <div className="row">
-        <div className="col-md-6 mb-4">
-          <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom p-4">
-              <h5 className="card-title mb-0 fw-semibold">
-                <i className="bi bi-lightning-charge text-primary me-2"></i>
-                การกระทำเร็ว
-              </h5>
-            </div>
+      <div className="row g-4">
+        <div className="col-lg-6">
+          <div className="quick-action-card card border-0 h-100 animate-slide-in-left" style={{
+            borderRadius: '1rem',
+            background: '#F5EFE7',
+            boxShadow: '0 5px 20px rgba(245, 239, 231, 0.4)',
+            animationDelay: '0.6s'
+          }}>
             <div className="card-body p-4">
+              <div className="d-flex align-items-center mb-4">
+                <div className="rounded-circle p-3 me-3" style={{ backgroundColor: '#3E5879' }}>
+                  <i className="bi bi-lightning-charge-fill fs-4" style={{ color: '#F5EFE7' }}></i>
+                </div>
+                <div>
+                  <h5 className="mb-0 fw-semibold" style={{ color: '#213555' }}>การกระทำเร็ว</h5>
+                  <p className="mb-0 small opacity-75" style={{ color: '#213555' }}>ทำงานที่ใช้บ่อย</p>
+                </div>
+              </div>
               <div className="d-grid gap-3">
-                <a href="/admin/rooms" className="btn btn-outline-primary d-flex align-items-center justify-content-center">
-                  <i className="bi bi-plus-circle me-2"></i>
+                <a href="/admin/rooms" className="d-flex align-items-center justify-content-center py-3 text-decoration-none border rounded-3" style={{
+                  borderRadius: '0.75rem',
+                  backgroundColor: '#213555',
+                  border: '2px solid #3E5879',
+                  color: '#F5EFE7',
+                  fontWeight: '500'
+                }}>
+                  <i className="bi bi-plus-circle-fill me-2"></i>
                   เพิ่มห้องพัก
                 </a>
-                <a href="/admin/bills" className="btn btn-outline-success d-flex align-items-center justify-content-center">
-                  <i className="bi bi-file-earmark-plus me-2"></i>
+                <a href="/admin/bills" className="d-flex align-items-center justify-content-center py-3 text-decoration-none border rounded-3" style={{
+                  borderRadius: '0.75rem',
+                  backgroundColor: '#3E5879',
+                  border: '2px solid #D8C4B6',
+                  color: '#F5EFE7',
+                  fontWeight: '500'
+                }}>
+                  <i className="bi bi-file-earmark-plus-fill me-2"></i>
                   สร้างบิล
                 </a>
-                <a href="/admin/payments" className="btn btn-outline-info d-flex align-items-center justify-content-center">
-                  <i className="bi bi-check-square me-2"></i>
+                <a href="/admin/payments" className="d-flex align-items-center justify-content-center py-3 text-decoration-none border rounded-3" style={{
+                  borderRadius: '0.75rem',
+                  backgroundColor: '#D8C4B6',
+                  border: '2px solid #F5EFE7',
+                  color: '#213555',
+                  fontWeight: '500'
+                }}>
+                  <i className="bi bi-check-square-fill me-2"></i>
                   ตรวจสอบการชำระ
                 </a>
               </div>
@@ -167,37 +305,76 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="col-md-6 mb-4">
-          <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom p-4">
-              <h5 className="card-title mb-0 fw-semibold">
-                <i className="bi bi-graph-up text-primary me-2"></i>
-                ข้อมูลสำคัญ
-              </h5>
-            </div>
+        <div className="col-lg-6">
+          <div className="info-card card border-0 h-100 animate-slide-in-left" style={{
+            borderRadius: '1rem',
+            background: '#D8C4B6',
+            boxShadow: '0 5px 20px rgba(216, 196, 182, 0.4)',
+            animationDelay: '0.7s'
+          }}>
             <div className="card-body p-4">
+              <div className="d-flex align-items-center mb-4">
+                <div className="rounded-circle p-3 me-3" style={{ backgroundColor: '#213555' }}>
+                  <i className="bi bi-graph-up-arrow fs-4" style={{ color: '#F5EFE7' }}></i>
+                </div>
+                <div>
+                  <h5 className="mb-0 fw-semibold" style={{ color: '#213555' }}>ข้อมูลสำคัญ</h5>
+                  <p className="mb-0 small opacity-75" style={{ color: '#213555' }}>สถิติที่น่าสนใจ</p>
+                </div>
+              </div>
               <div className="list-group list-group-flush">
-                <div className="list-group-item d-flex justify-content-between align-items-center px-0">
-                  <div>
-                    <i className="bi bi-house-door text-muted me-2"></i>
-                    <span>ห้องเช่าที่นั่ง</span>
+                <div className="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
+                  <div className="d-flex align-items-center">
+                    <div className="rounded-circle p-2 me-3" style={{ backgroundColor: '#213555' }}>
+                      <i className="bi bi-house-door-fill fs-4" style={{ color: '#F5EFE7' }}></i>
+                    </div>
+                    <div>
+                      <div className="fw-semibold" style={{ color: '#213555' }}>ห้องเช่าที่นั่ง</div>
+                      <small style={{ color: '#213555', opacity: '0.75' }}>ขณะนี้</small>
+                    </div>
                   </div>
-                  <span className="badge bg-primary bg-opacity-10 text-primary fw-semibold">{stats?.occupiedRooms || 0} ห้อง</span>
+                  <span className="badge-modern fw-semibold px-3 py-2" style={{
+                    backgroundColor: '#213555',
+                    color: '#F5EFE7',
+                    borderRadius: '0.5rem'
+                  }}>
+                    {stats?.occupiedRooms || 0} ห้อง
+                  </span>
                 </div>
-                <div className="list-group-item d-flex justify-content-between align-items-center px-0">
-                  <div>
-                    <i className="bi bi-receipt text-muted me-2"></i>
-                    <span>บิลทั้งหมด</span>
+                <div className="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
+                  <div className="d-flex align-items-center">
+                    <div className="rounded-circle p-2 me-3" style={{ backgroundColor: '#3E5879' }}>
+                      <i className="bi bi-receipt-cutoff fs-4" style={{ color: '#F5EFE7' }}></i>
+                    </div>
+                    <div>
+                      <div className="fw-semibold" style={{ color: '#213555' }}>บิลทั้งหมด</div>
+                      <small style={{ color: '#213555', opacity: '0.75' }}>เดือนนี้</small>
+                    </div>
                   </div>
-                  <span className="badge bg-info bg-opacity-10 text-info fw-semibold">{stats?.totalBills || 0} รายการ</span>
+                  <span className="badge-modern fw-semibold px-3 py-2" style={{
+                    backgroundColor: '#3E5879',
+                    color: '#F5EFE7',
+                    borderRadius: '0.5rem'
+                  }}>
+                    {stats?.totalBills || 0} รายการ
+                  </span>
                 </div>
-                <div className="list-group-item d-flex justify-content-between align-items-center px-0">
-                  <div>
-                    <i className="bi bi-percent text-muted me-2"></i>
-                    <span>อัตราการชำระ</span>
+                <div className="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
+                  <div className="d-flex align-items-center">
+                    <div className="rounded-circle p-2 me-3" style={{ backgroundColor: '#D8C4B6' }}>
+                      <i className="bi bi-cash-stack fs-4" style={{ color: '#213555' }}></i>
+                    </div>
+                    <div>
+                      <div className="fw-semibold" style={{ color: '#213555' }}>รายได้ประจำเดือน</div>
+                      <small style={{ color: '#213555', opacity: '0.75' }}>โดยประมาณ</small>
+                    </div>
                   </div>
-                  <span className="badge bg-success bg-opacity-10 text-success fw-semibold">
-                    {stats?.totalBills ? Math.round((((stats?.paidBills || 0) / stats?.totalBills) * 100)) : 0}%
+                  <span className="badge-modern fw-semibold px-3 py-2" style={{
+                    backgroundColor: '#D8C4B6',
+                    color: '#213555',
+                    borderRadius: '0.5rem'
+                  }}>
+                    ฿{(stats?.paidBills || 0) * 3000}
                   </span>
                 </div>
               </div>

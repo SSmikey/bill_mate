@@ -1,13 +1,14 @@
 /* Modern Design System for Bill Mate */
 :root {
-  /* Primary Colors */
-  --primary-color: #4361ee;
-  --primary-dark: #3651de;
-  --primary-light: #f0f3ff;
+  /* Primary Colors - New Color Scheme */
+  --primary-color: #213555;
+  --primary-dark: #3E5879;
+  --primary-light: #D8C4B6;
+  --accent-color: #F5EFE7;
   
   /* Secondary Colors */
-  --secondary-color: #7209b7;
-  --accent-color: #f72585;
+  --secondary-color: #3E5879;
+  --accent-secondary: #D8C4B6;
   
   /* Neutral Colors */
   --white: #ffffff;
@@ -749,6 +750,175 @@ a:hover {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  
+  /* Modern Dashboard Styles */
+  .dashboard-gradient {
+    background: linear-gradient(135deg, #E2852E 0%, #F5C857 100%);
+    box-shadow: 0 10px 30px rgba(226, 133, 46, 0.4);
+  }
+  
+  .stat-card {
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+  
+  .stat-card:hover::before {
+    transform: translateX(100%);
+  }
+  
+  .progress-bar-animated {
+    background: #FFEE91;
+    border-radius: 5px;
+    transition: width 1s ease-in-out;
+  }
+  
+  .sidebar-modern {
+    background: linear-gradient(180deg, #F5EFE7 0%, #D8C4B6 100%);
+    box-shadow: 4px 0 15px rgba(33, 53, 85, 0.1);
+  }
+  
+  .nav-link-modern {
+    transition: all 0.3s ease;
+    border-radius: 0.75rem;
+  }
+  
+  .nav-link-modern:hover {
+    background: linear-gradient(135deg, #D8C4B6 0%, #3E5879 100%);
+    color: #213555;
+    transform: translateX(5px);
+  }
+  
+  .nav-link-active {
+    background: linear-gradient(135deg, #213555 0%, #3E5879 100%);
+    color: #F5EFE7;
+    box-shadow: 0 4px 10px rgba(33, 53, 85, 0.4);
+  }
+  
+  .main-content-modern {
+    background-color: #F5EFE7;
+    background-image: radial-gradient(circle at 20% 80%, rgba(33, 53, 85, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(62, 88, 121, 0.1) 0%, transparent 50%);
+  }
+  
+  .quick-action-card {
+    border-radius: 1rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+  }
+  
+  .quick-action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  }
+  
+  .info-card {
+    border-radius: 1rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+  }
+  
+  .info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  }
+  
+  .badge-modern {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+  }
+  
+  .loading-spinner {
+    width: 3rem;
+    height: 3rem;
+  }
+  
+  /* Enhanced Animations */
+  @keyframes slideInFromTop {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideInFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+  
+  .animate-slide-in-top {
+    animation: slideInFromTop 0.5s ease-out;
+  }
+  
+  .animate-slide-in-left {
+    animation: slideInFromLeft 0.5s ease-out;
+  }
+  
+  .animate-pulse {
+    animation: pulse 2s infinite;
+  }
+  
+  /* Glassmorphism Effect */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  
+  /* Custom Scrollbar for Sidebar */
+  .sidebar-modern::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .sidebar-modern::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .sidebar-modern::-webkit-scrollbar-thumb {
+    background: rgba(33, 53, 85, 0.3);
+    border-radius: 3px;
+  }
+  
+  .sidebar-modern::-webkit-scrollbar-thumb:hover {
+    background: rgba(33, 53, 85, 0.5);
   }
 }
 
