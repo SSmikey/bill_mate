@@ -5,7 +5,6 @@ import "./globals.css";
 import BootstrapClient from './components/BootstrapClient';
 import SessionWrapper from './components/SessionWrapper';
 import ErrorBoundary from './components/ErrorBoundary';
-import IconLoader from './components/IconLoader';
 import { initializeDatabase } from '@/lib/mongodb';
 import logger from '@/lib/logger';
 import { initializeCronJobs } from '@/services/cronService';
@@ -79,7 +78,6 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <IconLoader />
         <SessionWrapper>
           <BootstrapClient />
           <ErrorBoundary>

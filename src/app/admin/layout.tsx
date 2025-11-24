@@ -3,7 +3,6 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Navbar from '@/app/components/Navbar';
 import Link from 'next/link';
-import IconLoader from '@/app/components/IconLoader';
 
 export default async function AdminLayout({
   children,
@@ -19,7 +18,6 @@ export default async function AdminLayout({
 
   return (
     <>
-      <IconLoader />
       <Navbar />
       <div className="d-flex" style={{ minHeight: 'calc(100vh - 70px)' }}>
         {/* Sidebar */}
