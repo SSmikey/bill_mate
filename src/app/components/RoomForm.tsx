@@ -299,7 +299,7 @@ export default function RoomForm({
           <div className="row g-3">
             {/* หมายเลขห้อง */}
             <div className="col-md-6 mb-3">
-              <label htmlFor="roomNumber" className="form-label fw-semibold">
+              <label htmlFor="roomNumber" className="form-label fw-semibold text-dark">
                 หมายเลขห้อง <span className="text-danger">*</span>
               </label>
               <input
@@ -314,6 +314,7 @@ export default function RoomForm({
                 placeholder="เช่น 101, A-201, B12"
                 disabled={isLoading}
                 required
+                style={{ color: '#000' }}
               />
               {touched.roomNumber && fieldErrors.roomNumber && (
                 <div className="invalid-feedback">{fieldErrors.roomNumber}</div>
@@ -326,7 +327,7 @@ export default function RoomForm({
 
             {/* ชั้น */}
             <div className="col-md-6 mb-3">
-              <label htmlFor="floor" className="form-label fw-semibold">
+              <label htmlFor="floor" className="form-label fw-semibold text-dark">
                 ชั้น
               </label>
               <input
@@ -344,6 +345,7 @@ export default function RoomForm({
                 min="0"
                 max="100"
                 disabled={isLoading}
+                style={{ color: '#000' }}
               />
               {touched.floor && fieldErrors.floor && (
                 <div className="invalid-feedback">{fieldErrors.floor}</div>
@@ -358,7 +360,7 @@ export default function RoomForm({
           <div className="row g-3">
             {/* ค่าเช่า */}
             <div className="col-md-6 mb-3">
-              <label htmlFor="rentPrice" className="form-label fw-semibold">
+              <label htmlFor="rentPrice" className="form-label fw-semibold text-dark">
                 ค่าเช่า (บาท/เดือน) <span className="text-danger">*</span>
               </label>
               <div className="input-group">
@@ -377,6 +379,7 @@ export default function RoomForm({
                   step="0.01"
                   disabled={isLoading}
                   required
+                  style={{ color: '#000' }}
                 />
                 <span className="input-group-text">฿</span>
                 {touched.rentPrice && fieldErrors.rentPrice && (
@@ -393,7 +396,7 @@ export default function RoomForm({
 
             {/* ค่าน้ำ */}
             <div className="col-md-6 mb-3">
-              <label htmlFor="waterPrice" className="form-label fw-semibold">
+              <label htmlFor="waterPrice" className="form-label fw-semibold text-dark">
                 ค่าน้ำ (บาท/เดือน) <span className="text-danger">*</span>
               </label>
               <div className="input-group">
@@ -412,6 +415,7 @@ export default function RoomForm({
                   step="0.01"
                   disabled={isLoading}
                   required
+                  style={{ color: '#000' }}
                 />
                 <span className="input-group-text">฿</span>
                 {touched.waterPrice && fieldErrors.waterPrice && (
@@ -428,7 +432,7 @@ export default function RoomForm({
           <div className="row g-3">
             {/* ค่าไฟต่อหน่วย */}
             <div className="col-md-6 mb-3">
-              <label htmlFor="electricityPrice" className="form-label fw-semibold">
+              <label htmlFor="electricityPrice" className="form-label fw-semibold text-dark">
                 ค่าไฟต่อหน่วย (บาท/หน่วย) <span className="text-danger">*</span>
               </label>
               <div className="input-group">
@@ -455,6 +459,7 @@ export default function RoomForm({
                   step="0.01"
                   disabled={isLoading}
                   required
+                  style={{ color: '#000' }}
                 />
                 <span className="input-group-text">฿/หน่วย</span>
                 {touched.electricityPrice && fieldErrors.electricityPrice && (
@@ -476,7 +481,7 @@ export default function RoomForm({
 
             {/* Estimated Cost Summary */}
             <div className="col-md-6 mb-3">
-              <label className="form-label fw-semibold">
+              <label className="form-label fw-semibold text-dark">
                 <i className="bi bi-calculator-fill me-2"></i>
                 ประมาณการค่าใช้จ่ายต่อเดือน
               </label>

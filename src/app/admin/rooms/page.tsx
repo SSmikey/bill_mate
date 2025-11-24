@@ -576,7 +576,7 @@ export default function AdminRoomsPage() {
           <div className="row g-3">
             {/* Search */}
             <div className="col-md-4">
-              <label className="form-label fw-semibold">
+              <label className="form-label fw-semibold text-dark">
                 <i className="bi bi-search me-2"></i>
                 ค้นหา
               </label>
@@ -586,12 +586,13 @@ export default function AdminRoomsPage() {
                 placeholder="หมายเลขห้อง, ชื่อผู้เช่า, อีเมล"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ color: '#000' }}
               />
             </div>
 
             {/* Price Range */}
             <div className="col-md-4">
-              <label className="form-label fw-semibold">
+              <label className="form-label fw-semibold text-dark">
                 <i className="bi bi-cash me-2"></i>
                 ช่วงราคา
               </label>
@@ -604,6 +605,7 @@ export default function AdminRoomsPage() {
                   onChange={(e) =>
                     setPriceRange({ ...priceRange, min: Number(e.target.value) })
                   }
+                  style={{ color: '#000' }}
                 />
                 <input
                   type="number"
@@ -613,18 +615,19 @@ export default function AdminRoomsPage() {
                   onChange={(e) =>
                     setPriceRange({ ...priceRange, max: Number(e.target.value) })
                   }
+                  style={{ color: '#000' }}
                 />
               </div>
             </div>
 
             {/* Floor Filter */}
             <div className="col-md-2">
-              <label className="form-label fw-semibold">
+              <label className="form-label fw-semibold text-dark">
                 <i className="bi bi-building me-2"></i>
                 ชั้น
               </label>
               <select
-                className="form-select rounded-2 bg-white"
+                className="form-select rounded-2 bg-white text-dark"
                 value={floorFilter}
                 onChange={(e) =>
                   setFloorFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))
@@ -641,12 +644,12 @@ export default function AdminRoomsPage() {
 
             {/* Sort */}
             <div className="col-md-2">
-              <label className="form-label fw-semibold">
+              <label className="form-label fw-semibold text-dark">
                 <i className="bi bi-sort-down me-2"></i>
                 เรียงตาม
               </label>
               <select
-                className="form-select rounded-2 bg-white"
+                className="form-select rounded-2 bg-white text-dark"
                 value={`${sortField}-${sortOrder}`}
                 onChange={(e) => {
                   const [field, order] = e.target.value.split('-');
