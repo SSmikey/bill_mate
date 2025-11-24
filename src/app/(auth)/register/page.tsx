@@ -107,11 +107,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center bg-gradient-primary">
+    <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: '#f8fafc' }}>
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-6 col-lg-5 col-xl-4">
-            <div className="card shadow-lg border-0 rounded-4 fade-in">
+            <div className="card shadow-lg border-0 bg-white rounded-4 fade-in">
               <div className="card-body p-5">
                 <div className="text-center mb-4">
                   <div className="bg-gradient-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
@@ -121,7 +121,7 @@ export default function RegisterPage() {
                   <p className="text-muted">สมัครสมาชิกเพื่อเริ่มใช้งาน</p>
                 </div>
 
-                <h5 className="text-center mb-4 fw-semibold">สมัครสมาชิกใหม่</h5>
+                <h5 className="text-center mb-4 fw-semibold text-muted">สมัครสมาชิกใหม่</h5>
 
                 {error && (
                   <div className="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
@@ -138,13 +138,13 @@ export default function RegisterPage() {
 
                 <form onSubmit={handleSubmit}>
                   <div className="mb-3">
-                    <label htmlFor="name" className="form-label fw-semibold">
+                    <label htmlFor="name" className="form-label fw-semibold text-muted">
                       <i className="bi bi-person me-2 text-muted"></i>
                       ชื่อ-นามสกุล
                     </label>
                     <input
                       type="text"
-                      className="form-control rounded-3"
+                      className="form-control rounded-3 bg-light"
                       id="name"
                       name="name"
                       placeholder="เช่น สมชาย ใจดี"
@@ -156,13 +156,13 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="email" className="form-label fw-semibold">
+                    <label htmlFor="email" className="form-label fw-semibold text-muted">
                       <i className="bi bi-envelope me-2 text-muted"></i>
                       อีเมล
                     </label>
                     <input
                       type="email"
-                      className="form-control rounded-3"
+                      className="form-control rounded-3 bg-light"
                       id="email"
                       name="email"
                       placeholder="example@email.com"
@@ -174,13 +174,13 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="phone" className="form-label fw-semibold">
+                    <label htmlFor="phone" className="form-label fw-semibold text-muted">
                       <i className="bi bi-telephone me-2 text-muted"></i>
                       เบอร์โทรศัพท์ (ไม่บังคับ)
                     </label>
                     <input
                       type="tel"
-                      className="form-control rounded-3"
+                      className="form-control rounded-3 bg-light"
                       id="phone"
                       name="phone"
                       placeholder="0812345678"
@@ -191,13 +191,13 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="password" className="form-label fw-semibold">
+                    <label htmlFor="password" className="form-label fw-semibold text-muted">
                       <i className="bi bi-lock me-2 text-muted"></i>
                       รหัสผ่าน
                     </label>
                     <input
                       type="password"
-                      className="form-control rounded-3"
+                      className="form-control rounded-3 bg-light"
                       id="password"
                       name="password"
                       placeholder="••••••••"
@@ -213,13 +213,13 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="mb-4">
-                    <label htmlFor="confirmPassword" className="form-label fw-semibold">
+                    <label htmlFor="confirmPassword" className="form-label fw-semibold text-muted">
                       <i className="bi bi-lock-fill me-2 text-muted"></i>
                       ยืนยันรหัสผ่าน
                     </label>
                     <input
                       type="password"
-                      className="form-control rounded-3"
+                      className="form-control rounded-3 bg-light"
                       id="confirmPassword"
                       name="confirmPassword"
                       placeholder="••••••••"
@@ -232,7 +232,7 @@ export default function RegisterPage() {
 
                   <button
                     type="submit"
-                    className="btn btn-primary btn-lg w-100 fw-semibold py-3 rounded-3 shadow-hover"
+                    className="btn btn-secondary btn-lg w-100 fw-semibold py-3 rounded-3 shadow-hover"
                     disabled={loading}
                   >
                     {loading ? (
@@ -252,7 +252,7 @@ export default function RegisterPage() {
                 <div className="text-center mt-4">
                   <p className="text-muted mb-0">
                     มีบัญชีแล้ว?{' '}
-                    <Link href="/login" className="fw-semibold text-link">
+                    <Link href="/login" className="fw-semibold text-link text-muted">
                       เข้าสู่ระบบ
                     </Link>
                   </p>
@@ -261,7 +261,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="text-center mt-4">
-              <p className="text-white-50 small">
+              <p className="text-muted small">
                 <i className="bi bi-shield-check me-1"></i>
                 ข้อมูลของคุณจะถูกเก็บเป็นความลับและปลอดภัย
               </p>

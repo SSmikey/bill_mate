@@ -62,11 +62,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center bg-gradient-primary">
+    <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: '#f8fafc' }}>
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-6 col-lg-5 col-xl-4">
-            <div className="card shadow-lg border-0 rounded-4 fade-in">
+            <div className="card shadow-lg border-0 bg-white rounded-4 fade-in">
               <div className="card-body p-5">
                 <div className="text-center mb-5">
                   <div className="bg-gradient-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
@@ -76,7 +76,7 @@ export default function LoginPage() {
                   <p className="text-muted">ระบบจัดการค่าเช่าหอพักที่ทันสมัย</p>
                 </div>
 
-                <h5 className="text-center mb-4 fw-semibold">เข้าสู่ระบบ</h5>
+                <h5 className="text-center mb-4 fw-semibold text-dark">เข้าสู่ระบบ</h5>
 
                 {error && (
                   <div className="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
@@ -106,13 +106,13 @@ export default function LoginPage() {
 
                 <form onSubmit={handleSubmit}>
                   <div className="mb-4">
-                    <label htmlFor="email" className="form-label fw-semibold">
+                    <label htmlFor="email" className="form-label fw-semibold text-muted">
                       <i className="bi bi-envelope me-2 text-muted"></i>
                       อีเมล
                     </label>
                     <input
                       type="email"
-                      className="form-control form-control-lg rounded-3"
+                      className="form-control form-control-lg rounded-3 bg-light"
                       id="email"
                       placeholder="example@email.com"
                       value={email}
@@ -123,13 +123,13 @@ export default function LoginPage() {
                   </div>
 
                   <div className="mb-4">
-                    <label htmlFor="password" className="form-label fw-semibold">
+                    <label htmlFor="password" className="form-label fw-semibold text-muted">
                       <i className="bi bi-lock me-2 text-muted"></i>
                       รหัสผ่าน
                     </label>
                     <input
                       type="password"
-                      className="form-control form-control-lg rounded-3"
+                      className="form-control form-control-lg rounded-3 bg-light"
                       id="password"
                       placeholder="••••••••"
                       value={password}
@@ -141,7 +141,7 @@ export default function LoginPage() {
 
                   <button
                     type="submit"
-                    className="btn btn-primary btn-lg w-100 fw-semibold py-3 rounded-3 shadow-hover"
+                    className="btn btn-secondary btn-lg w-100 fw-semibold py-3 rounded-3 shadow-hover"
                     disabled={loading}
                   >
                     {loading ? (
@@ -151,7 +151,7 @@ export default function LoginPage() {
                       </>
                     ) : (
                       <>
-                        <i className="bi bi-box-arrow-in-right me-2"></i>
+                        <i className="bi bi-box-arrow-in-right me-2 "></i>
                         เข้าสู่ระบบ
                       </>
                     )}
@@ -161,7 +161,7 @@ export default function LoginPage() {
                 <div className="text-center mt-4">
                   <p className="text-muted mb-0">
                     ยังไม่มีบัญชี?{' '}
-                    <Link href="/register" className="fw-semibold text-link">
+                    <Link href="/register" className="fw-semibold text-link text-muted">
                       สมัครสมาชิก
                     </Link>
                   </p>
@@ -170,7 +170,7 @@ export default function LoginPage() {
             </div>
 
             <div className="text-center mt-4">
-              <p className="text-white-50 small">
+              <p className="text-muted small">
                 <i className="bi bi-shield-check me-1"></i>
                 ระบบจัดการค่าเช่าหอพักที่ปลอดภัยและเชื่อถือได้
               </p>
