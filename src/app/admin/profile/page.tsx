@@ -402,7 +402,7 @@ export default function AdminProfilePage() {
                       <Form.Check
                         type="checkbox"
                         id="emailNotifications"
-                        label="รับการแจ้งเตือนทางอีเมล"
+                        label={<span className="text-dark">รับการแจ้งเตือนทางอีเมล</span>}
                         checked={notificationPrefs.emailNotifications}
                         onChange={(e) => setNotificationPrefs({ ...notificationPrefs, emailNotifications: e.target.checked })}
                         disabled={prefsLoading}
@@ -413,7 +413,7 @@ export default function AdminProfilePage() {
                       <Form.Check
                         type="checkbox"
                         id="reminder5Days"
-                        label="แจ้งเตือนก่อนครบกำหนด 5 วัน"
+                        label={<span className="text-dark">แจ้งเตือนก่อนครบกำหนด 5 วัน</span>}
                         checked={notificationPrefs.reminder5Days}
                         onChange={(e) => setNotificationPrefs({ ...notificationPrefs, reminder5Days: e.target.checked })}
                         disabled={prefsLoading}
@@ -426,7 +426,7 @@ export default function AdminProfilePage() {
                       <Form.Check
                         type="checkbox"
                         id="reminder1Day"
-                        label="แจ้งเตือนก่อนครบกำหนด 1 วัน"
+                        label={<span className="text-dark">แจ้งเตือนก่อนครบกำหนด 1 วัน</span>}
                         checked={notificationPrefs.reminder1Day}
                         onChange={(e) => setNotificationPrefs({ ...notificationPrefs, reminder1Day: e.target.checked })}
                         disabled={prefsLoading}
@@ -437,7 +437,7 @@ export default function AdminProfilePage() {
                       <Form.Check
                         type="checkbox"
                         id="overdueNotifications"
-                        label="แจ้งเตือนเมื่อเกินกำหนด"
+                        label={<span className="text-dark">แจ้งเตือนเมื่อเกินกำหนด</span>}
                         checked={notificationPrefs.overdueNotifications}
                         onChange={(e) => setNotificationPrefs({ ...notificationPrefs, overdueNotifications: e.target.checked })}
                         disabled={prefsLoading}
