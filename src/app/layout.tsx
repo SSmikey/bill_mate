@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import "@/styles/bootstrap-custom.scss";
 import "./globals.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
 import BootstrapClient from './components/BootstrapClient';
 import SessionWrapper from './components/SessionWrapper';
 import ErrorBoundary from './components/ErrorBoundary';
+import IconLoader from './components/IconLoader';
 import { initializeDatabase } from '@/lib/mongodb';
 import logger from '@/lib/logger';
 import { initializeCronJobs } from '@/services/cronService';
@@ -65,6 +66,7 @@ export default function RootLayout({
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+          crossOrigin="anonymous"
         />
       </head>
       <body
@@ -72,6 +74,7 @@ export default function RootLayout({
         style={{ fontFamily: 'var(--font-family)' }}
       >
         <SessionWrapper>
+          <IconLoader />
           <BootstrapClient />
           <ErrorBoundary>
             <div className="min-vh-100 d-flex flex-column">

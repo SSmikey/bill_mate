@@ -138,7 +138,7 @@ export default function NotificationList({
   if (notifications.length === 0) {
     return (
       <div className="text-center py-4 text-muted">
-        <i className="bi bi-bell-slash fs-1 d-block mb-2"></i>
+        <i className="bi bi-bell-slash fs-1 d-block mb-2" style={{ fontSize: '2rem' }}></i>
         <p>ไม่มีการแจ้งเตือน</p>
       </div>
     );
@@ -156,7 +156,7 @@ export default function NotificationList({
           <div className="card-body py-2">
             <div className="d-flex align-items-start">
               <div className="me-3">
-                <i className={`bi ${getNotificationIcon(notification.type)} fs-5`}></i>
+                <i className={`bi ${getNotificationIcon(notification.type)} fs-5`} style={{ fontSize: '1.2rem' }}></i>
               </div>
               <div className="flex-grow-1">
                 <div className="d-flex justify-content-between align-items-start">

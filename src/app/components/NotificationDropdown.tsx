@@ -76,56 +76,40 @@ export default function NotificationDropdown({ className = '' }: NotificationDro
   return (
     <div className={`dropdown ${className}`} ref={dropdownRef}>
       <button
-        className="btn position-relative border-0 shadow-sm"
+        className="btn btn-light position-relative rounded-circle shadow-sm"
         type="button"
         onClick={toggleDropdown}
         aria-expanded={isOpen}
-        style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '50%',
-          backgroundColor: '#f1f5f9'
-        }}
+        style={{ width: '40px', height: '40px' }}
       >
-        <i className="bi bi-bell" style={{ color: '#64748b' }}></i>
+        <i className="bi bi-bell text-secondary" style={{ fontSize: '1.2rem' }}></i>
         {unreadCount > 0 && (
-          <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill" style={{ backgroundColor: '#ef4444', border: '2px solid #ffffff' }}>
+          <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
-      <div className={`dropdown-menu dropdown-menu-end p-0 shadow-lg border-0 ${isOpen ? 'show' : ''}`} style={{
-        width: '380px',
-        maxHeight: '450px',
-        borderRadius: '0.75rem',
-        backgroundColor: '#ffffff',
-        border: '1px solid #e2e8f0'
-      }}>
-        <div className="d-flex justify-content-between align-items-center p-4 border-bottom" style={{ backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }}>
-          <div className="d-flex align-items-center">
-            <i className="bi bi-bell-fill me-2" style={{ color: '#4361ee' }}></i>
-            <h6 className="mb-0 fw-semibold" style={{ color: '#0f172a' }}>การแจ้งเตือน</h6>
+      <div className={`dropdown-menu dropdown-menu-end shadow-lg border-0 ${isOpen ? 'show' : ''}`} style={{ width: '380px', maxHeight: '450px' }}>
+        <div className="d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
+          <div className="d-flex align-items-center gap-2">
+            <i className="bi bi-bell-fill text-primary" style={{ fontSize: '1.2rem' }}></i>
+            <h6 className="mb-0 fw-semibold">การแจ้งเตือน</h6>
             {unreadCount > 0 && (
-              <span className="badge ms-2" style={{ backgroundColor: '#4361ee' }}>{unreadCount}</span>
+              <span className="badge bg-primary">{unreadCount}</span>
             )}
           </div>
           {unreadCount > 0 && (
             <button
-              className="btn btn-sm rounded-pill"
+              className="btn btn-sm btn-outline-primary rounded-pill"
               onClick={markAllAsRead}
-              style={{
-                border: '1px solid #4361ee',
-                color: '#4361ee',
-                backgroundColor: 'transparent'
-              }}
             >
-              <i className="bi bi-check-all me-1"></i>
-              อ่านทั้งหมด
+              <i className="bi bi-check-all"></i>
+              <span className="d-none d-sm-inline ms-1">อ่านทั้งหมด</span>
             </button>
           )}
         </div>
-        
+
         <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
           <NotificationList
             limit={5}
@@ -133,15 +117,11 @@ export default function NotificationDropdown({ className = '' }: NotificationDro
             refreshTrigger={refreshTrigger}
           />
         </div>
-        
-        <div className="p-3 border-top" style={{ backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }}>
-          <a href="/notifications" className="btn btn-sm w-100 rounded-pill text-decoration-none" style={{
-            border: '1px solid #4361ee',
-            color: '#4361ee',
-            backgroundColor: 'transparent'
-          }}>
-            <i className="bi bi-arrow-right me-1"></i>
-            ดูการแจ้งเตือนทั้งหมด
+
+        <div className="p-3 border-top bg-light">
+          <a href="/notifications" className="btn btn-sm btn-outline-primary w-100 rounded-pill">
+            <i className="bi bi-arrow-right"></i>
+            <span className="d-none d-sm-inline ms-1">ดูทั้งหมด</span>
           </a>
         </div>
       </div>

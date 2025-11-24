@@ -2,27 +2,58 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import NotificationDropdown from './NotificationDropdown';
 
 export default function Navbar() {
   const { data: session } = useSession();
+  const [iconsLoaded, setIconsLoaded] = useState(false);
+
+  useEffect(() => {
+    // Check if Bootstrap Icons are loaded
+    const checkIconsLoaded = () => {
+      const testElement = document.createElement('i');
+      testElement.className = 'bi bi-house';
+      testElement.style.display = 'none';
+      document.body.appendChild(testElement);
+      
+      const styles = window.getComputedStyle(testElement);
+      const isLoaded = styles.fontFamily.includes('bootstrap-icons');
+      
+      document.body.removeChild(testElement);
+      return isLoaded;
+    };
+
+    // Load Bootstrap Icons if not already loaded
+    if (!checkIconsLoaded()) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css';
+      link.crossOrigin = 'anonymous';
+      link.onload = () => setIconsLoaded(true);
+      document.head.appendChild(link);
+    } else {
+      setIconsLoaded(true);
+    }
+  }, []);
 
   const handleLogout = async () => {
     await signOut({ redirect: true, callbackUrl: '/login' });
   };
 
-  if (!session) {
+  if (!session || !iconsLoaded) {
     return null;
   }
 
   return (
-    <nav className="navbar navbar-expand-lg sticky-top shadow-sm" style={{ backgroundColor: '#ffffff', zIndex: 1030 }}>
+    <nav className="navbar navbar-expand-lg sticky-top bg-primary text-white shadow-sm">
       <div className="container-fluid">
-        <Link href="/" className="navbar-brand d-flex align-items-center" style={{ color: '#4361ee' }}>
-          <div className="bg-gradient-primary text-white rounded-circle p-2 me-2">
-            <i className="bi bi-house-check"></i>
+        <Link href="/" className="navbar-brand d-flex align-items-center gap-2">
+          <div className="bg-secondary rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
+            <i className="bi bi-house-check" style={{ fontSize: '1.2rem' }}></i>
+            {!iconsLoaded && <span className="fw-bold">BM</span>}
           </div>
-          <span className="fw-bold" style={{ background: 'linear-gradient(135deg, #4361ee, #7209b7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Bill Mate</span>
+          <span className="fw-bold">Bill Mate</span>
         </Link>
 
         <button
@@ -38,70 +69,73 @@ export default function Navbar() {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto align-items-center">
+          <ul className="navbar-nav ms-auto align-items-center gap-2">
             {/* Notifications */}
-            <li className="nav-item me-2">
+            <li className="nav-item">
               <NotificationDropdown />
             </li>
 
             {/* User Menu */}
             <li className="nav-item dropdown">
               <button
-                className="btn btn-link nav-link dropdown-toggle d-flex align-items-center"
+                className="btn btn-link nav-link dropdown-toggle d-flex align-items-center gap-2 text-white"
                 id="userDropdown"
                 type="button"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
-                style={{ color: '#334155', textDecoration: 'none' }}
               >
-                <div className="bg-light rounded-circle p-2 me-2" style={{ backgroundColor: '#f1f5f9' }}>
-                  <i className="bi bi-person" style={{ color: '#4361ee' }}></i>
+                <div className="bg-secondary rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
+                  <i className="bi bi-person" style={{ fontSize: '1.2rem' }}></i>
+                  {!iconsLoaded && <span className="fw-bold">U</span>}
                 </div>
-                <div className="text-start">
-                  <div className="fw-semibold" style={{ color: '#0f172a' }}>{session.user?.name || 'ผู้ใช้'}</div>
-                  <small style={{ color: '#64748b' }}>
+                <div className="text-start d-none d-md-block">
+                  <div className="fw-semibold">{session.user?.name || 'ผู้ใช้'}</div>
+                  <small className="opacity-75">
                     {session.user?.role === 'admin' ? 'เจ้าของหอ' : 'ผู้เช่า'}
                   </small>
                 </div>
               </button>
-              <ul className="dropdown-menu dropdown-menu-end shadow-lg border-0" aria-labelledby="userDropdown" style={{ minWidth: '250px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}>
-                <li className="px-3 py-2 border-bottom" style={{ borderColor: '#e2e8f0' }}>
-                  <div className="d-flex align-items-center">
-                    <div className="bg-light rounded-circle p-2 me-3" style={{ backgroundColor: '#f1f5f9' }}>
-                      <i className="bi bi-person" style={{ color: '#4361ee' }}></i>
+              <ul className="dropdown-menu dropdown-menu-end shadow-lg border-0" aria-labelledby="userDropdown">
+                <li className="px-3 py-2 border-bottom">
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="bg-primary rounded-circle p-2 d-flex align-items-center justify-content-center text-white" style={{ width: '40px', height: '40px' }}>
+                      <i className="bi bi-person" style={{ fontSize: '1.2rem' }}></i>
+                      {!iconsLoaded && <span className="fw-bold">U</span>}
                     </div>
                     <div>
-                      <div className="fw-semibold" style={{ color: '#0f172a' }}>{session.user?.name || 'ผู้ใช้'}</div>
-                      <small style={{ color: '#64748b' }}>{session.user?.email}</small>
+                      <div className="fw-semibold text-dark">{session.user?.name || 'ผู้ใช้'}</div>
+                      <small className="text-muted">{session.user?.email}</small>
                     </div>
                   </div>
                 </li>
                 <li>
                   <div className="px-3 py-2">
-                    <span className="badge" style={{ backgroundColor: 'rgba(67, 97, 238, 0.1)', color: '#4361ee' }}>
+                    <span className="badge bg-primary">
                       {session.user?.role === 'admin' ? 'เจ้าของหอ' : 'ผู้เช่า'}
                     </span>
                   </div>
                 </li>
                 <li>
-                  <hr className="dropdown-divider" style={{ borderColor: '#e2e8f0' }} />
+                  <hr className="dropdown-divider" />
                 </li>
                 <li>
-                  <Link href={session.user?.role === 'admin' ? '/admin/profile' : '/tenant/profile'} className="dropdown-item d-flex align-items-center" style={{ color: '#334155' }}>
-                    <i className="bi bi-gear me-3" style={{ color: '#64748b' }}></i>
+                  <Link
+                    href={session.user?.role === 'admin' ? '/admin/profile' : '/tenant/profile'}
+                    className="dropdown-item d-flex align-items-center gap-2"
+                  >
+                    <i className="bi bi-gear" style={{ fontSize: '1.2rem' }}></i>
                     ตั้งค่าโปรไฟล์
                   </Link>
                 </li>
                 <li>
-                  <hr className="dropdown-divider" style={{ borderColor: '#e2e8f0' }} />
+                  <hr className="dropdown-divider" />
                 </li>
                 <li>
                   <button
-                    className="dropdown-item text-danger d-flex align-items-center"
+                    className="dropdown-item d-flex align-items-center gap-2 text-danger"
                     onClick={handleLogout}
-                    style={{ color: '#ef4444' }}
                   >
-                    <i className="bi bi-box-arrow-right me-3"></i>
+                    <i className="bi bi-box-arrow-right" style={{ fontSize: '1.2rem' }}></i>
                     ออกจากระบบ
                   </button>
                 </li>
