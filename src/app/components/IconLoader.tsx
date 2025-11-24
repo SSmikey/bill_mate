@@ -1,36 +1,37 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 export default function IconLoader() {
-  const [iconsLoaded, setIconsLoaded] = useState(false);
-
   useEffect(() => {
-    // Check if Bootstrap Icons CSS is already loaded
-    const checkIconsLoaded = () => {
-      const testElement = document.createElement('i');
-      testElement.className = 'bi bi-house';
-      testElement.style.display = 'none';
-      document.body.appendChild(testElement);
-      
-      const styles = window.getComputedStyle(testElement);
-      const isLoaded = styles.fontFamily.includes('bootstrap-icons');
-      
-      document.body.removeChild(testElement);
-      return isLoaded;
+    // Bootstrap Icons should be loaded from layout.tsx head tag
+    // This component is a safety fallback to ensure the CSS is available
+    const ensureIconsLoaded = () => {
+      // Check if stylesheet exists
+      const iconLink = document.querySelector('link[href*="bootstrap-icons"]');
+      if (!iconLink) {
+        // If not found, add it
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css';
+        link.crossOrigin = 'anonymous';
+        link.type = 'text/css';
+        document.head.appendChild(link);
+      }
     };
 
-    // Load Bootstrap Icons if not already loaded
-    if (!checkIconsLoaded()) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css';
-      link.crossOrigin = 'anonymous';
-      link.onload = () => setIconsLoaded(true);
-      document.head.appendChild(link);
-    } else {
-      setIconsLoaded(true);
-    }
+    // Run on mount and also on visibility change (page becomes visible after refresh)
+    ensureIconsLoaded();
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        ensureIconsLoaded();
+      }
+    });
+
+    return () => {
+      document.removeEventListener('visibilitychange', () => {});
+    };
   }, []);
 
   return null;

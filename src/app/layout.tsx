@@ -78,10 +78,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body
-        className="antialiased"
-        style={{ fontFamily: 'var(--font-family)' }}
-      >
+      <body className="antialiased">
         <SessionWrapper>
           <IconLoader />
           <BootstrapClient />

@@ -2,18 +2,10 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
 import NotificationDropdown from './NotificationDropdown';
 
 export default function Navbar() {
   const { data: session } = useSession();
-  const [iconsLoaded, setIconsLoaded] = useState(true);
-
-  useEffect(() => {
-    // Bootstrap Icons should already be loaded from layout.tsx
-    // Just ensure it's available
-    setIconsLoaded(true);
-  }, []);
 
   const handleLogout = async () => {
     await signOut({ redirect: true, callbackUrl: '/login' });

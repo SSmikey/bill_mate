@@ -25,7 +25,13 @@ html, body {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: "Sarabun", sans-serif;
+  font-family: "Sarabun", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Ensure Bootstrap Icons load properly */
+i[class^="bi"]::before,
+i[class*=" bi"]::before {
+  font-family: "bootstrap-icons" !important;
 }
 
 /* Sarabun Font Weights */
