@@ -150,7 +150,7 @@ export default function TenantDashboard() {
         <div className="card-body p-0">
           {bills.length === 0 ? (
             <div className="text-center py-5">
-              <div className="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
+              <div className="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3 w-5rem h-5rem">
                 <i className="bi bi-inbox fs-2 text-muted"></i>
               </div>
               <h6 className="text-muted">ยังไม่มีบิล</h6>

@@ -126,8 +126,9 @@ export default function UserForm({
   return (
     <form onSubmit={handleSubmit}>
       {error && (
-        <div className="alert alert-danger alert-dismissible fade show" role="alert">
-          {error}
+        <div className="alert alert-danger alert-dismissible fade show d-flex align-items-start rounded-3" role="alert">
+          <i className="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
+          <div className="flex-grow-1">{error}</div>
           <button
             type="button"
             className="btn-close"
@@ -138,8 +139,9 @@ export default function UserForm({
       )}
 
       {success && (
-        <div className="alert alert-success alert-dismissible fade show" role="alert">
-          {success}
+        <div className="alert alert-success alert-dismissible fade show d-flex align-items-start rounded-3" role="alert">
+          <i className="bi bi-check-circle-fill me-2 mt-1"></i>
+          <div className="flex-grow-1">{success}</div>
           <button
             type="button"
             className="btn-close"
@@ -151,12 +153,12 @@ export default function UserForm({
 
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label htmlFor="name" className="form-label fw-bold">
+          <label htmlFor="name" className="form-label fw-semibold">
             ชื่อ-นามสกุล <span className="text-danger">*</span>
           </label>
           <input
             type="text"
-            className="form-control"
+            className="form-control rounded-3 shadow-sm"
             id="name"
             name="name"
             value={formData.name}
@@ -167,12 +169,12 @@ export default function UserForm({
         </div>
 
         <div className="col-md-6 mb-3">
-          <label htmlFor="email" className="form-label fw-bold">
+          <label htmlFor="email" className="form-label fw-semibold">
             อีเมล <span className="text-danger">*</span>
           </label>
           <input
             type="email"
-            className="form-control"
+            className="form-control rounded-3 shadow-sm"
             id="email"
             name="email"
             value={formData.email}
@@ -185,12 +187,12 @@ export default function UserForm({
 
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label htmlFor="password" className="form-label fw-bold">
+          <label htmlFor="password" className="form-label fw-semibold">
             รหัสผ่าน {!isEditing && <span className="text-danger">*</span>}
           </label>
           <input
             type="password"
-            className="form-control"
+            className="form-control rounded-3 shadow-sm"
             id="password"
             name="password"
             placeholder={isEditing ? 'ปล่อยว่างถ้าไม่เปลี่ยน' : ''}
@@ -199,17 +201,20 @@ export default function UserForm({
             disabled={isLoading}
           />
           {isEditing && (
-            <small className="text-muted">ปล่อยว่างถ้าไม่ต้องการเปลี่ยน</small>
+            <small className="text-muted form-text">
+              <i className="bi bi-info-circle me-1"></i>
+              ปล่อยว่างถ้าไม่ต้องการเปลี่ยน
+            </small>
           )}
         </div>
 
         <div className="col-md-6 mb-3">
-          <label htmlFor="phone" className="form-label fw-bold">
+          <label htmlFor="phone" className="form-label fw-semibold">
             เบอร์โทรศัพท์
           </label>
           <input
             type="tel"
-            className="form-control"
+            className="form-control rounded-3 shadow-sm"
             id="phone"
             name="phone"
             value={formData.phone || ''}
@@ -221,11 +226,11 @@ export default function UserForm({
 
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label htmlFor="role" className="form-label fw-bold">
+          <label htmlFor="role" className="form-label fw-semibold">
             บทบาท <span className="text-danger">*</span>
           </label>
           <select
-            className="form-select"
+            className="form-select rounded-3 shadow-sm"
             id="role"
             name="role"
             value={formData.role}
@@ -240,11 +245,11 @@ export default function UserForm({
 
         {formData.role === 'tenant' && (
           <div className="col-md-6 mb-3">
-            <label htmlFor="roomId" className="form-label fw-bold">
+            <label htmlFor="roomId" className="form-label fw-semibold">
               ห้องพัก
             </label>
             <select
-              className="form-select"
+              className="form-select rounded-3 shadow-sm"
               id="roomId"
               name="roomId"
               value={formData.roomId || ''}
@@ -265,7 +270,7 @@ export default function UserForm({
       <div className="d-flex gap-2 mt-4">
         <button
           type="submit"
-          className="btn btn-primary"
+          className="btn btn-primary rounded-3 shadow-sm px-4"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -278,12 +283,23 @@ export default function UserForm({
               กำลังบันทึก...
             </>
           ) : isEditing ? (
-            'อัพเดท'
+            <>
+              <i className="bi bi-check-circle me-2"></i>
+              อัพเดท
+            </>
           ) : (
-            'สร้างผู้ใช้'
+            <>
+              <i className="bi bi-person-plus me-2"></i>
+              สร้างผู้ใช้
+            </>
           )}
         </button>
-        <button type="reset" className="btn btn-outline-secondary" disabled={isLoading}>
+        <button
+          type="reset"
+          className="btn btn-outline-secondary rounded-3 px-4"
+          disabled={isLoading}
+        >
+          <i className="bi bi-arrow-clockwise me-2"></i>
           รีเซ็ต
         </button>
       </div>

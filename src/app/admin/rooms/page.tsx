@@ -604,23 +604,20 @@ export default function AdminRoomsPage() {
           <div className="mb-3 d-flex justify-content-between align-items-center">
             <div>
               <span
-                className={`badge ${filter === 'all' ? 'bg-primary' : 'bg-secondary'} me-2`}
+                className={`badge badge-filter ${filter === 'all' ? 'bg-primary' : 'bg-secondary'} me-2`}
                 onClick={() => setFilter('all')}
-                style={{ cursor: 'pointer', fontSize: '0.9rem', padding: '0.5rem 0.75rem' }}
               >
                 ทั้งหมด ({rooms.length})
               </span>
               <span
-                className={`badge ${filter === 'available' ? 'bg-success' : 'bg-secondary'} me-2`}
+                className={`badge badge-filter ${filter === 'available' ? 'bg-success' : 'bg-secondary'} me-2`}
                 onClick={() => setFilter('available')}
-                style={{ cursor: 'pointer', fontSize: '0.9rem', padding: '0.5rem 0.75rem' }}
               >
                 ห้องว่าง ({availableCount})
               </span>
               <span
-                className={`badge ${filter === 'occupied' ? 'bg-warning' : 'bg-secondary'}`}
+                className={`badge badge-filter ${filter === 'occupied' ? 'bg-warning' : 'bg-secondary'}`}
                 onClick={() => setFilter('occupied')}
-                style={{ cursor: 'pointer', fontSize: '0.9rem', padding: '0.5rem 0.75rem' }}
               >
                 มีผู้เช่า ({occupiedCount})
               </span>
@@ -652,7 +649,7 @@ export default function AdminRoomsPage() {
                 <div className="card-body">
                   {filteredRooms.length === 0 ? (
                     <div className="text-center py-5">
-                      <i className="bi bi-inbox" style={{ fontSize: '3rem', color: '#ccc' }}></i>
+                      <i className="bi bi-inbox fs-1 text-muted opacity-25"></i>
                       <p className="mt-3 text-muted">
                         {searchQuery || priceRange.min > 0 || floorFilter !== 'all'
                           ? 'ไม่พบห้องที่ตรงกับเงื่อนไขการค้นหา'
@@ -669,7 +666,7 @@ export default function AdminRoomsPage() {
                         <thead className="table-light">
                           <tr>
                             {bulkMode && (
-                              <th style={{ width: '50px' }}>
+                              <th className="w-50px">
                                 <input
                                   type="checkbox"
                                   className="form-check-input"
@@ -687,7 +684,7 @@ export default function AdminRoomsPage() {
                             <th className="text-end">ค่าน้ำ</th>
                             <th className="text-end">ค่าไฟ/หน่วย</th>
                             <th>สถานะ/ผู้เช่า</th>
-                            <th className="text-center" style={{ minWidth: '250px' }}>
+                            <th className="text-center min-w-250px">
                               การจัดการ
                             </th>
                           </tr>

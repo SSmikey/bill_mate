@@ -107,11 +107,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center bg-gradient-primary" style={{ background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))' }}>
+    <div className="min-vh-100 d-flex align-items-center justify-content-center bg-gradient-primary">
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-6 col-lg-5 col-xl-4">
-            <div className="card shadow-xl border-0 fade-in" style={{ borderRadius: 'var(--radius-2xl)' }}>
+            <div className="card shadow-lg border-0 rounded-4 fade-in">
               <div className="card-body p-5">
                 <div className="text-center mb-4">
                   <div className="bg-gradient-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
@@ -144,7 +144,7 @@ export default function RegisterPage() {
                     </label>
                     <input
                       type="text"
-                      className="form-control"
+                      className="form-control rounded-3"
                       id="name"
                       name="name"
                       placeholder="เช่น สมชาย ใจดี"
@@ -152,7 +152,6 @@ export default function RegisterPage() {
                       onChange={handleChange}
                       required
                       disabled={loading}
-                      style={{ borderRadius: 'var(--radius-lg)' }}
                     />
                   </div>
 
@@ -163,7 +162,7 @@ export default function RegisterPage() {
                     </label>
                     <input
                       type="email"
-                      className="form-control"
+                      className="form-control rounded-3"
                       id="email"
                       name="email"
                       placeholder="example@email.com"
@@ -171,7 +170,6 @@ export default function RegisterPage() {
                       onChange={handleChange}
                       required
                       disabled={loading}
-                      style={{ borderRadius: 'var(--radius-lg)' }}
                     />
                   </div>
 
@@ -182,14 +180,13 @@ export default function RegisterPage() {
                     </label>
                     <input
                       type="tel"
-                      className="form-control"
+                      className="form-control rounded-3"
                       id="phone"
                       name="phone"
                       placeholder="0812345678"
                       value={formData.phone}
                       onChange={handleChange}
                       disabled={loading}
-                      style={{ borderRadius: 'var(--radius-lg)' }}
                     />
                   </div>
 
@@ -200,7 +197,7 @@ export default function RegisterPage() {
                     </label>
                     <input
                       type="password"
-                      className="form-control"
+                      className="form-control rounded-3"
                       id="password"
                       name="password"
                       placeholder="••••••••"
@@ -208,7 +205,6 @@ export default function RegisterPage() {
                       onChange={handleChange}
                       required
                       disabled={loading}
-                      style={{ borderRadius: 'var(--radius-lg)' }}
                     />
                     <small className="text-muted">
                       <i className="bi bi-info-circle me-1"></i>
@@ -223,7 +219,7 @@ export default function RegisterPage() {
                     </label>
                     <input
                       type="password"
-                      className="form-control"
+                      className="form-control rounded-3"
                       id="confirmPassword"
                       name="confirmPassword"
                       placeholder="••••••••"
@@ -231,15 +227,13 @@ export default function RegisterPage() {
                       onChange={handleChange}
                       required
                       disabled={loading}
-                      style={{ borderRadius: 'var(--radius-lg)' }}
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="btn btn-primary btn-lg w-100 fw-semibold shadow-hover"
+                    className="btn btn-primary btn-lg w-100 fw-semibold py-3 rounded-3 shadow-hover"
                     disabled={loading}
-                    style={{ borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)' }}
                   >
                     {loading ? (
                       <>
