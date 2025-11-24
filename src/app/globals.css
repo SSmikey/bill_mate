@@ -31,7 +31,8 @@ html, body {
 /* Ensure Bootstrap Icons load properly */
 @font-face {
   font-family: 'bootstrap-icons';
-  src: url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.woff2') format('woff2');
+  src: url('/bootstrap-icons/font/fonts/bootstrap-icons.woff2') format('woff2'),
+       url('/bootstrap-icons/font/fonts/bootstrap-icons.woff') format('woff');
   font-display: swap;
   font-weight: normal;
   font-style: normal;
@@ -48,10 +49,41 @@ i[class*=" bi"] {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   display: inline-block;
+  /* Ensure icons are visible even before font loads */
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 i[class^="bi"]::before,
 i[class*=" bi"]::before {
+  font-family: 'bootstrap-icons' !important;
+}
+
+/* Fallback for icons that haven't loaded yet */
+i[class^="bi"]:empty,
+i[class*=" bi"]:empty {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  border-radius: 50%;
+  opacity: 0.3;
+}
+
+/* Ensure icons persist after page refresh */
+body:not(.icons-loaded) i[class^="bi"],
+body:not(.icons-loaded) i[class*=" bi"] {
+  /* Show a placeholder while icons are loading */
+  min-width: 1em;
+  min-height: 1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.icons-loaded i[class^="bi"],
+body.icons-loaded i[class*=" bi"] {
+  /* Ensure proper display once icons are loaded */
   font-family: 'bootstrap-icons' !important;
 }
 
