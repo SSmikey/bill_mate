@@ -41,7 +41,8 @@ export default function Navbar() {
     await signOut({ redirect: true, callbackUrl: '/login' });
   };
 
-  if (!session || !iconsLoaded) {
+  // Don't hide navbar while loading, show placeholder
+  if (!session) {
     return null;
   }
 
@@ -50,8 +51,11 @@ export default function Navbar() {
       <div className="container-fluid">
         <Link href="/" className="navbar-brand d-flex align-items-center gap-2">
           <div className="bg-secondary rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
-            <i className="bi bi-house-check" style={{ fontSize: '1.2rem' }}></i>
-            {!iconsLoaded && <span className="fw-bold">BM</span>}
+            {iconsLoaded ? (
+              <i className="bi bi-house-check" style={{ fontSize: '1.2rem' }}></i>
+            ) : (
+              <span className="fw-bold text-white">BM</span>
+            )}
           </div>
           <span className="fw-bold">Bill Mate</span>
         </Link>
@@ -85,8 +89,11 @@ export default function Navbar() {
                 aria-expanded="false"
               >
                 <div className="bg-secondary rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
-                  <i className="bi bi-person" style={{ fontSize: '1.2rem' }}></i>
-                  {!iconsLoaded && <span className="fw-bold">U</span>}
+                  {iconsLoaded ? (
+                    <i className="bi bi-person" style={{ fontSize: '1.2rem' }}></i>
+                  ) : (
+                    <span className="fw-bold text-white">U</span>
+                  )}
                 </div>
                 <div className="text-start d-none d-md-block">
                   <div className="fw-semibold">{session.user?.name || 'ผู้ใช้'}</div>
@@ -99,8 +106,11 @@ export default function Navbar() {
                 <li className="px-3 py-2 border-bottom">
                   <div className="d-flex align-items-center gap-2">
                     <div className="bg-primary rounded-circle p-2 d-flex align-items-center justify-content-center text-white" style={{ width: '40px', height: '40px' }}>
-                      <i className="bi bi-person" style={{ fontSize: '1.2rem' }}></i>
-                      {!iconsLoaded && <span className="fw-bold">U</span>}
+                      {iconsLoaded ? (
+                        <i className="bi bi-person" style={{ fontSize: '1.2rem' }}></i>
+                      ) : (
+                        <span className="fw-bold">U</span>
+                      )}
                     </div>
                     <div>
                       <div className="fw-semibold text-dark">{session.user?.name || 'ผู้ใช้'}</div>
