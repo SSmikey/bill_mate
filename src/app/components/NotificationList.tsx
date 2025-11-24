@@ -210,8 +210,8 @@ export default function NotificationList({
           onClick={() => !notification.read && !markingAsRead.has(notification._id) && markAsRead(notification._id)}
         >
           <div className="card-body p-4">
-            <div className="d-flex align-items-start">
-              <div className="me-3">
+            <div className="row align-items-start">
+              <div className="col-auto">
                 <div className={`rounded-circle p-3 bg-opacity-10 transition-all duration-200 ${
                   notification.type === 'paymentReminder' ? 'bg-warning' :
                   notification.type === 'paymentVerified' ? 'bg-success' :
@@ -224,18 +224,18 @@ export default function NotificationList({
                   <i className={`bi ${getNotificationIcon(notification.type)} fs-5`} style={{ fontSize: '1.2rem' }}></i>
                 </div>
               </div>
-              <div className="flex-grow-1">
+              <div className="col">
                 <div className="d-flex justify-content-between align-items-start mb-2">
                   <h6 className={`mb-0 transition-all duration-200 ${
                     !notification.read ? 'fw-bold text-dark' : 'fw-medium text-dark'
                   }`}>
                     {notification.title}
                   </h6>
-                  <small className="text-muted ms-2">
+                  <small className="text-muted ms-2 flex-shrink-0">
                     {formatNotificationDate(notification.createdAt)}
                   </small>
                 </div>
-                <p className="mb-2 text-dark">{notification.message}</p>
+                <p className="mb-2 text-dark text-break">{notification.message}</p>
                 {notification.data && (
                   <div className="d-flex gap-2 flex-wrap">
                     {notification.data.billId && (
@@ -253,7 +253,7 @@ export default function NotificationList({
                   </div>
                 )}
               </div>
-              <div className="ms-3">
+              <div className="col-auto">
                 {!notification.read && (
                   <span className="badge bg-primary bg-opacity-10 text-primary border border-primary rounded-2 px-2 py-1">
                     <i className="bi bi-circle-fill me-1" style={{ fontSize: '0.5rem' }}></i>

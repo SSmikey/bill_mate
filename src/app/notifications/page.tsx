@@ -91,9 +91,10 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="fade-in">
-      {/* Enhanced Header with user info */}
-      <div className="mb-5">
+    <div className="fade-in notifications-page">
+      <div className="container-lg py-4">
+        {/* Enhanced Header with user info */}
+        <div className="mb-5">
         <div className="d-flex align-items-center justify-content-between">
           <div>
             <h1 className="fw-bold text-dark mb-2">การแจ้งเตือน</h1>
@@ -236,6 +237,7 @@ export default function NotificationsPage() {
             onStatsUpdate={setStats}
           />
         </div>
+      </div>
       </div>
     </div>
   );
