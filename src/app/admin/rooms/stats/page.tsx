@@ -163,12 +163,12 @@ export default function RoomStatsPage() {
           </div>
           <div className="row g-3">
             <div className="col-md-4">
-              <label className="form-label fw-medium">
-                <i className="bi bi-calendar-range me-2"></i>
+              <label className="form-label fw-medium text-dark">
+                <i className="bi bi-calendar-range me-2 text-dark"></i>
                 ช่วงเวลา
               </label>
               <select
-                className="form-select rounded-2 border-0 bg-light"
+                className="form-select rounded-2 border-0 bg-light text-dark"
                 value={period}
                 onChange={(e) => setPeriod(e.target.value as 'all' | 'month' | 'year')}
               >
@@ -185,7 +185,7 @@ export default function RoomStatsPage() {
                   ปี
                 </label>
                 <select
-                  className="form-select rounded-2 border-0 bg-light"
+                  className="form-select rounded-2 border-0 bg-light text-dark"
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
                 >
@@ -208,7 +208,7 @@ export default function RoomStatsPage() {
                   เดือน
                 </label>
                 <select
-                  className="form-select rounded-2 border-0 bg-light"
+                  className="form-select rounded-2 border-0 bg-light text-dark"
                   value={month}
                   onChange={(e) => setMonth(e.target.value)}
                 >
@@ -386,7 +386,7 @@ export default function RoomStatsPage() {
                 </div>
               </div>
               <div className="mb-3">
-                <div className="d-flex justify-content-between">
+                <div className="d-flex justify-content-between text-dark">
                   <span>ค่าเช่าเฉลี่ย</span>
                   <strong>{stats.pricing.avgRent.toLocaleString('th-TH')} ฿</strong>
                 </div>
@@ -397,14 +397,14 @@ export default function RoomStatsPage() {
               </div>
 
               <div className="mb-3">
-                <div className="d-flex justify-content-between">
+                <div className="d-flex justify-content-between text-dark">
                   <span>ค่าน้ำเฉลี่ย</span>
                   <strong>{stats.pricing.avgWater.toLocaleString('th-TH')} ฿</strong>
                 </div>
               </div>
 
               <div className="mb-3">
-                <div className="d-flex justify-content-between">
+                <div className="d-flex justify-content-between text-dark">
                   <span>ค่าไฟเฉลี่ย</span>
                   <strong>{stats.pricing.avgElectricity} ฿/หน่วย</strong>
                 </div>
@@ -413,7 +413,7 @@ export default function RoomStatsPage() {
               <hr />
 
               <div>
-                <div className="d-flex justify-content-between">
+                <div className="d-flex justify-content-between text-dark">
                   <span>ระยะเวลาเช่าเฉลี่ย</span>
                   <strong>{stats.rental.avgRentalPeriodMonths} เดือน</strong>
                 </div>
