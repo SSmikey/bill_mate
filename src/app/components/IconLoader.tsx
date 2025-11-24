@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 
 export default function IconLoader() {
-  useEffect(() => {
+  // Use useLayoutEffect to run before paint
+  useLayoutEffect(() => {
     // Ensure Bootstrap Icons stylesheet is loaded
     const ensureIconsLoaded = () => {
       const iconLink = document.querySelector('link[href*="bootstrap-icons"]');
@@ -16,7 +17,7 @@ export default function IconLoader() {
         link.crossOrigin = 'anonymous';
         link.type = 'text/css';
         link.media = 'all';
-        document.head.appendChild(link);
+        document.head.insertBefore(link, document.head.firstChild);
         console.log('[IconLoader] Bootstrap Icons stylesheet added');
       } else {
         console.log('[IconLoader] Bootstrap Icons stylesheet already exists');
@@ -25,16 +26,6 @@ export default function IconLoader() {
 
     // Ensure icons are loaded immediately
     ensureIconsLoaded();
-
-    // Also ensure it on next frame in case DOM hasn't fully loaded
-    requestAnimationFrame(() => {
-      ensureIconsLoaded();
-    });
-
-    // Re-check after a short delay
-    const timeoutId = setTimeout(() => {
-      ensureIconsLoaded();
-    }, 100);
 
     // Re-check when page becomes visible (after minimize/restore)
     const handleVisibilityChange = () => {
@@ -47,7 +38,6 @@ export default function IconLoader() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      clearTimeout(timeoutId);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);

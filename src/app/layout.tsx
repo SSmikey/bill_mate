@@ -77,10 +77,33 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
           crossOrigin="anonymous"
         />
+
+        {/* Ensure Bootstrap Icons are always loaded */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const ensureIcons = () => {
+                  const link = document.querySelector('link[href*="bootstrap-icons"]');
+                  if (!link) {
+                    const l = document.createElement('link');
+                    l.rel = 'stylesheet';
+                    l.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css';
+                    l.crossOrigin = 'anonymous';
+                    document.head.appendChild(l);
+                    console.log('[Head Script] Bootstrap Icons loaded');
+                  }
+                };
+                ensureIcons();
+                document.addEventListener('DOMContentLoaded', ensureIcons);
+              })();
+            `,
+          }}
+        />
       </head>
       <body className="antialiased">
+        <IconLoader />
         <SessionWrapper>
-          <IconLoader />
           <BootstrapClient />
           <ErrorBoundary>
             <div className="min-vh-100 d-flex flex-column">
