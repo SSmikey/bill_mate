@@ -220,7 +220,7 @@ export default function AdminDashboard() {
             <div className="card-body p-4">
               <div className="d-flex align-items-center mb-3">
                 <div className="rounded-circle p-3 me-3" style={{ backgroundColor: '#F5EFE7' }}>
-                  <i className="bi bi-credit-card-fill fs-4" style={{ color: '#213555' }}></i>
+                  <i className="bi bi-credit-card-fill fs-4" style={{ color: '#3E5879' }}></i>
                 </div>
                 <div>
                   <h5 className="mb-0 fw-semibold" style={{ color: '#F5EFE7' }}>อัตราการชำระเงิน</h5>
@@ -235,7 +235,7 @@ export default function AdminDashboard() {
                       className="progress-bar progress-bar-animated"
                       style={{
                         width: `${paymentRate}%`,
-                        background: '#D8C4B6'
+                        background: '#F5EFE7'
                       }}
                     ></div>
                   </div>
@@ -255,20 +255,20 @@ export default function AdminDashboard() {
         <div className="col-lg-6">
           <div className="quick-action-card card border-0 h-100 animate-slide-in-left" style={{
             borderRadius: '1rem',
-            background: '#F5EFE7',
-            boxShadow: '0 5px 20px rgba(245, 239, 231, 0.4)',
+            background: '#D8C4B6',
+            boxShadow: '0 5px 20px rgba(216, 196, 182, 0.4)',
             animationDelay: '0.6s'
           }}>
             <div className="card-body p-4">
               <div className="d-flex align-items-center mb-4">
-                <div className="rounded-circle p-3 me-3" style={{ backgroundColor: '#3E5879' }}>
-                  <i className="bi bi-lightning-charge-fill fs-4" style={{ color: '#F5EFE7' }}></i>
-                </div>
-                <div>
-                  <h5 className="mb-0 fw-semibold" style={{ color: '#213555' }}>การกระทำเร็ว</h5>
-                  <p className="mb-0 small opacity-75" style={{ color: '#213555' }}>ทำงานที่ใช้บ่อย</p>
-                </div>
+              <div className="rounded-circle p-3 me-3" style={{ backgroundColor: '#213555' }}>
+                <i className="bi bi-lightning-charge-fill fs-4" style={{ color: '#F5EFE7' }}></i>
               </div>
+              <div>
+                <h5 className="mb-0 fw-semibold" style={{ color: '#213555' }}>การกระทำเร็ว</h5>
+                <p className="mb-0 small opacity-75" style={{ color: '#213555' }}>ทำงานที่ใช้บ่อย</p>
+              </div>
+            </div>
               <div className="d-grid gap-3">
                 <a href="/admin/rooms" className="d-flex align-items-center justify-content-center py-3 text-decoration-none border rounded-3" style={{
                   borderRadius: '0.75rem',
@@ -308,29 +308,29 @@ export default function AdminDashboard() {
         <div className="col-lg-6">
           <div className="info-card card border-0 h-100 animate-slide-in-left" style={{
             borderRadius: '1rem',
-            background: '#D8C4B6',
-            boxShadow: '0 5px 20px rgba(216, 196, 182, 0.4)',
+            background: '#3E5879',
+            boxShadow: '0 5px 20px rgba(62, 88, 121, 0.4)',
             animationDelay: '0.7s'
           }}>
             <div className="card-body p-4">
               <div className="d-flex align-items-center mb-4">
-                <div className="rounded-circle p-3 me-3" style={{ backgroundColor: '#213555' }}>
-                  <i className="bi bi-graph-up-arrow fs-4" style={{ color: '#F5EFE7' }}></i>
+                <div className="rounded-circle p-3 me-3" style={{ backgroundColor: '#F5EFE7' }}>
+                  <i className="bi bi-graph-up-arrow fs-4" style={{ color: '#3E5879' }}></i>
                 </div>
                 <div>
-                  <h5 className="mb-0 fw-semibold" style={{ color: '#213555' }}>ข้อมูลสำคัญ</h5>
-                  <p className="mb-0 small opacity-75" style={{ color: '#213555' }}>สถิติที่น่าสนใจ</p>
+                  <h5 className="mb-0 fw-semibold" style={{ color: '#F5EFE7' }}>ข้อมูลสำคัญ</h5>
+                  <p className="mb-0 small opacity-75" style={{ color: '#F5EFE7' }}>สถิติที่น่าสนใจ</p>
                 </div>
               </div>
-              <div className="list-group list-group-flush">
-                <div className="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
+              <div className="list-group list-group-flush" style={{ backgroundColor: 'transparent' }}>
+                <div className="list-group-item d-flex justify-content-between align-items-center px-0 border-0" style={{ backgroundColor: 'transparent' }}>
                   <div className="d-flex align-items-center">
                     <div className="rounded-circle p-2 me-3" style={{ backgroundColor: '#213555' }}>
                       <i className="bi bi-house-door-fill fs-4" style={{ color: '#F5EFE7' }}></i>
                     </div>
                     <div>
-                      <div className="fw-semibold" style={{ color: '#213555' }}>ห้องเช่าที่นั่ง</div>
-                      <small style={{ color: '#213555', opacity: '0.75' }}>ขณะนี้</small>
+                      <div className="fw-semibold" style={{ color: '#F5EFE7' }}>ห้องเช่าที่นั่ง</div>
+                      <small style={{ color: '#F5EFE7', opacity: '0.75' }}>ขณะนี้</small>
                     </div>
                   </div>
                   <span className="badge-modern fw-semibold px-3 py-2" style={{
@@ -341,14 +341,14 @@ export default function AdminDashboard() {
                     {stats?.occupiedRooms || 0} ห้อง
                   </span>
                 </div>
-                <div className="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
+                <div className="list-group-item d-flex justify-content-between align-items-center px-0 border-0" style={{ backgroundColor: 'transparent' }}>
                   <div className="d-flex align-items-center">
                     <div className="rounded-circle p-2 me-3" style={{ backgroundColor: '#3E5879' }}>
                       <i className="bi bi-receipt-cutoff fs-4" style={{ color: '#F5EFE7' }}></i>
                     </div>
                     <div>
-                      <div className="fw-semibold" style={{ color: '#213555' }}>บิลทั้งหมด</div>
-                      <small style={{ color: '#213555', opacity: '0.75' }}>เดือนนี้</small>
+                      <div className="fw-semibold" style={{ color: '#F5EFE7' }}>บิลทั้งหมด</div>
+                      <small style={{ color: '#F5EFE7', opacity: '0.75' }}>เดือนนี้</small>
                     </div>
                   </div>
                   <span className="badge-modern fw-semibold px-3 py-2" style={{
@@ -359,14 +359,14 @@ export default function AdminDashboard() {
                     {stats?.totalBills || 0} รายการ
                   </span>
                 </div>
-                <div className="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
+                <div className="list-group-item d-flex justify-content-between align-items-center px-0 border-0" style={{ backgroundColor: 'transparent' }}>
                   <div className="d-flex align-items-center">
                     <div className="rounded-circle p-2 me-3" style={{ backgroundColor: '#D8C4B6' }}>
                       <i className="bi bi-cash-stack fs-4" style={{ color: '#213555' }}></i>
                     </div>
                     <div>
-                      <div className="fw-semibold" style={{ color: '#213555' }}>รายได้ประจำเดือน</div>
-                      <small style={{ color: '#213555', opacity: '0.75' }}>โดยประมาณ</small>
+                      <div className="fw-semibold" style={{ color: '#F5EFE7' }}>รายได้ประจำเดือน</div>
+                      <small style={{ color: '#F5EFE7', opacity: '0.75' }}>โดยประมาณ</small>
                     </div>
                   </div>
                   <span className="badge-modern fw-semibold px-3 py-2" style={{
