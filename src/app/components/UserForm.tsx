@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import StyledSelect from './StyledSelect';
 
 interface Room {
   _id: string;
@@ -224,45 +225,36 @@ export default function UserForm({
         </div>
       </div>
 
-      <div className="row">
-        <div className="col-md-6 mb-3">
-          <label htmlFor="role" className="form-label fw-semibold">
-            บทบาท <span className="text-danger">*</span>
-          </label>
-          <select
-            className="form-select rounded-3 shadow-sm"
-            id="role"
-            name="role"
+      <div className="row g-3">
+        <div className="col-md-6">
+          <StyledSelect
             value={formData.role}
-            onChange={handleChange}
-            disabled={isLoading}
+            onChange={(val) => handleChange({ target: { name: 'role', value: val } } as any)}
+            label="บทบาท"
             required
-          >
-            <option value="tenant">ผู้เช่า</option>
-            <option value="admin">เจ้าของหอ</option>
-          </select>
+            disabled={isLoading}
+            options={[
+              { value: 'tenant', label: 'ผู้เช่า' },
+              { value: 'admin', label: 'เจ้าของหอ' },
+            ]}
+          />
         </div>
 
         {formData.role === 'tenant' && (
-          <div className="col-md-6 mb-3">
-            <label htmlFor="roomId" className="form-label fw-semibold">
-              ห้องพัก
-            </label>
-            <select
-              className="form-select rounded-3 shadow-sm"
-              id="roomId"
-              name="roomId"
+          <div className="col-md-6">
+            <StyledSelect
               value={formData.roomId || ''}
-              onChange={handleChange}
+              onChange={(val) => handleChange({ target: { name: 'roomId', value: val } } as any)}
+              label="ห้องพัก"
               disabled={isLoading}
-            >
-              <option value="">-- เลือกห้อง --</option>
-              {rooms.map((room) => (
-                <option key={room._id} value={room._id}>
-                  {room.roomNumber}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: '', label: '-- เลือกห้อง --' },
+                ...rooms.map((room) => ({
+                  value: room._id,
+                  label: room.roomNumber,
+                })),
+              ]}
+            />
           </div>
         )}
       </div>

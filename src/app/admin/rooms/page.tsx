@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import RoomForm from '@/app/components/RoomForm';
 import RoomAssignmentForm from '@/app/components/RoomAssignmentForm';
+import StyledSelect from '@/app/components/StyledSelect';
 
 // Interface สำหรับข้อมูลห้อง
 interface Room {
@@ -622,48 +623,43 @@ export default function AdminRoomsPage() {
 
             {/* Floor Filter */}
             <div className="col-md-2">
-              <label className="form-label fw-semibold text-dark">
-                <i className="bi bi-building me-2"></i>
-                ชั้น
-              </label>
-              <select
-                className="form-select rounded-2 bg-white text-dark"
+              <StyledSelect
                 value={floorFilter}
-                onChange={(e) =>
-                  setFloorFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))
+                onChange={(val) =>
+                  setFloorFilter(val === 'all' ? 'all' : Number(val))
                 }
-              >
-                <option value="all">ทั้งหมด</option>
-                {uniqueFloors.sort((a, b) => a! - b!).map((floor) => (
-                  <option key={floor} value={floor}>
-                    ชั้น {floor}
-                  </option>
-                ))}
-              </select>
+                label="ชั้น"
+                icon="bi bi-building"
+                options={[
+                  { value: 'all', label: 'ทั้งหมด' },
+                  ...uniqueFloors.sort((a, b) => a! - b!).map((floor) => ({
+                    value: floor!.toString(),
+                    label: `ชั้น ${floor}`,
+                  })),
+                ]}
+              />
             </div>
 
             {/* Sort */}
             <div className="col-md-2">
-              <label className="form-label fw-semibold text-dark">
-                <i className="bi bi-sort-down me-2"></i>
-                เรียงตาม
-              </label>
-              <select
-                className="form-select rounded-2 bg-white text-dark"
+              <StyledSelect
                 value={`${sortField}-${sortOrder}`}
-                onChange={(e) => {
-                  const [field, order] = e.target.value.split('-');
+                onChange={(val) => {
+                  const [field, order] = val.split('-');
                   setSortField(field as SortField);
                   setSortOrder(order as SortOrder);
                 }}
-              >
-                <option value="roomNumber-asc">หมายเลขห้อง (A-Z)</option>
-                <option value="roomNumber-desc">หมายเลขห้อง (Z-A)</option>
-                <option value="floor-asc">ชั้น (น้อย-มาก)</option>
-                <option value="floor-desc">ชั้น (มาก-น้อย)</option>
-                <option value="rentPrice-asc">ราคา (ถูก-แพง)</option>
-                <option value="rentPrice-desc">ราคา (แพง-ถูก)</option>
-              </select>
+                label="เรียงตาม"
+                icon="bi bi-sort-down"
+                options={[
+                  { value: 'roomNumber-asc', label: 'หมายเลขห้อง (A-Z)' },
+                  { value: 'roomNumber-desc', label: 'หมายเลขห้อง (Z-A)' },
+                  { value: 'floor-asc', label: 'ชั้น (น้อย-มาก)' },
+                  { value: 'floor-desc', label: 'ชั้น (มาก-น้อย)' },
+                  { value: 'rentPrice-asc', label: 'ราคา (ถูก-แพง)' },
+                  { value: 'rentPrice-desc', label: 'ราคา (แพง-ถูก)' },
+                ]}
+              />
             </div>
           </div>
 

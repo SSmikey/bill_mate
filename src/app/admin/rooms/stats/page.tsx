@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import StyledSelect from '@/app/components/StyledSelect';
 
 interface RoomStats {
   overview: {
@@ -163,64 +164,52 @@ export default function RoomStatsPage() {
           </div>
           <div className="row g-3">
             <div className="col-md-4">
-              <label className="form-label fw-medium text-dark">
-                <i className="bi bi-calendar-range me-2 text-dark"></i>
-                ช่วงเวลา
-              </label>
-              <select
-                className="form-select rounded-2 border-0 bg-light text-dark"
+              <StyledSelect
                 value={period}
-                onChange={(e) => setPeriod(e.target.value as 'all' | 'month' | 'year')}
-              >
-                <option value="all">ทั้งหมด</option>
-                <option value="year">รายปี</option>
-                <option value="month">รายเดือน</option>
-              </select>
+                onChange={(val) => setPeriod(val as 'all' | 'month' | 'year')}
+                label="ช่วงเวลา"
+                icon="bi bi-calendar-range"
+                options={[
+                  { value: 'all', label: 'ทั้งหมด' },
+                  { value: 'year', label: 'รายปี' },
+                  { value: 'month', label: 'รายเดือน' },
+                ]}
+              />
             </div>
 
             {(period === 'year' || period === 'month') && (
               <div className="col-md-4">
-                <label className="form-label fw-medium">
-                  <i className="bi bi-calendar me-2"></i>
-                  ปี
-                </label>
-                <select
-                  className="form-select rounded-2 border-0 bg-light text-dark"
+                <StyledSelect
                   value={year}
-                  onChange={(e) => setYear(e.target.value)}
-                >
-                  {Array.from({ length: 5 }, (_, i) => {
+                  onChange={setYear}
+                  label="ปี"
+                  icon="bi bi-calendar"
+                  options={Array.from({ length: 5 }, (_, i) => {
                     const y = new Date().getFullYear() - i;
-                    return (
-                      <option key={y} value={y}>
-                        {y + 543}
-                      </option>
-                    );
+                    return {
+                      value: y.toString(),
+                      label: (y + 543).toString(),
+                    };
                   })}
-                </select>
+                />
               </div>
             )}
 
             {period === 'month' && (
               <div className="col-md-4">
-                <label className="form-label fw-medium">
-                  <i className="bi bi-calendar-month me-2"></i>
-                  เดือน
-                </label>
-                <select
-                  className="form-select rounded-2 border-0 bg-light text-dark"
+                <StyledSelect
                   value={month}
-                  onChange={(e) => setMonth(e.target.value)}
-                >
-                  {Array.from({ length: 12 }, (_, i) => {
+                  onChange={setMonth}
+                  label="เดือน"
+                  icon="bi bi-calendar-month"
+                  options={Array.from({ length: 12 }, (_, i) => {
                     const m = i + 1;
-                    return (
-                      <option key={m} value={m}>
-                        {getMonthName(m)}
-                      </option>
-                    );
+                    return {
+                      value: m.toString(),
+                      label: getMonthName(m),
+                    };
                   })}
-                </select>
+                />
               </div>
             )}
           </div>

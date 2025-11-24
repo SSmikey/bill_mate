@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import NotificationList from '@/app/components/NotificationList';
+import StyledSelect from '@/app/components/StyledSelect';
 
 interface NotificationFormData {
   userId?: string;
@@ -170,34 +171,35 @@ export default function AdminNotificationsPage() {
                   <h5 className="mb-4">สร้างการแจ้งเตือนใหม่</h5>
                   <form onSubmit={notificationForm.handleSubmit(handleNotificationSubmit)}>
                     <div className="row">
-                      <div className="col-md-6 mb-3">
-                        <label className="form-label">ผู้รับ (ปล่อยว่างสำหรับทุกคน)</label>
-                        <select
-                          className="form-select"
-                          {...notificationForm.register('userId')}
-                        >
-                          <option value="">ทุกผู้ใช้</option>
-                          {users.map((user) => (
-                            <option key={user._id} value={user._id}>
-                              {user.name} ({user.email}) - {user.role}
-                            </option>
-                          ))}
-                        </select>
+                      <div className="col-md-6">
+                        <StyledSelect
+                          value={notificationForm.watch('userId') || ''}
+                          onChange={(val) => notificationForm.setValue('userId', val || undefined)}
+                          label="ผู้รับ (ปล่อยว่างสำหรับทุกคน)"
+                          options={[
+                            { value: '', label: 'ทุกผู้ใช้' },
+                            ...users.map((user) => ({
+                              value: user._id,
+                              label: `${user.name} (${user.email}) - ${user.role}`,
+                            })),
+                          ]}
+                        />
                       </div>
-                      <div className="col-md-6 mb-3">
-                        <label className="form-label">ประเภทการแจ้งเตือน</label>
-                        <select
-                          className="form-select"
-                          {...notificationForm.register('type')}
-                        >
-                          <option value="general">ทั่วไป</option>
-                          <option value="paymentReminder">แจ้งเตือนการชำระเงิน</option>
-                          <option value="paymentVerified">ยืนยันการชำระเงิน</option>
-                          <option value="paymentRejected">ปฏิเสธการชำระเงิน</option>
-                          <option value="overdue">เกินกำหนดชำระ</option>
-                          <option value="billGenerated">สร้างบิล</option>
-                          <option value="maintenance">ซ่อมบำรุง</option>
-                        </select>
+                      <div className="col-md-6">
+                        <StyledSelect
+                          value={notificationForm.watch('type') || 'general'}
+                          onChange={(val) => notificationForm.setValue('type', val as any)}
+                          label="ประเภทการแจ้งเตือน"
+                          options={[
+                            { value: 'general', label: 'ทั่วไป' },
+                            { value: 'paymentReminder', label: 'แจ้งเตือนการชำระเงิน' },
+                            { value: 'paymentVerified', label: 'ยืนยันการชำระเงิน' },
+                            { value: 'paymentRejected', label: 'ปฏิเสธการชำระเงิน' },
+                            { value: 'overdue', label: 'เกินกำหนดชำระ' },
+                            { value: 'billGenerated', label: 'สร้างบิล' },
+                            { value: 'maintenance', label: 'ซ่อมบำรุง' },
+                          ]}
+                        />
                       </div>
                     </div>
                     <div className="mb-3">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import StyledSelect from '@/app/components/StyledSelect';
 
 interface MaintenanceRequest {
   _id: string;
@@ -232,44 +233,32 @@ export default function MaintenancePage() {
           </div>
           <div className="card-body p-4">
             <form onSubmit={handleSubmit}>
-              <div className="row">
-                <div className="col-md-6 mb-3">
-                  <label className="form-label fw-semibold">
-                    <i className="bi bi-tag me-2 text-muted"></i>
-                    ประเภท
-                  </label>
-                  <select
-                    className="form-select"
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <StyledSelect
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    onChange={(val) => setFormData({ ...formData, category: val })}
+                    label="ประเภท"
+                    icon="bi bi-tag"
+                    options={categories.map((cat) => ({
+                      value: cat.value,
+                      label: cat.label,
+                    }))}
                     required
-                    style={{ borderRadius: 'var(--radius-md)' }}
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
-                <div className="col-md-6 mb-3">
-                  <label className="form-label fw-semibold">
-                    <i className="bi bi-exclamation-triangle me-2 text-muted"></i>
-                    ความสำคัญ
-                  </label>
-                  <select
-                    className="form-select"
+                <div className="col-md-6">
+                  <StyledSelect
                     value={formData.priority}
-                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                    onChange={(val) => setFormData({ ...formData, priority: val })}
+                    label="ความสำคัญ"
+                    icon="bi bi-exclamation-triangle"
+                    options={priorities.map((pri) => ({
+                      value: pri.value,
+                      label: pri.label,
+                    }))}
                     required
-                    style={{ borderRadius: 'var(--radius-md)' }}
-                  >
-                    {priorities.map((pri) => (
-                      <option key={pri.value} value={pri.value}>
-                        {pri.label}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
               </div>
               <div className="mb-3">

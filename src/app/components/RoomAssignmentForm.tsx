@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import StyledSelect from './StyledSelect';
 
 interface Room {
   _id: string;
@@ -240,29 +241,26 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
           <form onSubmit={handleSubmit}>
             {/* Tenant Selection */}
             <div className="mb-3">
-              <label htmlFor="tenantId" className="form-label fw-semibold">
-                เลือกผู้เช่า <span className="text-danger">*</span>
-              </label>
-              <select
-                className={`form-select rounded-3 shadow-sm ${fieldErrors.tenantId ? 'is-invalid' : ''}`}
-                id="tenantId"
+              <StyledSelect
                 value={formData.tenantId}
-                onChange={(e) => handleChange('tenantId', e.target.value)}
+                onChange={(val) => handleChange('tenantId', val)}
+                label="เลือกผู้เช่า"
+                icon="bi bi-person"
                 disabled={loading || tenants.length === 0}
                 required
-              >
-                <option value="">-- เลือกผู้เช่า --</option>
-                {tenants.map((tenant) => (
-                  <option key={tenant._id} value={tenant._id}>
-                    {tenant.name} ({tenant.email})
-                  </option>
-                ))}
-              </select>
+                options={[
+                  { value: '', label: '-- เลือกผู้เช่า --' },
+                  ...tenants.map((tenant) => ({
+                    value: tenant._id,
+                    label: `${tenant.name} (${tenant.email})`,
+                  })),
+                ]}
+              />
               {fieldErrors.tenantId && (
-                <div className="invalid-feedback">{fieldErrors.tenantId}</div>
+                <div className="text-danger small mt-2">{fieldErrors.tenantId}</div>
               )}
               {tenants.length === 0 && !fetchingTenants && (
-                <div className="form-text text-warning">
+                <div className="text-warning small mt-2">
                   <i className="bi bi-exclamation-triangle me-1"></i>
                   ไม่มีผู้เช่าว่างในระบบ กรุณาเพิ่มผู้เช่าก่อน
                 </div>
