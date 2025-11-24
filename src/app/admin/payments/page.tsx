@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Modal, Button, Spinner, Alert, Badge, Table } from "react-bootstrap";
+import { Modal, Button, Spinner, Alert, Badge, Table, Form } from "react-bootstrap";
 import Link from 'next/link';
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
-import { rejects } from "assert";
 
 // สมมติว่า Type เหล่านี้ถูก import มาจากไฟล์กลาง
 // src/types/payment.ts
@@ -206,59 +205,6 @@ const AdminPaymentsPage = () => {
     }
   };
 
-  const renderFilters = () => {
-    const filters: (PaymentStatus | "all")[] = [
-      "pending",
-      "verified",
-      "rejected",
-      "all",
-    ];
-    // ย้าย filterLabels ออกไปข้างนอกแล้ว
-    // const filterLabels: { [key: string]: string } = {
-    //   pending: "รอตรวจสอบ",
-    //   verified: "อนุมัติแล้ว",
-    //   rejected: "ปฏิเสธ",
-    //   all: "ทั้งหมด",
-    // };
-    const filterColors: { [key: string]: string } = {
-      pending: "warning",
-      verified: "success",
-      rejected: "danger",
-      all: "dark",
-    };
-
-    return (
-      <div className="mb-3">
-        {filters.map((f) => (
-          <Button
-            key={f}
-            // ถ้าปุ่มถูกเลือก ให้ใช้สีจาก map, ถ้าไม่มีให้ใช้สีน้ำเงิน(primary) เหมือนเดิม
-            variant={
-              filter === f ? filterColors[f] || "primary" : "outline-secondary"
-            }
-            size="sm"
-            className="me-2"
-            onClick={() => setFilter(f)}
-          >
-            <i
-              className={`bi bi-${
-                f === "pending"
-                  ? "hourglass-split"
-                  : f === "verified"
-                  ? "check2-circle"
-                  : f === "rejected"
-                  ? "x-circle"
-                  : "collection"
-              } me-1`}
-            ></i>
-            {filterLabels[f]}
-            {f === "pending" &&
-              `(${payments.filter((p) => p.status === "pending").length})`}
-          </Button>
-        ))}
-      </div>
-    );
-  };
 
   const filterLabels: { [key: string]: string } = {
     pending: "รอตรวจสอบ",
@@ -277,191 +223,207 @@ const AdminPaymentsPage = () => {
 
     return (
       <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <i className="bi bi-receipt-cutoff me-2"></i>ตรวจสอบการชำระเงิน
+        <Modal.Header closeButton className="bg-light">
+          <Modal.Title className="fw-bold">
+            <i className="bi bi-receipt-cutoff me-2 text-primary"></i>ตรวจสอบการชำระเงิน
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {isVerifying && (
-            <div className="text-center mb-3">
+            <div className="text-center py-4">
               <Spinner animation="border" variant="primary" />
-              <p>กำลังดำเนินการ...</p>
+              <p className="mt-2">กำลังดำเนินการ...</p>
             </div>
           )}
           <div className="row">
             <div className="col-md-6 mb-3 mb-md-0">
-              <h6>
-                <i className="bi bi-image me-2"></i>สลิปการชำระ
-              </h6>
-              <img
-                src={selectedPayment.slipImageUrl}
-                className="img-fluid border rounded shadow-sm"
-                alt="Payment slip"
-                style={{
-                  maxHeight: "600px",
-                  width: "100%",
-                  objectFit: "contain",
-                }}
-              />
+              <div className="d-flex align-items-center mb-3">
+                <div className="rounded-circle p-2 me-2 bg-primary bg-opacity-10">
+                  <i className="bi bi-image fs-5 text-primary"></i>
+                </div>
+                <h6 className="mb-0 fw-semibold">สลิปการชำระ</h6>
+              </div>
+              <div className="border rounded p-2 bg-light">
+                <img
+                  src={selectedPayment.slipImageUrl}
+                  className="img-fluid rounded"
+                  alt="Payment slip"
+                  style={{
+                    maxHeight: "500px",
+                    width: "100%",
+                    objectFit: "contain",
+                  }}
+                />
+              </div>
             </div>
             <div className="col-md-6">
-              <h6>
-                <i className="bi bi-file-earmark-text me-2"></i>ข้อมูลบิล
-              </h6>
-              <Table bordered size="sm">
-                <tbody>
-                  <tr>
-                    <td>ห้อง</td>
-                    <td>{selectedPayment.billId.roomId.roomNumber}</td>
-                  </tr>
-                  <tr>
-                    <td>ผู้เช่า</td>
-                    <td>{selectedPayment.userId.name}</td>
-                  </tr>
-                  <tr>
-                    <td>ยอดบิล</td>
-                    <td>
-                      <strong>
+              <div className="d-flex align-items-center mb-3">
+                <div className="rounded-circle p-2 me-2 bg-info bg-opacity-10">
+                  <i className="bi bi-file-earmark-text fs-5 text-info"></i>
+                </div>
+                <h6 className="mb-0 fw-semibold">ข้อมูลบิล</h6>
+              </div>
+              <div className="card border-0 bg-light rounded-3 mb-3">
+                <div className="card-body">
+                  <div className="row g-3">
+                    <div className="col-6">
+                      <small className="text-muted d-block">ห้อง</small>
+                      <span className="fw-semibold">{selectedPayment.billId.roomId.roomNumber}</span>
+                    </div>
+                    <div className="col-6">
+                      <small className="text-muted d-block">ผู้เช่า</small>
+                      <span className="fw-semibold">{selectedPayment.userId.name}</span>
+                    </div>
+                    <div className="col-12">
+                      <small className="text-muted d-block">ยอดบิล</small>
+                      <span className="fw-bold text-primary fs-5">
                         {billAmount.toLocaleString("th-TH", {
                           style: "currency",
                           currency: "THB",
                         })}
-                      </strong>
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-              <div className="d-flex justify-content-between align-items-center mt-3">
-                <h6>
-                  <i className="bi bi-search me-2"></i>ข้อมูลจาก OCR
-                </h6>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="d-flex align-items-center">
+                  <div className="rounded-circle p-2 me-2 bg-warning bg-opacity-10">
+                    <i className="bi bi-search fs-5 text-warning"></i>
+                  </div>
+                  <h6 className="mb-0 fw-semibold">ข้อมูลจาก OCR</h6>
+                </div>
                 {!isEditingOcr && selectedPayment.status === 'pending' && (
-                  <Button variant="outline-primary" size="sm" onClick={() => setIsEditingOcr(true)}>
+                  <Button variant="outline-primary" size="sm" className="rounded-2" onClick={() => setIsEditingOcr(true)}>
                     <i className="bi bi-pencil-square me-1"></i> แก้ไข
                   </Button>
                 )}
               </div>
-              <Table bordered size="sm">
-                <tbody>
-                  <tr>
-                    <td>จำนวนเงิน</td>
-                    <td>
+              <div className="card border-0 bg-light rounded-3 mb-3">
+                <div className="card-body">
+                  <div className="row g-3">
+                    <div className="col-12">
+                      <small className="text-muted d-block">จำนวนเงิน</small>
                       {isEditingOcr ? (
                         <input
                           type="number"
                           name="amount"
-                          className="form-control form-control-sm"
+                          className="form-control form-control-sm rounded-2"
                           value={editableOcrData?.amount || ''}
                           onChange={handleOcrInputChange}
                         />
                       ) : (
-                        <>
-                          <strong>
+                        <div className="d-flex align-items-center">
+                          <span className="fw-bold fs-5">
                             {ocrAmount
                               ? ocrAmount.toLocaleString("th-TH", {
                                   style: "currency",
                                   currency: "THB",
                                 })
                               : "N/A"}
-                          </strong>
+                          </span>
                           {ocrAmount !== undefined &&
                             (isAmountMatch ? (
                               <Badge bg="success" className="ms-2">
-                                ตรงกัน
+                                <i className="bi bi-check-circle me-1"></i>ตรงกัน
                               </Badge>
                             ) : (
                               <Badge bg="danger" className="ms-2">
-                                ไม่ตรงกัน
+                                <i className="bi bi-x-circle me-1"></i>ไม่ตรงกัน
                               </Badge>
                             ))}
-                        </>
+                        </div>
                       )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>วันที่-เวลา</td>
-                    <td>
+                    </div>
+                    <div className="col-12">
+                      <small className="text-muted d-block">วันที่-เวลา</small>
                       {isEditingOcr ? (
-                        <div className="d-flex">
-                          <input type="text" name="date" className="form-control form-control-sm me-1" value={editableOcrData?.date || ''} onChange={handleOcrInputChange} placeholder="DD/MM/YYYY" />
-                          <input type="text" name="time" className="form-control form-control-sm" value={editableOcrData?.time || ''} onChange={handleOcrInputChange} placeholder="HH:MM" />
+                        <div className="d-flex gap-2">
+                          <input type="text" name="date" className="form-control form-control-sm rounded-2" value={editableOcrData?.date || ''} onChange={handleOcrInputChange} placeholder="DD/MM/YYYY" />
+                          <input type="text" name="time" className="form-control form-control-sm rounded-2" value={editableOcrData?.time || ''} onChange={handleOcrInputChange} placeholder="HH:MM" />
                         </div>
                       ) : (
-                        `${selectedPayment.ocrData.date || "N/A"} - ${selectedPayment.ocrData.time || "N/A"}`
+                        <span className="fw-semibold">
+                          {selectedPayment.ocrData.date || "N/A"} - {selectedPayment.ocrData.time || "N/A"}
+                        </span>
                       )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>จากบัญชี</td>
-                    <td>
+                    </div>
+                    <div className="col-12">
+                      <small className="text-muted d-block">จากบัญชี</small>
                       {isEditingOcr ? (
-                        <input type="text" name="fromAccount" className="form-control form-control-sm" value={editableOcrData?.fromAccount || ''} onChange={handleOcrInputChange} />
+                        <input type="text" name="fromAccount" className="form-control form-control-sm rounded-2" value={editableOcrData?.fromAccount || ''} onChange={handleOcrInputChange} />
                       ) : (
-                        selectedPayment.ocrData.fromAccount || "N/A"
+                        <span className="fw-semibold">{selectedPayment.ocrData.fromAccount || "N/A"}</span>
                       )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>ไปบัญชี</td>
-                    <td>
+                    </div>
+                    <div className="col-12">
+                      <small className="text-muted d-block">ไปบัญชี</small>
                       {isEditingOcr ? (
-                        <input type="text" name="toAccount" className="form-control form-control-sm" value={editableOcrData?.toAccount || ''} onChange={handleOcrInputChange} />
+                        <input type="text" name="toAccount" className="form-control form-control-sm rounded-2" value={editableOcrData?.toAccount || ''} onChange={handleOcrInputChange} />
                       ) : (
-                        selectedPayment.ocrData.toAccount || "N/A"
+                        <span className="fw-semibold">{selectedPayment.ocrData.toAccount || "N/A"}</span>
                       )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>เลขที่อ้างอิง</td>
-                    <td>
+                    </div>
+                    <div className="col-12">
+                      <small className="text-muted d-block">เลขที่อ้างอิง</small>
                       {isEditingOcr ? (
-                        <input type="text" name="reference" className="form-control form-control-sm" value={editableOcrData?.reference || ''} onChange={handleOcrInputChange} />
+                        <input type="text" name="reference" className="form-control form-control-sm rounded-2" value={editableOcrData?.reference || ''} onChange={handleOcrInputChange} />
                       ) : (
-                        selectedPayment.ocrData.reference || "N/A"
+                        <span className="fw-semibold">{selectedPayment.ocrData.reference || "N/A"}</span>
                       )}
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
+                    </div>
+                  </div>
+                </div>
+              </div>
               {isEditingOcr && (
-                <div className="text-end"><Button variant="link" size="sm" onClick={() => setIsEditingOcr(false)}>ยกเลิก</Button><Button variant="primary" size="sm" onClick={handleSaveOcr} disabled={isVerifying}>{isVerifying ? 'กำลังบันทึก...' : 'บันทึก'}</Button></div>
+                <div className="d-flex justify-content-end gap-2">
+                  <Button variant="link" size="sm" onClick={() => setIsEditingOcr(false)}>ยกเลิก</Button>
+                  <Button variant="primary" size="sm" className="rounded-2" onClick={handleSaveOcr} disabled={isVerifying}>
+                    {isVerifying ? <><Spinner as="span" animation="border" size="sm" /> กำลังบันทึก...</> : 'บันทึก'}
+                  </Button>
+                </div>
               )}
 
               {selectedPayment.qrData && (
                 <>
-                  <h6 className="mt-3">
-                    <i className="bi bi-qr-code me-2"></i>ข้อมูลจาก QR Code
-                  </h6>
-                  <Table bordered size="sm">
-                    <tbody>
-                      <tr>
-                        <td>จำนวนเงิน</td>
-                        <td>
-                          {selectedPayment.qrData.amount
-                            ? selectedPayment.qrData.amount.toLocaleString(
-                                "th-TH",
-                                {
-                                  style: "currency",
-                                  currency: "THB",
-                                }
-                              )
-                            : "N/A"}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </Table>
+                  <div className="d-flex align-items-center mb-3">
+                    <div className="rounded-circle p-2 me-2 bg-success bg-opacity-10">
+                      <i className="bi bi-qr-code fs-5 text-success"></i>
+                    </div>
+                    <h6 className="mb-0 fw-semibold">ข้อมูลจาก QR Code</h6>
+                  </div>
+                  <div className="card border-0 bg-light rounded-3">
+                    <div className="card-body">
+                      <div className="row g-3">
+                        <div className="col-12">
+                          <small className="text-muted d-block">จำนวนเงิน</small>
+                          <span className="fw-bold">
+                            {selectedPayment.qrData.amount
+                              ? selectedPayment.qrData.amount.toLocaleString(
+                                  "th-TH",
+                                  {
+                                    style: "currency",
+                                    currency: "THB",
+                                  }
+                                )
+                              : "N/A"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </>
               )}
             </div>
           </div>
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className="bg-light">
           {!isEditingOcr && (
             <>
               <Button
-                variant="secondary"
+                variant="outline-secondary"
+                className="rounded-2"
                 onClick={handleCloseModal}
                 disabled={isVerifying}
               >
@@ -469,6 +431,7 @@ const AdminPaymentsPage = () => {
               </Button>
               <Button
                 variant="danger"
+                className="rounded-2"
                 onClick={handleReject}
                 disabled={isVerifying || selectedPayment.status !== 'pending'}
               >
@@ -476,6 +439,7 @@ const AdminPaymentsPage = () => {
               </Button>
               <Button
                 variant="success"
+                className="rounded-2"
                 onClick={handleApprove}
                 disabled={isVerifying || selectedPayment.status !== 'pending'}
               >
@@ -489,102 +453,198 @@ const AdminPaymentsPage = () => {
   };
 
   return (
-    <div className="container-fluid mt-4">
-      <div className="card">
-        <div className="card-header bg-light d-flex justify-content-between align-items-center">
-          <div>
-            <h3>
-              <i className="bi bi-check2-circle me-2"></i>ยืนยันการชำระเงิน
-            </h3>
-            <p className="text-muted mb-0">
-              ตรวจสอบและยืนยันสลิปการชำระเงินที่ผู้เช่าอัปโหลด
-            </p>
-          </div>
-          <div>
-            <Link href="/admin/payments/analytics" passHref>
-              <Button variant="outline-primary">
-                <i className="bi bi-bar-chart-line-fill me-2"></i>ดูข้อมูลวิเคราะห์
-              </Button>
-            </Link>
-          </div>
-        </div>
-        <div className="card-body">
-          {renderFilters()}
-          {loading && (
-            <div className="text-center py-5">
-              <Spinner animation="border" variant="primary" />
-              <p className="mt-2">กำลังโหลดข้อมูล...</p>
+    <div className="fade-in">
+      {/* Header - Clean and minimal */}
+      <div className="mb-5">
+        <h1 className="fw-bold text-dark mb-2">จัดการการชำระเงิน</h1>
+        <p className="text-muted mb-0">ตรวจสอบและยืนยันสลิปการชำระเงินที่ผู้เช่าอัปโหลด</p>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div className="d-flex gap-2 flex-wrap">
+              <Link href="/admin/payments/analytics" passHref>
+                <Button variant="outline-primary" className="d-flex align-items-center justify-content-center py-2 text-decoration-none fw-medium rounded-2">
+                  <i className="bi bi-bar-chart-line-fill me-2"></i>
+                  ดูข้อมูลวิเคราะห์
+                </Button>
+              </Link>
             </div>
-          )}
-          {error && <Alert variant="danger">{error}</Alert>}
-          {!loading && !error && (
-            <div className="table-responsive">
-              <Table hover striped>
-                <thead className="table-light">
-                  <tr>
-                    <th>วันที่อัปโหลด</th>
-                    <th>ห้อง</th>
-                    <th>ผู้เช่า</th>
-                    <th>บิล</th>
-                    <th>ยอดบิล</th>
-                    <th>ยอด OCR</th>
-                    <th>สถานะ</th>
-                    <th>การจัดการ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPayments.length > 0 ? (
-                    filteredPayments.map((p) => (
-                      <tr key={p._id}>
-                        <td>
-                          {format(new Date(p.createdAt), "dd MMM yy, HH:mm", {
-                            locale: th,
-                          })}
-                        </td>
-                        <td>{p.billId.roomId.roomNumber}</td>
-                        <td>{p.userId.name}</td>
-                        <td>
-                          {`เดือน ${p.billId.month}/${p.billId.year}`}
-                          <div className="small text-muted">
-                            {p.billId.totalAmount.toLocaleString("th-TH", {
-                              minimumFractionDigits: 2,
-                            })}{" "}
-                            บาท
-                          </div>
-                        </td>
-                        {/* No change here, but showing for context */}
-                        <td>{p.billId.totalAmount.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</td>
-                        {/* No change here, but showing for context */}
-                        <td>
-                          {p.ocrData?.amount ? `${p.ocrData.amount.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท` : "N/A"}
-                        </td>
-                        <td>{getStatusBadge(p.status)}</td>
-                        <td>
-                          <Button
-                            variant="outline-primary"
-                            size="sm"
-                            onClick={() => handleShowModal(p)}
-                          >
-                            <i className="bi bi-search me-2"></i>ตรวจสอบ
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={8} className="text-center py-4">
-                        {filter === 'all'
-                          ? 'ยังไม่มีข้อมูลการชำระเงิน'
-                          : `ไม่พบรายการที่ ${filterLabels[filter]}`}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </div>
-          )}
+          </div>
         </div>
       </div>
+
+      {/* Error Alert */}
+      {error && (
+        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          <i className="bi bi-exclamation-triangle me-2"></i>
+          {error}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError(null)}
+            aria-label="Close"
+          ></button>
+        </div>
+      )}
+
+      {/* Filter Section */}
+      <div className="card border-0 bg-white rounded-3 shadow-sm mb-4">
+        <div className="card-body p-4">
+          <div className="d-flex align-items-center mb-4">
+            <div className="rounded-circle p-3 me-3 bg-primary bg-opacity-10">
+              <i className="bi bi-funnel fs-5 text-primary"></i>
+            </div>
+            <div>
+              <h6 className="mb-0 fw-semibold text-dark">กรองตามสถานะ</h6>
+              <p className="mb-0 small text-muted">กรองการชำระเงินตามสถานะที่ต้องการ</p>
+            </div>
+          </div>
+          <Form.Group className="mb-3" controlId="statusFilter">
+            <Form.Label className="fw-semibold text-dark">
+              <i className="bi bi-funnel me-2"></i>
+              กรองตามสถานะ
+            </Form.Label>
+            <Form.Select
+              className="form-select rounded-2 bg-white text-dark"
+              onChange={(e) => setFilter(e.target.value as any)}
+              value={filter}
+            >
+              <option value="all">ทั้งหมด</option>
+              <option value="pending">รอตรวจสอบ</option>
+              <option value="verified">อนุมัติแล้ว</option>
+              <option value="rejected">ปฏิเสธ</option>
+            </Form.Select>
+          </Form.Group>
+          <div className="d-flex gap-2 flex-wrap">
+            {(["pending", "verified", "rejected", "all"] as const).map((f) => (
+              <Button
+                key={f}
+                variant={
+                  filter === f
+                    ? f === "pending"
+                      ? "warning"
+                      : f === "verified"
+                        ? "success"
+                        : f === "rejected"
+                          ? "danger"
+                          : "dark"
+                    : "outline-secondary"
+                }
+                size="sm"
+                className="rounded-2"
+                onClick={() => setFilter(f)}
+              >
+                <i
+                  className={`bi bi-${
+                    f === "pending"
+                      ? "hourglass-split"
+                      : f === "verified"
+                      ? "check2-circle"
+                      : f === "rejected"
+                      ? "x-circle"
+                      : "collection"
+                  } me-1`}
+                ></i>
+                {filterLabels[f]}
+                {f === "pending" &&
+                  `(${payments.filter((p) => p.status === "pending").length})`}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Loading State */}
+      {loading ? (
+        <div className="text-center py-5">
+          <div className="spinner-border text-primary" role="status" style={{ width: '3rem', height: '3rem' }}>
+            <span className="visually-hidden">กำลังโหลด...</span>
+          </div>
+          <p className="mt-3 text-muted">กำลังโหลดข้อมูลการชำระเงิน...</p>
+        </div>
+      ) : (
+        <>
+          {/* Table */}
+          <div className="card border-0 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-0">
+              {filteredPayments.length === 0 ? (
+                <div className="text-center py-5">
+                  <div className="rounded-circle p-4 bg-light mb-3 d-inline-block">
+                    <i className="bi bi-inbox fs-1 text-muted"></i>
+                  </div>
+                  <h5 className="text-muted">
+                    {filter === 'all'
+                      ? 'ยังไม่มีข้อมูลการชำระเงิน'
+                      : `ไม่พบรายการที่ ${filterLabels[filter]}`}
+                  </h5>
+                  <p className="text-muted mt-2">
+                    ลองปรับเปลี่ยนเงื่อนไขการกรองหรือรอการอัปโหลดสลิปจากผู้เช่า
+                  </p>
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <Table hover className="mb-0">
+                    <thead className="table-dark">
+                      <tr>
+                        <th>วันที่อัปโหลด</th>
+                        <th>ห้อง</th>
+                        <th>ผู้เช่า</th>
+                        <th>บิล</th>
+                        <th>ยอดบิล</th>
+                        <th>ยอด OCR</th>
+                        <th>สถานะ</th>
+                        <th className="text-center min-w-250px">
+                          การจัดการ
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredPayments.map((p) => (
+                        <tr key={p._id}>
+                          <td>
+                            {format(new Date(p.createdAt), "dd MMM yy, HH:mm", {
+                              locale: th,
+                            })}
+                          </td>
+                          <td>{p.billId.roomId.roomNumber}</td>
+                          <td>{p.userId.name}</td>
+                          <td>
+                            {`เดือน ${p.billId.month}/${p.billId.year}`}
+                            <div className="small text-muted">
+                              {p.billId.totalAmount.toLocaleString("th-TH", {
+                                minimumFractionDigits: 2,
+                              })}{" "}
+                              บาท
+                            </div>
+                          </td>
+                          <td>{p.billId.totalAmount.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</td>
+                          <td>
+                            {p.ocrData?.amount ? `${p.ocrData.amount.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท` : "N/A"}
+                          </td>
+                          <td>{getStatusBadge(p.status)}</td>
+                          <td className="text-center">
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              className="rounded-2"
+                              onClick={() => handleShowModal(p)}
+                            >
+                              <i className="bi bi-search me-2"></i>ตรวจสอบ
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
       {renderVerificationModal()}
     </div>
   );
