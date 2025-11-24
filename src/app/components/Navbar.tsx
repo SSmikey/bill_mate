@@ -7,34 +7,12 @@ import NotificationDropdown from './NotificationDropdown';
 
 export default function Navbar() {
   const { data: session } = useSession();
-  const [iconsLoaded, setIconsLoaded] = useState(false);
+  const [iconsLoaded, setIconsLoaded] = useState(true);
 
   useEffect(() => {
-    // Check if Bootstrap Icons are loaded
-    const checkIconsLoaded = () => {
-      const testElement = document.createElement('i');
-      testElement.className = 'bi bi-house';
-      testElement.style.display = 'none';
-      document.body.appendChild(testElement);
-      
-      const styles = window.getComputedStyle(testElement);
-      const isLoaded = styles.fontFamily.includes('bootstrap-icons');
-      
-      document.body.removeChild(testElement);
-      return isLoaded;
-    };
-
-    // Load Bootstrap Icons if not already loaded
-    if (!checkIconsLoaded()) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css';
-      link.crossOrigin = 'anonymous';
-      link.onload = () => setIconsLoaded(true);
-      document.head.appendChild(link);
-    } else {
-      setIconsLoaded(true);
-    }
+    // Bootstrap Icons should already be loaded from layout.tsx
+    // Just ensure it's available
+    setIconsLoaded(true);
   }, []);
 
   const handleLogout = async () => {
@@ -51,11 +29,7 @@ export default function Navbar() {
       <div className="container-fluid">
         <Link href="/" className="navbar-brand d-flex align-items-center gap-2">
           <div className="bg-secondary rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
-            {iconsLoaded ? (
-              <i className="bi bi-house-check" style={{ fontSize: '1.2rem' }}></i>
-            ) : (
-              <span className="fw-bold text-white">BM</span>
-            )}
+            <i className="bi bi-house-check" style={{ fontSize: '1.2rem' }}></i>
           </div>
           <span className="fw-bold">Bill Mate</span>
         </Link>
@@ -89,11 +63,7 @@ export default function Navbar() {
                 aria-expanded="false"
               >
                 <div className="bg-secondary rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
-                  {iconsLoaded ? (
-                    <i className="bi bi-person" style={{ fontSize: '1.2rem' }}></i>
-                  ) : (
-                    <span className="fw-bold text-white">U</span>
-                  )}
+                  <i className="bi bi-person" style={{ fontSize: '1.2rem' }}></i>
                 </div>
                 <div className="text-start d-none d-md-block">
                   <div className="fw-semibold">{session.user?.name || 'ผู้ใช้'}</div>
@@ -106,11 +76,7 @@ export default function Navbar() {
                 <li className="px-3 py-2 border-bottom">
                   <div className="d-flex align-items-center gap-2">
                     <div className="bg-primary rounded-circle p-2 d-flex align-items-center justify-content-center text-white" style={{ width: '40px', height: '40px' }}>
-                      {iconsLoaded ? (
-                        <i className="bi bi-person" style={{ fontSize: '1.2rem' }}></i>
-                      ) : (
-                        <span className="fw-bold">U</span>
-                      )}
+                      <i className="bi bi-person" style={{ fontSize: '1.2rem' }}></i>
                     </div>
                     <div>
                       <div className="fw-semibold text-dark">{session.user?.name || 'ผู้ใช้'}</div>
