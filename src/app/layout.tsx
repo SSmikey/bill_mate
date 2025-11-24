@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "@/styles/bootstrap-custom.scss";
+import 'bootstrap/dist/css/bootstrap.min.css';
 import "./globals.css";
 import BootstrapClient from './components/BootstrapClient';
 import SessionWrapper from './components/SessionWrapper';
