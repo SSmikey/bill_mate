@@ -13,6 +13,7 @@ export default function NotificationDropdown({ className = '' }: NotificationDro
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [dropdownPosition, setDropdownPosition] = useState<'left' | 'right'>('right');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,11 +26,31 @@ export default function NotificationDropdown({ className = '' }: NotificationDro
       }
     };
 
+    // Recalculate position on window resize
+    const handleResize = () => {
+      if (isOpen && dropdownRef.current) {
+        const rect = dropdownRef.current.getBoundingClientRect();
+        const dropdownWidth = 380; // Width of the dropdown
+        const padding = 16; // Padding from screen edges
+        const spaceOnRight = window.innerWidth - rect.right - padding;
+
+        // If not enough space on the right, align to left
+        if (spaceOnRight < dropdownWidth) {
+          setDropdownPosition('left');
+        } else {
+          setDropdownPosition('right');
+        }
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('resize', handleResize);
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('resize', handleResize);
     };
-  }, [refreshTrigger]);
+  }, [refreshTrigger, isOpen]);
 
   const fetchUnreadCount = async () => {
     try {
@@ -51,6 +72,21 @@ export default function NotificationDropdown({ className = '' }: NotificationDro
     if (!isOpen) {
       // Refresh notifications when opening dropdown
       setRefreshTrigger(prev => prev + 1);
+
+      // Calculate dropdown position
+      if (dropdownRef.current) {
+        const rect = dropdownRef.current.getBoundingClientRect();
+        const dropdownWidth = 380; // Width of the dropdown
+        const padding = 16; // Padding from screen edges
+        const spaceOnRight = window.innerWidth - rect.right - padding;
+
+        // If not enough space on the right, align to left
+        if (spaceOnRight < dropdownWidth) {
+          setDropdownPosition('left');
+        } else {
+          setDropdownPosition('right');
+        }
+      }
     }
   };
 
@@ -90,19 +126,30 @@ export default function NotificationDropdown({ className = '' }: NotificationDro
         )}
       </button>
 
-      <div className={`dropdown-menu dropdown-menu-end shadow-lg border-0 ${isOpen ? 'show' : ''}`} style={{ width: '380px', maxHeight: '450px' }}>
-        <div className="d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
-          <div className="d-flex align-items-center gap-2">
-            <i className="bi bi-bell-fill text-primary" style={{ fontSize: '1.2rem' }}></i>
-            <h6 className="mb-0 fw-semibold">การแจ้งเตือน</h6>
+      <div className={`dropdown-menu shadow-lg border-0 ${isOpen ? 'show' : ''} ${dropdownPosition === 'right' ? 'dropdown-menu-end' : 'dropdown-menu-start'}`} style={{
+        width: '360px',
+        maxHeight: '450px',
+        margin: '0.5rem',
+        overflow: 'hidden',
+        boxSizing: 'border-box',
+        right: dropdownPosition === 'left' ? '16px' : 'auto',
+        left: dropdownPosition === 'right' ? '16px' : 'auto'
+      }}>
+        <div className="d-flex justify-content-between align-items-center p-3 border-bottom bg-light gap-2" style={{ overflow: 'hidden' }}>
+          <div className="d-flex align-items-center gap-2" style={{ minWidth: 0, flex: 1 }}>
+            <i className="bi bi-bell-fill text-primary" style={{ fontSize: '1.2rem', flexShrink: 0 }}></i>
+            <h6 className="mb-0 fw-semibold" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>การแจ้งเตือน</h6>
             {unreadCount > 0 && (
-              <span className="badge bg-primary">{unreadCount}</span>
+              <span className="badge bg-primary" style={{ flexShrink: 0 }}>
+                {unreadCount}
+              </span>
             )}
           </div>
           {unreadCount > 0 && (
             <button
               className="btn btn-sm btn-outline-primary rounded-pill"
               onClick={markAllAsRead}
+              style={{ flexShrink: 0 }}
             >
               <i className="bi bi-check-all"></i>
               <span className="d-none d-sm-inline ms-1">อ่านทั้งหมด</span>
