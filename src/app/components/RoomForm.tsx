@@ -218,9 +218,12 @@ export default function RoomForm({
 
   // ฟังก์ชันจัดการการเปลี่ยนแปลงข้อมูล
   const handleChange = (field: keyof RoomFormData, value: string | number) => {
+    // ถ้าเป็น number field และค่าเริ่มต้นเป็น 0 ให้เคลียร์ค่าเก่า
+    const numericValue = typeof value === 'string' ? (value === '' ? 0 : parseFloat(value)) : value;
+
     setFormData((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: isNaN(numericValue as number) ? 0 : numericValue,
     }));
 
     // Validate on change if field was touched
@@ -253,6 +256,16 @@ export default function RoomForm({
 
   return (
     <div className="card border-0 bg-white rounded-3 shadow-sm">
+      <style>{`
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type="number"] {
+          -moz-appearance: textfield;
+        }
+      `}</style>
       <div className="card-body p-4">
         <div className="d-flex align-items-center mb-4">
           <div className="rounded-circle p-3 me-3 bg-primary bg-opacity-10">
@@ -370,8 +383,8 @@ export default function RoomForm({
                     touched.rentPrice && fieldErrors.rentPrice ? 'is-invalid' : ''
                   } ${touched.rentPrice && !fieldErrors.rentPrice && formData.rentPrice > 0 ? 'is-valid' : ''}`}
                   id="rentPrice"
-                  value={formData.rentPrice}
-                  onChange={(e) => handleChange('rentPrice', parseFloat(e.target.value) || 0)}
+                  value={formData.rentPrice === 0 ? '' : formData.rentPrice}
+                  onChange={(e) => handleChange('rentPrice', e.target.value)}
                   onBlur={() => handleBlur('rentPrice')}
                   placeholder="เช่น 3000, 5000"
                   min="0"
@@ -406,8 +419,8 @@ export default function RoomForm({
                     touched.waterPrice && fieldErrors.waterPrice ? 'is-invalid' : ''
                   } ${touched.waterPrice && !fieldErrors.waterPrice && formData.waterPrice > 0 ? 'is-valid' : ''}`}
                   id="waterPrice"
-                  value={formData.waterPrice}
-                  onChange={(e) => handleChange('waterPrice', parseFloat(e.target.value) || 0)}
+                  value={formData.waterPrice === 0 ? '' : formData.waterPrice}
+                  onChange={(e) => handleChange('waterPrice', e.target.value)}
                   onBlur={() => handleBlur('waterPrice')}
                   placeholder="เช่น 120, 150, 200"
                   min="0"
@@ -448,9 +461,9 @@ export default function RoomForm({
                       : ''
                   }`}
                   id="electricityPrice"
-                  value={formData.electricityPrice}
+                  value={formData.electricityPrice === 0 ? '' : formData.electricityPrice}
                   onChange={(e) =>
-                    handleChange('electricityPrice', parseFloat(e.target.value) || 0)
+                    handleChange('electricityPrice', e.target.value)
                   }
                   onBlur={() => handleBlur('electricityPrice')}
                   placeholder="เช่น 8, 10, 12"

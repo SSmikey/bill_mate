@@ -117,8 +117,8 @@ const AdminBillsPage = () => {
       tenantId: selectedRoom?.tenantId?._id,
       month: Number(formData.get('month')),
       year: Number(formData.get('year')),
-      waterUnits: Number(formData.get('waterUnits')),
-      electricityUnits: Number(formData.get('electricityUnits')),
+      waterUnits: 0, // ค่าน้ำเป็นเหมาจ่าย ส่ง 0 หน่วย
+      electricityUnits: Number(formData.get('electricityPrice')), // ส่งค่าไฟต่อหน่วย
     };
 
     if (!billData.tenantId) {
@@ -241,6 +241,16 @@ const AdminBillsPage = () => {
 
   const renderCreateBillModal = () => (
     <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} centered>
+      <style>{`
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type="number"] {
+          -moz-appearance: textfield;
+        }
+      `}</style>
       <Modal.Header closeButton>
         <Modal.Title><i className="bi bi-receipt-cutoff me-2"></i>สร้างบิลใหม่</Modal.Title>
       </Modal.Header>
@@ -289,10 +299,10 @@ const AdminBillsPage = () => {
               />
             </div>
           </Form.Group>
-          <Form.Group className="mb-3" controlId="waterUnits">
-            <Form.Label className="fw-semibold text-dark">หน่วยน้ำ (ลบ.ม.)</Form.Label>
+          <Form.Group className="mb-3" controlId="waterPrice">
+            <Form.Label className="fw-semibold text-dark">ค่าน้ำ (บาท/เดือน)</Form.Label>
             <Form.Control
-              name="waterUnits"
+              name="waterPrice"
               type="number"
               placeholder="0.00"
               required
@@ -300,11 +310,12 @@ const AdminBillsPage = () => {
               min="0"
               className="form-control rounded-2 bg-white"
               style={{ color: '#000' }}
+              defaultValue={rooms.find(r => r._id === selectedRoomId)?.waterPrice || 0}
             />
             <Form.Text className="text-muted">
               {(() => {
                 const selectedRoom = rooms.find(r => r._id === selectedRoomId);
-                return selectedRoom ? `อัตราค่าน้ำ: ${selectedRoom.waterPrice || 0} บาท/ลบ.ม.` : 'กรุณาเลือกห้องเพื่อแสดงอัตราค่าน้ำ';
+                return selectedRoom ? `ค่าน้ำแบบเหมาจ่ายรายเดือน: ${selectedRoom.waterPrice || 0} บาท` : 'กรุณาเลือกห้องเพื่อดึงค่าน้ำ';
               })()}
             </Form.Text>
           </Form.Group>
