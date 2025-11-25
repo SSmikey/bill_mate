@@ -591,15 +591,20 @@ export default function AdminRoomsPage() {
             <div className="col-md-2">
               <StyledSelect
                 value={floorFilter}
-                onChange={(val) =>
-                  setFloorFilter(val === 'all' ? 'all' : Number(val))
-                }
+                onChange={(val) => {
+                  if (val === 'all') {
+                    setFloorFilter('all');
+                  } else {
+                    const numVal = typeof val === 'string' ? Number(val) : val;
+                    setFloorFilter(numVal);
+                  }
+                }}
                 label="ชั้น"
                 icon="bi bi-building"
                 options={[
                   { value: 'all', label: 'ทั้งหมด' },
                   ...uniqueFloors.sort((a, b) => a! - b!).map((floor) => ({
-                    value: floor!.toString(),
+                    value: floor!,
                     label: `ชั้น ${floor}`,
                   })),
                 ]}
@@ -611,15 +616,14 @@ export default function AdminRoomsPage() {
               <StyledSelect
                 value={`${sortField}-${sortOrder}`}
                 onChange={(val) => {
-                  const [field, order] = val.split('-');
+                  const valStr = val.toString();
+                  const [field, order] = valStr.split('-');
                   setSortField(field as SortField);
                   setSortOrder(order as SortOrder);
                 }}
                 label="เรียงตาม"
                 icon="bi bi-sort-down"
                 options={[
-                  { value: 'roomNumber-asc', label: 'หมายเลขห้อง (A-Z)' },
-                  { value: 'roomNumber-desc', label: 'หมายเลขห้อง (Z-A)' },
                   { value: 'floor-asc', label: 'ชั้น (น้อย-มาก)' },
                   { value: 'floor-desc', label: 'ชั้น (มาก-น้อย)' },
                   { value: 'rentPrice-asc', label: 'ราคา (ถูก-แพง)' },
