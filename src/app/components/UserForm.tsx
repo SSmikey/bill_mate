@@ -154,12 +154,12 @@ export default function UserForm({
 
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label htmlFor="name" className="form-label fw-semibold">
+          <label htmlFor="name" className="form-label fw-semibold text-dark">
             ชื่อ-นามสกุล <span className="text-danger">*</span>
           </label>
           <input
             type="text"
-            className="form-control rounded-3 shadow-sm"
+            className="form-control rounded-3 shadow-sm bg-white text-dark"
             id="name"
             name="name"
             value={formData.name}
@@ -170,12 +170,12 @@ export default function UserForm({
         </div>
 
         <div className="col-md-6 mb-3">
-          <label htmlFor="email" className="form-label fw-semibold">
+          <label htmlFor="email" className="form-label fw-semibold text-dark">
             อีเมล <span className="text-danger">*</span>
           </label>
           <input
             type="email"
-            className="form-control rounded-3 shadow-sm"
+            className="form-control rounded-3 shadow-sm bg-white text-dark"
             id="email"
             name="email"
             value={formData.email}
@@ -188,12 +188,12 @@ export default function UserForm({
 
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label htmlFor="password" className="form-label fw-semibold">
+          <label htmlFor="password" className="form-label fw-semibold text-dark">
             รหัสผ่าน {!isEditing && <span className="text-danger">*</span>}
           </label>
           <input
             type="password"
-            className="form-control rounded-3 shadow-sm"
+            className="form-control rounded-3 shadow-sm bg-white text-dark"
             id="password"
             name="password"
             placeholder={isEditing ? 'ปล่อยว่างถ้าไม่เปลี่ยน' : ''}
@@ -210,12 +210,12 @@ export default function UserForm({
         </div>
 
         <div className="col-md-6 mb-3">
-          <label htmlFor="phone" className="form-label fw-semibold">
+          <label htmlFor="phone" className="form-label fw-semibold text-dark">
             เบอร์โทรศัพท์
           </label>
           <input
             type="tel"
-            className="form-control rounded-3 shadow-sm"
+            className="form-control rounded-3 shadow-sm bg-white text-dark"
             id="phone"
             name="phone"
             value={formData.phone || ''}
