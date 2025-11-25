@@ -26,23 +26,19 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "typeRoots": [
+      "node_modules/@types",
+      "types",
+      "src/types"
+    ]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "types/**/*.d.ts",
     "src/types/**/*.d.ts",
-    ".next/dev/types/**/*.ts",
-    ".next/types/**/*.ts",
-    "next-env.d.ts",
-    "./.next/types/**/*.ts",
-    "scripts/**/*.ts"
-  ],
-  "typeRoots": [
-    "node_modules/@types",
-    "types",
-    "src/types"
+    "types/**/*.d.ts",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
