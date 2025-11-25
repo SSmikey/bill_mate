@@ -62,6 +62,9 @@ const AdminPaymentsPage = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [isRejecting, setIsRejecting] = useState(false);
 
+  // State for success message
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   const fetchPayments = async () => {
     setLoading(true);
     setError(null);
@@ -120,9 +123,11 @@ const AdminPaymentsPage = () => {
         const errorData = await response.json();
         throw new Error(errorData.error || "การอนุมัติล้มเเหลว");
       }
-      alert("อนุมัติการชำระเงินเรียบร้อยแล้ว");
+      setSuccessMessage("อนุมัติการชำระเงินเรียบร้อยแล้ว");
       await fetchPayments();
       handleCloseModal();
+      // Auto hide success message after 5 seconds
+      setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err: any) {
       alert(`เกิดข้อผิดพลาด: ${err.message}`);
     } finally {
@@ -136,7 +141,7 @@ const AdminPaymentsPage = () => {
 
   const confirmReject = async () => {
     if (!selectedPayment || !rejectReason.trim()) return;
-    
+
     setIsRejecting(true);
     try {
       const response = await fetch(
@@ -151,11 +156,13 @@ const AdminPaymentsPage = () => {
         const errorData = await response.json();
         throw new Error(errorData.error || "การปฏิเสธล้มเหลว");
       }
-      alert("ปฏิเสธการชำระเงินเรียบร้อยแล้ว");
+      setSuccessMessage("ปฏิเสธการชำระเงินเรียบร้อยแล้ว");
       await fetchPayments();
       handleCloseModal();
       setShowRejectDialog(false);
       setRejectReason('');
+      // Auto hide success message after 5 seconds
+      setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err: any) {
       alert(`เกิดข้อผิดพลาด: ${err.message}`);
     } finally {
@@ -587,6 +594,26 @@ const AdminPaymentsPage = () => {
         </div>
       )}
 
+      {/* Success Alert */}
+      {successMessage && (
+        <div className="alert alert-success alert-dismissible fade show" role="alert">
+          <div className="d-flex align-items-center">
+            <div className="rounded-circle p-3 me-3 bg-success bg-opacity-20">
+              <i className="bi bi-check-circle-fill fs-5 text-success"></i>
+            </div>
+            <div>
+              <h5 className="mb-0 text-dark fw-semibold">{successMessage}</h5>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setSuccessMessage(null)}
+            aria-label="Close"
+          ></button>
+        </div>
+      )}
+
       {/* Filter Section */}
       <div className="card border-0 bg-white rounded-3 shadow-sm mb-4">
         <div className="card-body p-4">
@@ -747,17 +774,14 @@ const AdminPaymentsPage = () => {
       {renderVerificationModal()}
 
       {/* Rejection Confirmation Dialog */}
-      {showRejectDialog && (
-        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999 }} tabIndex={-1}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-0 rounded-3 shadow-lg">
-              <div className="modal-header bg-danger text-white border-0 rounded-top-3">
-                <h6 className="modal-title fw-semibold">
-                  <i className="bi bi-x-circle-fill me-2"></i>
-                  ยืนยันการปฏิเสธบิล
-                </h6>
-              </div>
-              <div className="modal-body p-4">
+      <Modal show={showRejectDialog} onHide={cancelReject} centered size="lg">
+        <Modal.Header closeButton className="bg-danger text-white border-0">
+          <Modal.Title className="fw-semibold">
+            <i className="bi bi-x-circle-fill me-2"></i>
+            ยืนยันการปฏิเสธบิล
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
                 {/* Warning Card */}
                 <div className="card border-0 bg-warning bg-opacity-10 rounded-3 mb-3">
                   <div className="card-body p-3">
@@ -845,13 +869,13 @@ const AdminPaymentsPage = () => {
                       </label>
                       <textarea
                         id="rejectReason"
-                        className="form-control rounded-2 border-2 bg-light"
+                        className="form-control rounded-2 border-2 bg-white text-dark"
                         rows={4}
                         value={rejectReason}
                         onChange={(e) => setRejectReason(e.target.value)}
                         placeholder="ระบุเหตุผลที่ชัดเจน..."
-                        disabled={isRejecting}
                         required
+                        style={{ minHeight: '100px' }}
                       />
                       <small className="text-muted">
                         <i className="bi bi-info-circle me-1"></i>
@@ -873,40 +897,37 @@ const AdminPaymentsPage = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="modal-footer border-0 bg-light rounded-bottom-3">
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary rounded-2 px-4"
-                  onClick={cancelReject}
-                  disabled={isRejecting}
-                >
-                  <i className="bi bi-x-lg me-2"></i>
-                  ยกเลิก
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-danger rounded-2 px-4"
-                  onClick={confirmReject}
-                  disabled={isRejecting || !rejectReason.trim()}
-                >
-                  {isRejecting ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                      กำลังดำเนินการ...
-                    </>
-                  ) : (
-                    <>
-                      <i className="bi bi-x-circle-fill me-2"></i>
-                      ยืนยันการปฏิเสธ
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+        </Modal.Body>
+        <Modal.Footer className="border-0 bg-light rounded-bottom-3">
+          <Button
+            variant="outline-secondary"
+            className="rounded-2 px-4"
+            onClick={cancelReject}
+            disabled={isRejecting}
+          >
+            <i className="bi bi-x-lg me-2"></i>
+            ยกเลิก
+          </Button>
+          <Button
+            variant="danger"
+            className="rounded-2 px-4"
+            onClick={confirmReject}
+            disabled={isRejecting || !rejectReason.trim()}
+          >
+            {isRejecting ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" className="me-2" />
+                กำลังดำเนินการ...
+              </>
+            ) : (
+              <>
+                <i className="bi bi-x-circle-fill me-2"></i>
+                ยืนยันการปฏิเสธ
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
