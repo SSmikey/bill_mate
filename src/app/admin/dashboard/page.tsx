@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 interface DashboardStats {
   totalRooms: number;
@@ -220,10 +221,10 @@ export default function AdminDashboard() {
                   <i className="bi bi-plus-circle-fill me-2"></i>
                   เพิ่มห้องพัก
                 </a>
-                <a href="/admin/bills" className="btn btn-outline-primary d-flex align-items-center justify-content-center py-2 text-decoration-none fw-medium rounded-2">
+                <Link href="/admin/bills" className="btn btn-outline-primary d-flex align-items-center justify-content-center py-2 text-decoration-none fw-medium rounded-2">
                   <i className="bi bi-file-earmark-plus-fill me-2"></i>
                   สร้างบิล
-                </a>
+                </Link>
                 <a href="/admin/payments" className="btn btn-outline-primary d-flex align-items-center justify-content-center py-2 text-decoration-none fw-medium rounded-2">
                   <i className="bi bi-check-square-fill me-2"></i>
                   ตรวจสอบการชำระ
