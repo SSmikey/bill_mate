@@ -85,3 +85,36 @@ export async function createManualBill(billData: any) {
   // Placeholder for manual bill creation logic
   return { success: true, data: { ...billData, _id: 'new_bill_id' } };
 }
+
+/**
+ * Gets statistics about bill generation.
+ * Returns counts and status information about bills in the system.
+ */
+export async function getBillGenerationStats() {
+  try {
+    await connectDB();
+
+    const totalBills = await Bill.countDocuments();
+    const pendingBills = await Bill.countDocuments({ status: 'pending' });
+    const verifiedBills = await Bill.countDocuments({ status: 'verified' });
+    const rejectedBills = await Bill.countDocuments({ status: 'rejected' });
+
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    const currentMonthBills = await Bill.countDocuments({ month: currentMonth, year: currentYear });
+
+    return {
+      totalBills,
+      pendingBills,
+      verifiedBills,
+      rejectedBills,
+      currentMonthBills,
+      currentMonth,
+      currentYear
+    };
+  } catch (error) {
+    console.error('Error fetching bill generation stats:', error);
+    throw new Error('Failed to fetch bill generation statistics');
+  }
+}
