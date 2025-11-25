@@ -232,10 +232,10 @@ export default function TenantProfilePage() {
           <form onSubmit={handleProfileUpdate}>
             <div className="row g-3 mb-4">
               <div className="col-md-6">
-                <label className="form-label fw-semibold">ชื่อ-นามสกุล</label>
+                <label className="form-label fw-semibold text-muted">ชื่อ-นามสกุล</label>
                 <input
                   type="text"
-                  className="form-control rounded-2"
+                  className="form-control rounded-2 bg-light text-dark"
                   value={profile.name}
                   onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                   disabled={loading}
@@ -243,10 +243,10 @@ export default function TenantProfilePage() {
                 />
               </div>
               <div className="col-md-6">
-                <label className="form-label fw-semibold">อีเมล</label>
+                <label className="form-label fw-semibold text-muted">อีเมล</label>
                 <input
                   type="email"
-                  className="form-control rounded-2"
+                  className="form-control rounded-2 bg-light text-dark"
                   value={profile.email}
                   disabled
                   readOnly
@@ -256,29 +256,30 @@ export default function TenantProfilePage() {
             </div>
             <div className="row g-3 mb-4">
               <div className="col-md-6">
-                <label className="form-label fw-semibold">เบอร์โทรศัพท์</label>
+                <label className="form-label fw-semibold text-muted">เบอร์โทรศัพท์</label>
                 <input
                   type="tel"
-                  className="form-control rounded-2"
+                  className="form-control rounded-2 bg-light text-dark"
                   value={profile.phone || ''}
                   onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                   disabled={loading}
                 />
               </div>
               <div className="col-md-6">
-                <label className="form-label fw-semibold">บทบาท</label>
+                <label className="form-label fw-semibold text-muted">บทบาท</label>
                 <input
                   type="text"
-                  className="form-control rounded-2"
+                  className="form-control rounded-2 text-dark bg-light"
                   value={profile.role === 'admin' ? 'เจ้าของหอ' : 'ผู้เช่า'}
                   disabled
                   readOnly
                 />
+                <small className="text-muted">ไม่สามารถเปลี่ยนบทบาทได้</small>
               </div>
             </div>
             <button
               type="submit"
-              className="btn btn-primary rounded-2"
+              className="btn btn-secondary rounded-2"
               disabled={loading}
             >
               {loading ? (
@@ -309,10 +310,10 @@ export default function TenantProfilePage() {
           <form onSubmit={handlePasswordChange}>
             <div className="row g-3 mb-4">
               <div className="col-md-4">
-                <label className="form-label fw-semibold">รหัสผ่านเดิม</label>
+                <label className="form-label fw-semibold text-muted">รหัสผ่านเดิม</label>
                 <input
                   type="password"
-                  className="form-control rounded-2"
+                  className="form-control rounded-2 bg-light text-dark"
                   value={passwordForm.currentPassword}
                   onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
                   disabled={passwordLoading}
@@ -320,10 +321,10 @@ export default function TenantProfilePage() {
                 />
               </div>
               <div className="col-md-4">
-                <label className="form-label fw-semibold">รหัสผ่านใหม่</label>
+                <label className="form-label fw-semibold text-muted">รหัสผ่านใหม่</label>
                 <input
                   type="password"
-                  className="form-control rounded-2"
+                  className="form-control rounded-2 bg-light text-dark"
                   value={passwordForm.newPassword}
                   onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                   disabled={passwordLoading}
@@ -332,10 +333,10 @@ export default function TenantProfilePage() {
                 />
               </div>
               <div className="col-md-4">
-                <label className="form-label fw-semibold">ยืนยันรหัสผ่าน</label>
+                <label className="form-label fw-semibold text-muted">ยืนยันรหัสผ่าน</label>
                 <input
                   type="password"
-                  className="form-control rounded-2"
+                  className="form-control rounded-2 bg-light text-dark"
                   value={passwordForm.confirmPassword}
                   onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                   disabled={passwordLoading}
@@ -385,7 +386,7 @@ export default function TenantProfilePage() {
                   onChange={(e) => setNotificationPrefs({ ...notificationPrefs, emailNotifications: e.target.checked })}
                   disabled={prefsLoading}
                 />
-                <label className="form-check-label" htmlFor="emailNotifications">
+                <label className="form-check-label text-muted" htmlFor="emailNotifications">
                   รับการแจ้งเตือนทางอีเมล
                 </label>
               </div>
@@ -400,7 +401,7 @@ export default function TenantProfilePage() {
                   onChange={(e) => setNotificationPrefs({ ...notificationPrefs, reminder5Days: e.target.checked })}
                   disabled={prefsLoading}
                 />
-                <label className="form-check-label" htmlFor="reminder5Days">
+                <label className="form-check-label text-muted" htmlFor="reminder5Days">
                   แจ้งเตือนก่อนครบกำหนด 5 วัน
                 </label>
               </div>
@@ -415,7 +416,7 @@ export default function TenantProfilePage() {
                   onChange={(e) => setNotificationPrefs({ ...notificationPrefs, reminder1Day: e.target.checked })}
                   disabled={prefsLoading}
                 />
-                <label className="form-check-label" htmlFor="reminder1Day">
+                <label className="form-check-label text-muted" htmlFor="reminder1Day">
                   แจ้งเตือนก่อนครบกำหนด 1 วัน
                 </label>
               </div>
@@ -430,14 +431,14 @@ export default function TenantProfilePage() {
                   onChange={(e) => setNotificationPrefs({ ...notificationPrefs, overdueNotifications: e.target.checked })}
                   disabled={prefsLoading}
                 />
-                <label className="form-check-label" htmlFor="overdueNotifications">
+                <label className="form-check-label text-muted" htmlFor="overdueNotifications">
                   แจ้งเตือนเมื่อเกินกำหนด
                 </label>
               </div>
             </div>
             <button
               type="button"
-              className="btn btn-info rounded-2"
+              className="btn btn-secondary rounded-2"
               onClick={handleNotificationPrefsUpdate}
               disabled={prefsLoading}
             >

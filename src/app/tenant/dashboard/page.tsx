@@ -86,7 +86,7 @@ export default function TenantDashboard() {
                   <h3 className="mb-0 fw-bold text-dark">{bills.length}</h3>
                 </div>
                 <div className="rounded-circle p-3 bg-primary bg-opacity-10">
-                  <i className="bi bi-receipt-fill fs-4 text-primary"></i>
+                  <i className="bi bi-receipt fs-4 text-primary"></i>
                 </div>
               </div>
             </div>
