@@ -2,7 +2,7 @@ import connectDB from '@/lib/mongodb';
 import Notification from '@/models/Notification';
 import Bill from '@/models/Bill';
 import User from '@/models/User';
-import { sendEmail, getPaymentReminderEmail, getPaymentVerifiedEmail, getPaymentRejectedEmail } from '@/lib/email';
+// import { sendEmail, getPaymentReminderEmail, getPaymentVerifiedEmail, getPaymentRejectedEmail } from '@/lib/email';
 import { format } from 'date-fns';
 
 export async function sendPaymentReminders(daysBefore: number) {
@@ -46,17 +46,17 @@ export async function sendPaymentReminders(daysBefore: number) {
         sentAt: new Date(),
       });
 
-      // Send email
-      await sendEmail({
-        to: user.email,
-        subject: `แจ้งเตือนการชำระเงิน - ห้อง ${room.roomNumber}`,
-        html: getPaymentReminderEmail(
-          user.name,
-          room.roomNumber,
-          bill.totalAmount,
-          format(bill.dueDate, 'dd/MM/yyyy')
-        ),
-      });
+      // Send email (disabled for deployment)
+      // await sendEmail({
+      //   to: user.email,
+      //   subject: `แจ้งเตือนการชำระเงิน - ห้อง ${room.roomNumber}`,
+      //   html: getPaymentReminderEmail(
+      //     user.name,
+      //     room.roomNumber,
+      //     bill.totalAmount,
+      //     format(bill.dueDate, 'dd/MM/yyyy')
+      //   ),
+      // });
 
       notificationCount++;
     } catch (error) {
@@ -136,12 +136,12 @@ export async function notifyPaymentVerified(billId: string, userId: string, amou
       sentAt: new Date(),
     });
 
-    // Send email
-    await sendEmail({
-      to: email,
-      subject: `ยืนยันการชำระเงิน - ห้อง ${roomNumber}`,
-      html: getPaymentVerifiedEmail(userName, roomNumber, amount),
-    });
+    // Send email (disabled for deployment)
+    // await sendEmail({
+    //   to: email,
+    //   subject: `ยืนยันการชำระเงิน - ห้อง ${roomNumber}`,
+    //   html: getPaymentVerifiedEmail(userName, roomNumber, amount),
+    // });
 
     return true;
   } catch (error) {
@@ -165,12 +165,12 @@ export async function notifyPaymentRejected(billId: string, userId: string, reas
       sentAt: new Date(),
     });
 
-    // Send email
-    await sendEmail({
-      to: email,
-      subject: `ไม่สามารถยืนยันการชำระ - ห้อง ${roomNumber}`,
-      html: getPaymentRejectedEmail(userName, roomNumber, reason),
-    });
+    // Send email (disabled for deployment)
+    // await sendEmail({
+    //   to: email,
+    //   subject: `ไม่สามารถยืนยันการชำระ - ห้อง ${roomNumber}`,
+    //   html: getPaymentRejectedEmail(userName, roomNumber, reason),
+    // });
 
     return true;
   } catch (error) {
