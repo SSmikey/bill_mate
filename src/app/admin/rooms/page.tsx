@@ -69,6 +69,11 @@ export default function AdminRoomsPage() {
   const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
   const [bulkMode, setBulkMode] = useState(false);
 
+  // State สำหรับ checkout confirmation dialog
+  const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
+  const [checkoutRoom, setCheckoutRoom] = useState<Room | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
   // โหลดข้อมูลห้องทั้งหมดเมื่อเปิดหน้า
   useEffect(() => {
     fetchRooms();
@@ -292,18 +297,19 @@ export default function AdminRoomsPage() {
   };
 
   // ฟังก์ชัน Checkout (unassign tenant)
-  const handleCheckout = async (room: Room) => {
-    const confirmed = window.confirm(
-      `ต้องการให้ผู้เช่า ${room.tenantId?.name} ออกจากห้อง ${room.roomNumber} ใช่หรือไม่?\n\nการดำเนินการนี้จะทำให้ห้องกลายเป็นห้องว่าง`
-    );
+  const handleCheckout = (room: Room) => {
+    setCheckoutRoom(room);
+    setShowCheckoutDialog(true);
+  };
 
-    if (!confirmed) return;
+  const confirmCheckout = async () => {
+    if (!checkoutRoom) return;
 
     try {
       setError('');
-      setLoading(true);
+      setCheckoutLoading(true);
 
-      const response = await fetch(`/api/rooms/${room._id}/assign`, {
+      const response = await fetch(`/api/rooms/${checkoutRoom._id}/assign`, {
         method: 'DELETE',
       });
 
@@ -314,13 +320,15 @@ export default function AdminRoomsPage() {
       }
 
       await fetchRooms();
-      setSuccess(`ปลดผู้เช่าออกจากห้อง ${room.roomNumber} สำเร็จ`);
+      setSuccess(`ปลดผู้เช่าออกจากห้อง ${checkoutRoom.roomNumber} สำเร็จ`);
       setTimeout(() => setSuccess(''), 3000);
+      setShowCheckoutDialog(false);
+      setCheckoutRoom(null);
     } catch (err: any) {
       console.error('Error checking out tenant:', err);
       setError(err.message || 'เกิดข้อผิดพลาดในการปลดผู้เช่า');
     } finally {
-      setLoading(false);
+      setCheckoutLoading(false);
     }
   };
 
@@ -903,6 +911,119 @@ export default function AdminRoomsPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Checkout Confirmation Dialog */}
+      {showCheckoutDialog && checkoutRoom && (
+        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex={-1}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 rounded-3 shadow-lg">
+              <div className="modal-header bg-warning text-dark border-0 rounded-top-3">
+                <h6 className="modal-title fw-semibold">
+                  <i className="bi bi-person-dash-fill me-2"></i>
+                  ยืนยันการปลดผู้เช่า
+                </h6>
+              </div>
+              <div className="modal-body p-4">
+                <div className="alert alert-warning border-0 rounded-3">
+                  <h6 className="fw-semibold mb-3">
+                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                    คำเตือน
+                  </h6>
+                  <p className="mb-0">
+                    การดำเนินการนี้จะปลดผู้เช่าออกจากห้องและทำให้ห้องกลายเป็นห้องว่าง
+                  </p>
+                </div>
+
+                <div className="alert alert-info border-0 rounded-3">
+                  <h6 className="fw-semibold mb-3">
+                    <i className="bi bi-house me-2"></i>
+                    ข้อมูลห้อง
+                  </h6>
+                  <div className="row g-2">
+                    <div className="col-12">
+                      <strong>หมายเลขห้อง:</strong> {checkoutRoom.roomNumber}
+                    </div>
+                    <div className="col-12">
+                      <strong>ชั้น:</strong> {checkoutRoom.floor || '-'}
+                    </div>
+                    <div className="col-12">
+                      <strong>ค่าเช่า:</strong> {checkoutRoom.rentPrice.toLocaleString('th-TH')} ฿/เดือน
+                    </div>
+                  </div>
+                </div>
+
+                {checkoutRoom.tenantId && (
+                  <div className="alert alert-danger border-0 rounded-3">
+                    <h6 className="fw-semibold mb-3">
+                      <i className="bi bi-person me-2"></i>
+                      ข้อมูลผู้เช่าที่จะถูกปลด
+                    </h6>
+                    <div className="row g-2">
+                      <div className="col-12">
+                        <strong>ชื่อ:</strong> {checkoutRoom.tenantId.name}
+                      </div>
+                      <div className="col-12">
+                        <strong>อีเมล:</strong> {checkoutRoom.tenantId.email}
+                      </div>
+                      {checkoutRoom.moveInDate && (
+                        <div className="col-12">
+                          <strong>วันที่เข้าพัก:</strong>{' '}
+                          {new Date(checkoutRoom.moveInDate).toLocaleDateString('th-TH')}
+                        </div>
+                      )}
+                      {checkoutRoom.depositAmount && (
+                        <div className="col-12">
+                          <strong>เงินมัดจำ:</strong> {checkoutRoom.depositAmount.toLocaleString('th-TH')} ฿
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-center mt-3">
+                  <p className="mb-0 fw-semibold text-dark">
+                    <i className="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                    ต้องการยืนยันการปลดผู้เช่านี้ใช่หรือไม่?
+                  </p>
+                  <small className="text-muted">การดำเนินการนี้ไม่สามารถย้อนกลับได้</small>
+                </div>
+              </div>
+              <div className="modal-footer border-0 bg-light rounded-bottom-3">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary rounded-2 px-4"
+                  onClick={() => {
+                    setShowCheckoutDialog(false);
+                    setCheckoutRoom(null);
+                  }}
+                  disabled={checkoutLoading}
+                >
+                  <i className="bi bi-x-lg me-2"></i>
+                  ยกเลิก
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-warning text-dark rounded-2 px-4"
+                  onClick={confirmCheckout}
+                  disabled={checkoutLoading}
+                >
+                  {checkoutLoading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                      กำลังดำเนินการ...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-person-dash-fill me-2"></i>
+                      ยืนยันการปลดผู้เช่า
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

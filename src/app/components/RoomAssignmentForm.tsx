@@ -40,6 +40,7 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
   const [loading, setLoading] = useState(false);
   const [fetchingTenants, setFetchingTenants] = useState(true);
   const [error, setError] = useState('');
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const [formData, setFormData] = useState<AssignmentData>({
     tenantId: '',
@@ -109,15 +110,14 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
       return;
     }
 
-    const confirmed = window.confirm(
-      `ต้องการมอบหมายห้อง ${room.roomNumber} ให้กับผู้เช่าที่เลือก ใช่หรือไม่?`
-    );
+    setShowConfirmDialog(true);
+  };
 
-    if (!confirmed) return;
-
+  const confirmAssignment = async () => {
     try {
       setLoading(true);
       setError('');
+      setShowConfirmDialog(false);
 
       // Create FormData for file upload
       const submitData = new FormData();
@@ -481,6 +481,119 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
           </form>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex={-1}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 rounded-3 shadow-lg">
+              <div className="modal-header bg-primary text-white border-0 rounded-top-3">
+                <h6 className="modal-title fw-semibold">
+                  <i className="bi bi-person-check-fill me-2"></i>
+                  ยืนยันการมอบหมายผู้เช่า
+                </h6>
+              </div>
+              <div className="modal-body p-4">
+                <div className="alert alert-info border-0 rounded-3">
+                  <h6 className="fw-semibold mb-3">
+                    <i className="bi bi-house me-2"></i>
+                    ข้อมูลห้อง
+                  </h6>
+                  <div className="row g-2">
+                    <div className="col-12">
+                      <strong>หมายเลขห้อง:</strong> {room.roomNumber}
+                    </div>
+                    <div className="col-12">
+                      <strong>ชั้น:</strong> {room.floor || '-'}
+                    </div>
+                    <div className="col-12">
+                      <strong>ค่าเช่า:</strong> {room.rentPrice.toLocaleString('th-TH')} ฿/เดือน
+                    </div>
+                  </div>
+                </div>
+
+                {selectedTenant && (
+                  <div className="alert alert-success border-0 rounded-3">
+                    <h6 className="fw-semibold mb-3">
+                      <i className="bi bi-person me-2"></i>
+                      ข้อมูลผู้เช่า
+                    </h6>
+                    <div className="row g-2">
+                      <div className="col-12">
+                        <strong>ชื่อ:</strong> {selectedTenant.name}
+                      </div>
+                      <div className="col-12">
+                        <strong>อีเมล:</strong> {selectedTenant.email}
+                      </div>
+                      {selectedTenant.phone && (
+                        <div className="col-12">
+                          <strong>เบอร์โทร:</strong> {selectedTenant.phone}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="alert alert-warning border-0 rounded-3">
+                  <h6 className="fw-semibold mb-3">
+                    <i className="bi bi-calendar-check me-2"></i>
+                    รายละเอียดการมอบหมาย
+                  </h6>
+                  <div className="row g-2">
+                    <div className="col-12">
+                      <strong>วันที่เข้าพัก:</strong>{' '}
+                      {new Date(formData.moveInDate).toLocaleDateString('th-TH')}
+                    </div>
+                    <div className="col-12">
+                      <strong>วันครบกำหนดชำระ:</strong> วันที่ {formData.rentDueDate} ของทุกเดือน
+                    </div>
+                    <div className="col-12">
+                      <strong>เงินมัดจำ:</strong> {formData.depositAmount.toLocaleString('th-TH')} ฿
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-center mt-3">
+                  <p className="mb-0 fw-semibold text-dark">
+                    <i className="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                    ต้องการยืนยันการมอบหมายห้องนี้ใช่หรือไม่?
+                  </p>
+                  <small className="text-muted">การดำเนินการนี้ไม่สามารถย้อนกลับได้</small>
+                </div>
+              </div>
+              <div className="modal-footer border-0 bg-light rounded-bottom-3">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary rounded-2 px-4"
+                  onClick={() => setShowConfirmDialog(false)}
+                  disabled={loading}
+                >
+                  <i className="bi bi-x-lg me-2"></i>
+                  ยกเลิก
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary rounded-2 px-4"
+                  onClick={confirmAssignment}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                      กำลังดำเนินการ...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-check-circle me-2"></i>
+                      ยืนยันการมอบหมาย
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
