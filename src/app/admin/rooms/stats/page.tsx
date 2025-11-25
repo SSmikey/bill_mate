@@ -181,7 +181,7 @@ export default function RoomStatsPage() {
               <div className="col-md-4">
                 <StyledSelect
                   value={year}
-                  onChange={setYear}
+                  onChange={(val) => setYear(String(val))}
                   label="ปี"
                   icon="bi bi-calendar"
                   options={Array.from({ length: 5 }, (_, i) => {

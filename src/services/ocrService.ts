@@ -38,7 +38,7 @@ export async function performOCR(imageBase64: string): Promise<OCRData> {
  */
 async function runTesseract(imageBase64: string): Promise<OCRData> {
   const result = await Tesseract.recognize(imageBase64, 'tha+eng', {
-    logger: (m) => console.log('Tesseract Progress:', m),
+    logger: (m) => console.warn('Tesseract Progress:', m),
   });
 
   const text = result.data.text;
@@ -64,7 +64,7 @@ async function runGoogleVision(imageBase64: string): Promise<OCRData> {
     const [result] = await client.textDetection(request);
     const fullText = result.textAnnotations?.[0]?.description || '';
 
-    console.log('Google Vision OCR Result received.');
+    console.warn('Google Vision OCR Result received.');
     return extractSlipInfoFromText(fullText);
   } catch (error) {
     console.error('Google Vision API Error:', error);
