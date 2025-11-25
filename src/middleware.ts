@@ -1,38 +1,11 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { RateLimiters, addSecurityHeaders } from '@/lib/security';
 
 export default withAuth(
   function middleware(req: NextRequest) {
-    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-    
-    // Apply rate limiting based on the route
-    let rateLimiter = RateLimiters.API;
-    
-    if (req.nextUrl.pathname.includes('/auth') || req.nextUrl.pathname.includes('/login')) {
-      rateLimiter = RateLimiters.AUTH;
-    } else if (req.nextUrl.pathname.includes('/password')) {
-      rateLimiter = RateLimiters.PASSWORD_RESET;
-    } else if (req.nextUrl.pathname.includes('/upload')) {
-      rateLimiter = RateLimiters.FILE_UPLOAD;
-    }
-    
-    // Check rate limit
-    const rateLimitResult = rateLimiter.isAllowed(ip);
-    if (!rateLimitResult.allowed) {
-      const response = NextResponse.json(
-        { error: 'Too many requests' },
-        { status: 429 }
-      );
-      
-      if (rateLimitResult.resetTime) {
-        const retryAfter = Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000);
-        response.headers.set('Retry-After', retryAfter.toString());
-      }
-      
-      return response;
-    }
+    // Note: Rate limiting moved to individual API routes to avoid Edge Runtime issues
+    // See @/lib/security for rate limiting utilities
 
     // Create response with security headers
     const response = NextResponse.next();

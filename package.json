@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "create-admin": "node scripts/init-db.js",
-    "postinstall": "xcopy node_modules\\bootstrap-icons\\font\\*.* public\\bootstrap-icons\\font\\ /E /I /Y"
+    "postinstall": "node scripts/copy-bootstrap-icons.js || echo 'Bootstrap icons copy skipped'"
   },
   "overrides": {
     "react-is": "19.0.0"
