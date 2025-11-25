@@ -1,375 +1,243 @@
-// src/app/notifications/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { format } from 'date-fns';
-import { th } from 'date-fns/locale';
+import NotificationList from '@/app/components/NotificationList';
 
-interface Notification {
-  _id: string;
-  type: 'payment_reminder' | 'payment_verified' | 'payment_rejected' | 'overdue' | 'bill_generated';
-  title: string;
-  message: string;
-  billId?: {
-    _id: string;
-    roomId: {
-      roomNumber: string;
-    };
-  };
-  read: boolean;
-  sentAt: string;
-  readAt?: string;
+interface NotificationStats {
+  total: number;
+  unread: number;
+  read: number;
 }
-
-type FilterStatus = 'all' | 'unread' | 'read';
-type FilterType = 'all' | 'payment_reminder' | 'payment_verified' | 'payment_rejected' | 'overdue' | 'bill_generated';
 
 export default function NotificationsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
-  const [filterType, setFilterType] = useState<FilterType>('all');
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'all' | 'unread'>('unread');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [stats, setStats] = useState<NotificationStats>({ total: 0, unread: 0, read: 0 });
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [isMarkingAll, setIsMarkingAll] = useState(false);
 
-  // Redirect ถ้ายังไม่ login
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (status === 'loading') return;
+    if (!session) {
       router.push('/login');
+      return;
     }
-  }, [status, router]);
+    fetchNotificationStats();
+  }, [status, session, router]);
 
-  // Fetch notifications
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchNotifications();
-    }
-  }, [status]);
-
-  async function fetchNotifications() {
+  const fetchNotificationStats = async () => {
     try {
-      setLoading(true);
-      const response = await fetch('/api/notifications');
+      setLoadingStats(true);
+      const response = await fetch(`/api/notifications/stats?userId=${session?.user?.id}`);
       const result = await response.json();
-
+      
       if (result.success) {
-        setNotifications(result.data.notifications);
+        setStats(result.data || { total: 0, unread: 0, read: 0 });
       }
     } catch (error) {
-      console.error('Error fetching notifications:', error);
-      alert('เกิดข้อผิดพลาดในการโหลดการแจ้งเตือน');
+      console.error('Failed to fetch notification stats:', error);
     } finally {
-      setLoading(false);
+      setLoadingStats(false);
     }
-  }
+  };
 
-  // Mark as read
-  async function markAsRead(notificationId: string) {
+  const handleTabChange = (tab: 'all' | 'unread') => {
+    if (activeTab === tab) return; // Prevent unnecessary re-renders
+    setActiveTab(tab);
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  const markAllAsRead = async () => {
+    if (isMarkingAll || stats.unread === 0) return; // Prevent multiple clicks
+    
     try {
-      setActionLoading(notificationId);
-      
-      const response = await fetch('/api/notifications', {
-        method: 'POST',
+      setIsMarkingAll(true);
+      const response = await fetch('/api/notifications/mark-all-read', {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notificationId })
+        body: JSON.stringify({ userId: session?.user?.id }),
       });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await fetchNotifications();
+      
+      if (response.ok) {
+        setStats(prev => ({ ...prev, unread: 0, read: prev.total }));
+        setRefreshTrigger(prev => prev + 1);
       }
     } catch (error) {
-      console.error('Error marking as read:', error);
-      alert('เกิดข้อผิดพลาด');
+      console.error('Failed to mark all notifications as read:', error);
     } finally {
-      setActionLoading(null);
+      setIsMarkingAll(false);
     }
-  }
+  };
 
-  // Mark all as read
-  async function markAllAsRead() {
-    const unreadIds = notifications
-      .filter(n => !n.read)
-      .map(n => n._id);
-
-    if (unreadIds.length === 0) {
-      alert('ไม่มีการแจ้งเตือนที่ยังไม่อ่าน');
-      return;
-    }
-
-    if (!confirm(`ต้องการทำเครื่องหมายว่าอ่านแล้วทั้งหมด ${unreadIds.length} รายการ?`)) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      for (const id of unreadIds) {
-        await markAsRead(id);
-      }
-      
-      await fetchNotifications();
-      alert('ทำเครื่องหมายว่าอ่านแล้วทั้งหมดเรียบร้อย');
-    } catch (error) {
-      console.error('Error marking all as read:', error);
-      alert('เกิดข้อผิดพลาด');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Delete notification
-  async function deleteNotification(id: string) {
-    if (!confirm('ต้องการลบการแจ้งเตือนนี้?')) {
-      return;
-    }
-
-    try {
-      setActionLoading(id);
-      
-      const response = await fetch(`/api/notifications/${id}`, {
-        method: 'DELETE'
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await fetchNotifications();
-      } else {
-        alert(result.error || 'เกิดข้อผิดพลาด');
-      }
-    } catch (error) {
-      console.error('Error deleting notification:', error);
-      alert('เกิดข้อผิดพลาด');
-    } finally {
-      setActionLoading(null);
-    }
-  }
-
-  // Delete all read
-  async function deleteAllRead() {
-    const readIds = notifications
-      .filter(n => n.read)
-      .map(n => n._id);
-
-    if (readIds.length === 0) {
-      alert('ไม่มีการแจ้งเตือนที่อ่านแล้วให้ลบ');
-      return;
-    }
-
-    if (!confirm(`ต้องการลบการแจ้งเตือนที่อ่านแล้วทั้งหมด ${readIds.length} รายการ?`)) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      for (const id of readIds) {
-        await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
-      }
-      
-      await fetchNotifications();
-      alert('ลบการแจ้งเตือนที่อ่านแล้วเรียบร้อย');
-    } catch (error) {
-      console.error('Error deleting all read:', error);
-      alert('เกิดข้อผิดพลาด');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Filter notifications
-  const filteredNotifications = notifications.filter(notification => {
-    // Filter by status
-    if (filterStatus === 'unread' && notification.read) return false;
-    if (filterStatus === 'read' && !notification.read) return false;
-    
-    // Filter by type
-    if (filterType !== 'all' && notification.type !== filterType) return false;
-    
-    return true;
-  });
-
-  // Get icon and color
-  function getNotificationIcon(type: Notification['type']) {
-    switch (type) {
-      case 'payment_reminder': return '🔔';
-      case 'payment_verified': return '✅';
-      case 'payment_rejected': return '❌';
-      case 'overdue': return '⚠️';
-      case 'bill_generated': return '📄';
-      default: return '📌';
-    }
-  }
-
-  function getNotificationColor(type: Notification['type']) {
-    switch (type) {
-      case 'payment_reminder': return 'warning';
-      case 'payment_verified': return 'success';
-      case 'payment_rejected': return 'danger';
-      case 'overdue': return 'danger';
-      case 'bill_generated': return 'info';
-      default: return 'secondary';
-    }
-  }
-
-  const unreadCount = notifications.filter(n => !n.read).length;
-  const readCount = notifications.filter(n => n.read).length;
-
-  if (status === 'loading' || loading) {
+  if (status === 'loading') {
     return (
-      <div className="container mt-4">
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status">
+      <div className="d-flex justify-content-center align-items-center vh-80">
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}>
             <span className="visually-hidden">กำลังโหลด...</span>
           </div>
-          <p className="mt-3">กำลังโหลดการแจ้งเตือน...</p>
+          <h5 className="text-muted">กำลังโหลด...</h5>
         </div>
       </div>
     );
   }
 
+  if (!session) {
+    return null;
+  }
+
   return (
-    <div className="container mt-4 mb-5">
-      <div className="row">
-        <div className="col-12">
-          {/* Header */}
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2>
-              <i className="bi bi-bell"></i> การแจ้งเตือนของฉัน
-              {unreadCount > 0 && (
-                <span className="badge bg-danger ms-2">{unreadCount}</span>
-              )}
-            </h2>
+    <div className="fade-in notifications-page">
+      <div className="container-lg py-4">
+        {/* Enhanced Header with user info */}
+        <div className="mb-5">
+        <div className="d-flex align-items-center justify-content-between">
+          <div>
+            <h1 className="fw-bold text-dark mb-2">การแจ้งเตือน</h1>
+            <p className="text-muted mb-0">จัดการและตรวจสอบการแจ้งเตือนทั้งหมดของคุณ</p>
           </div>
+          <div className="text-end">
+            <div className="text-muted small">วันนี้</div>
+            <div className="fw-semibold">
+              {new Date().toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
+          </div>
+        </div>
+      </div>
 
-          {/* Filters & Actions */}
-          <div className="card mb-3">
-            <div className="card-body">
-              <div className="row g-3">
-                {/* Status Filter */}
-                <div className="col-md-3">
-                  <label className="form-label small">สถานะ:</label>
-                  <select
-                    className="form-select"
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
-                  >
-                    <option value="all">ทั้งหมด ({notifications.length})</option>
-                    <option value="unread">ยังไม่อ่าน ({unreadCount})</option>
-                    <option value="read">อ่านแล้ว ({readCount})</option>
-                  </select>
+      {/* Statistics Cards */}
+      <div className="row mb-5 g-3">
+        <div className="col-md-4">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm stats-card">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <p className="text-muted small mb-1">การแจ้งเตือนทั้งหมด</p>
+                  <h3 className="mb-0 fw-bold text-dark">{loadingStats ? '-' : stats.total}</h3>
                 </div>
-
-                {/* Type Filter */}
-                <div className="col-md-4">
-                  <label className="form-label small">ประเภท:</label>
-                  <select
-                    className="form-select"
-                    value={filterType}
-                    onChange={(e) => setFilterType(e.target.value as FilterType)}
-                  >
-                    <option value="all">ทั้งหมด</option>
-                    <option value="payment_reminder">🔔 เตือนการชำระ</option>
-                    <option value="payment_verified">✅ อนุมัติการชำระ</option>
-                    <option value="payment_rejected">❌ ปฏิเสธการชำระ</option>
-                    <option value="overdue">⚠️ เกินกำหนด</option>
-                    <option value="bill_generated">📄 สร้างบิลใหม่</option>
-                  </select>
-                </div>
-
-                {/* Actions */}
-                <div className="col-md-5">
-                  <label className="form-label small">จัดการ:</label>
-                  <div className="d-flex gap-2">
-                    <button
-                      className="btn btn-sm btn-outline-success"
-                      onClick={markAllAsRead}
-                      disabled={unreadCount === 0 || loading}
-                    >
-                      <i className="bi bi-check-all"></i> อ่านทั้งหมด
-                    </button>
-                    <button
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={deleteAllRead}
-                      disabled={readCount === 0 || loading}
-                    >
-                      <i className="bi bi-trash"></i> ลบที่อ่านแล้ว
-                    </button>
-                  </div>
+                <div className="rounded-circle p-3 bg-primary bg-opacity-10">
+                  <i className="bi bi-bell-fill fs-4 text-primary"></i>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Notifications List */}
-          {filteredNotifications.length === 0 ? (
-            <div className="alert alert-info">
-              <i className="bi bi-info-circle"></i> ไม่มีการแจ้งเตือน
-            </div>
-          ) : (
-            <div className="list-group">
-              {filteredNotifications.map((notification) => (
-                <div
-                  key={notification._id}
-                  className={`list-group-item list-group-item-action ${
-                    !notification.read ? 'border-primary border-2' : ''
-                  }`}
-                >
-                  <div className="d-flex w-100 justify-content-between align-items-start">
-                    <div className="flex-grow-1">
-                      <h6 className="mb-1">
-                        {getNotificationIcon(notification.type)}{' '}
-                        {!notification.read && (
-                          <span className="badge bg-danger">NEW</span>
-                        )}{' '}
-                        {notification.title}
-                      </h6>
-                      <p className="mb-2 text-muted">{notification.message}</p>
-                      <small className="text-muted">
-                        <i className="bi bi-clock"></i>{' '}
-                        {format(new Date(notification.sentAt), 'dd/MM/yyyy HH:mm', { locale: th })}
-                      </small>
-                    </div>
-
-                    <div className="d-flex gap-2 ms-3">
-                      {notification.billId && (
-                        <Link
-                          href={`/tenant/bills/${notification.billId._id}`}
-                          className="btn btn-sm btn-outline-primary"
-                        >
-                          <i className="bi bi-file-text"></i> ดูบิล
-                        </Link>
-                      )}
-                      {!notification.read && (
-                        <button
-                          className="btn btn-sm btn-outline-success"
-                          onClick={() => markAsRead(notification._id)}
-                          disabled={actionLoading === notification._id}
-                        >
-                          <i className="bi bi-check"></i>
-                        </button>
-                      )}
-                      <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={() => deleteNotification(notification._id)}
-                        disabled={actionLoading === notification._id}
-                      >
-                        <i className="bi bi-trash"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
+
+        <div className="col-md-4">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm stats-card">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <p className="text-muted small mb-1">ยังไม่ได้อ่าน</p>
+                  <h3 className="mb-0 fw-bold text-warning">{loadingStats ? '-' : stats.unread}</h3>
+                </div>
+                <div className="rounded-circle p-3 bg-warning bg-opacity-10">
+                  <i className="bi bi-envelope-fill fs-4 text-warning"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-4">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm stats-card">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <p className="text-muted small mb-1">อ่านแล้ว</p>
+                  <h3 className="mb-0 fw-bold text-success">{loadingStats ? '-' : stats.read}</h3>
+                </div>
+                <div className="rounded-circle p-3 bg-success bg-opacity-10">
+                  <i className="bi bi-check-circle-fill fs-4 text-success"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Card */}
+      <div className="card border-0 bg-white rounded-3 shadow-sm">
+        <div className="card-body p-4">
+          <div className="d-flex align-items-center justify-content-between mb-4">
+            <div className="d-flex align-items-center">
+              <div className="rounded-circle p-3 me-3 bg-info bg-opacity-10">
+                <i className="bi bi-bell-fill fs-5 text-info"></i>
+              </div>
+              <div>
+                <h6 className="mb-0 fw-semibold text-dark">การแจ้งเตือน</h6>
+                <p className="mb-0 small text-muted">จัดการการแจ้งเตือนของคุณ</p>
+              </div>
+            </div>
+            
+            {stats.unread > 0 && (
+              <button
+                className="btn btn-sm btn-outline-primary rounded-2"
+                onClick={markAllAsRead}
+                disabled={isMarkingAll}
+              >
+                {isMarkingAll ? (
+                  <>
+                    <div className="spinner-border spinner-border-sm me-2" role="status">
+                      <span className="visually-hidden">กำลังอัปเดต...</span>
+                    </div>
+                    กำลังอัปเดต...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-check-all me-2"></i>
+                    ทำเครื่องหมายว่าอ่านทั้งหมด
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+          
+          {/* Enhanced Tab Navigation */}
+          <div className="d-flex gap-2 mb-4">
+            <button
+              className={`btn rounded-2 px-4 py-2 fw-medium position-relative ${
+                activeTab === 'unread'
+                  ? 'btn-primary text-white'
+                  : 'btn-outline-primary text-primary'
+              }`}
+              onClick={() => handleTabChange('unread')}
+              disabled={activeTab === 'unread'}
+            >
+              <i className="bi bi-envelope-fill me-2"></i>
+              ยังไม่ได้อ่าน
+              {stats.unread > 0 && (
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {stats.unread}
+                </span>
+              )}
+            </button>
+            <button
+              className={`btn rounded-2 px-4 py-2 fw-medium ${
+                activeTab === 'all'
+                  ? 'btn-primary text-white'
+                  : 'btn-outline-primary text-primary'
+              }`}
+              onClick={() => handleTabChange('all')}
+              disabled={activeTab === 'all'}
+            >
+              <i className="bi bi-list-ul me-2"></i>
+              ทั้งหมด
+            </button>
+          </div>
+
+          <NotificationList
+            showRead={activeTab === 'all'}
+            limit={50}
+            refreshTrigger={refreshTrigger}
+            onStatsUpdate={setStats}
+          />
+        </div>
+      </div>
       </div>
     </div>
   );

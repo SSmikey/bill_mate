@@ -1,171 +1,120 @@
 // src/services/billService.ts
+
+/**
+ * @file Service functions for bill management.
+ * This file will contain the business logic for creating, reading,
+ * updating, and deleting bills, including the automatic generation
+ * of monthly bills.
+ */
+
 import connectDB from '@/lib/mongodb';
 import Bill from '@/models/Bill';
-import Room from '@/models/Room';
-import Notification from '@/models/Notification';
+import Room, { IRoom } from '@/models/Room';
+import User from '@/models/User';
 
 /**
- * สร้างบิลอัตโนมัติสำหรับทุกห้องที่มีผู้เช่า
- * ทำงานทุกวันที่ 1 ของเดือน
+ * Generates monthly bills for all active rooms.
+ * This function will be called by a cron job.
  */
-export async function generateMonthlyBills(): Promise<number> {
-  await connectDB();
+export async function generateMonthlyBills() {
+  try {
+    console.log('Starting monthly bill generation...');
+    await connectDB();
 
-  const now = new Date();
-  const month = now.getMonth() + 1; // 1-12
-  const year = now.getFullYear();
+    const now = new Date();
+    const month = now.getMonth() + 1; // JavaScript months are 0-11
+    const year = now.getFullYear();
 
-  console.log(`📄 [BILL GEN] Starting monthly bill generation for ${getThaiMonth(month)} ${year + 543}`);
+    // 1. Find all rooms that are occupied and have a tenant assigned.
+    const occupiedRooms = await Room.find({ isOccupied: true, tenantId: { $ne: null } }).populate('tenantId');
 
-  // หาห้องที่มีผู้เช่าทั้งหมด
-  const occupiedRooms = await Room.find({ isOccupied: true })
-    .populate('tenantId');
-
-  if (occupiedRooms.length === 0) {
-    console.log('📄 [BILL GEN] No occupied rooms found');
-    return 0;
-  }
-
-  console.log(`📄 [BILL GEN] Found ${occupiedRooms.length} occupied rooms`);
-
-  let billsCreated = 0;
-  let billsSkipped = 0;
-  const errors: string[] = [];
-
-  for (const room of occupiedRooms) {
-    try {
-      // เช็คว่ามีบิลเดือนนี้แล้วหรือยัง
-      const existingBill = await Bill.findOne({
-        roomId: room._id,
-        month,
-        year
-      });
-
-      if (existingBill) {
-        console.log(`📄 [BILL GEN] Bill already exists for room ${room.roomNumber}`);
-        billsSkipped++;
-        continue;
-      }
-
-      // คำนวณวันครบกำหนด (วันที่ 25 ของเดือนนี้)
-      const dueDate = new Date(year, month - 1, 25);
-      
-      // ถ้าวันนี้เกินวันที่ 25 แล้ว ให้ครบกำหนดเดือนหน้า
-      if (now.getDate() > 25) {
-        dueDate.setMonth(dueDate.getMonth() + 1);
-      }
-
-      // คำนวณยอดรวม
-      const totalAmount = (room.rentPrice || 0) + 
-                         (room.waterPrice || 0) + 
-                         (room.electricityPrice || 0);
-
-      // สร้างบิลใหม่
-      const bill = await Bill.create({
-        roomId: room._id,
-        tenantId: room.tenantId._id,
-        month,
-        year,
-        rentAmount: room.rentPrice || 0,
-        waterAmount: room.waterPrice || 0,
-        electricityAmount: room.electricityPrice || 0,
-        totalAmount,
-        dueDate,
-        status: 'pending',
-        waterUnits: 0,
-        electricityUnits: 0,
-        previousWaterReading: 0,
-        currentWaterReading: 0,
-        previousElectricReading: 0,
-        currentElectricReading: 0
-      });
-
-      console.log(`✅ [BILL GEN] Created bill for room ${room.roomNumber} - ${totalAmount} บาท`);
-      billsCreated++;
-
-      // สร้าง notification แจ้งผู้เช่า
-      await Notification.create({
-        userId: room.tenantId._id,
-        type: 'bill_generated',
-        title: `บิลเดือน ${getThaiMonth(month)} ${year + 543}`,
-        message: `บิลค่าเช่าห้อง ${room.roomNumber} จำนวน ${totalAmount.toLocaleString('th-TH')} บาท ถูกสร้างแล้ว กรุณาชำระภายในวันที่ ${dueDate.getDate()}/${month}/${year + 543}`,
-        billId: bill._id,
-        read: false,
-        sentAt: new Date()
-      });
-
-      console.log(`📧 [BILL GEN] Notification sent to tenant of room ${room.roomNumber}`);
-
-    } catch (error) {
-      const errorMsg = `Error creating bill for room ${room.roomNumber}: ${error}`;
-      console.error(`❌ [BILL GEN] ${errorMsg}`);
-      errors.push(errorMsg);
+    if (occupiedRooms.length === 0) {
+      console.log('No occupied rooms found. No bills to generate.');
+      return { success: true, message: 'ไม่พบห้องพักที่มีผู้เช่า ไม่มีการสร้างบิล', generatedCount: 0 };
     }
-  }
 
-  console.log('');
-  console.log('='.repeat(60));
-  console.log('📄 [BILL GEN] Monthly Bill Generation Summary');
-  console.log('='.repeat(60));
-  console.log(`✅ Bills created: ${billsCreated}`);
-  console.log(`⏭️  Bills skipped (already exists): ${billsSkipped}`);
-  console.log(`❌ Errors: ${errors.length}`);
-  if (errors.length > 0) {
-    console.log('Error details:');
-    errors.forEach((err, i) => console.log(`  ${i + 1}. ${err}`));
-  }
-  console.log('='.repeat(60));
-  console.log('');
+    let generatedCount = 0;
+    // Explicitly type the room to help TypeScript understand the shape of the populated document
+    for (const room of occupiedRooms as (IRoom & { _id: any, tenantId: any })[]) {
+      // 2. Check if a bill for the current month/year already exists for this room
+      const existingBill = await Bill.findOne({ roomId: room._id, month, year });
 
-  return billsCreated;
+      if (!existingBill) {
+        // Defensive check: Ensure tenantId is populated and valid before creating a bill
+        if (!room.tenantId || !room.tenantId?._id) {
+          console.warn(`Skipping bill generation for room ${room.roomNumber} due to missing tenant data.`);
+          continue; // Skip to the next room
+        }
+
+        // 3. Create a new bill
+        // Water and electricity are fixed charges, not unit-based
+        const waterAmount = room.waterPrice;
+        const electricityAmount = room.electricityPrice;
+        const newBill = new Bill({
+          roomId: room._id,
+          tenantId: room.tenantId, // Use the populated tenant object directly
+          month,
+          year,
+          rentAmount: room.rentPrice,
+          waterAmount,
+          electricityAmount,
+          totalAmount: room.rentPrice + waterAmount + electricityAmount,
+          status: 'pending',
+        });
+
+        // 4. Save the new bill
+        await newBill.save();
+        generatedCount++;
+        console.log(`Generated bill for room ${room.roomNumber}`);
+      }
+    }
+
+    console.log(`Monthly bill generation complete. Generated ${generatedCount} bills.`);
+    return { success: true, message: `สร้างบิลประจำเดือน ${month}/${year} สำเร็จ จำนวน ${generatedCount} รายการ`, generatedCount };
+  } catch (error) {
+    console.error('Error during bill generation:', error);
+    throw new Error('Bill generation failed');
+  }
 }
 
 /**
- * แปลงเลขเดือนเป็นชื่อภาษาไทย
+ * Creates a single bill manually.
+ * @param billData - The data for the bill to create.
  */
-function getThaiMonth(month: number): string {
-  const months = [
-    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
-    'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
-    'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-  ];
-  return months[month - 1] || 'ไม่ทราบ';
+export async function createManualBill(billData: any) {
+  // Placeholder for manual bill creation logic
+  return { success: true, data: { ...billData, _id: 'new_bill_id' } };
 }
 
 /**
- * ดึงข้อมูลสถิติการสร้างบิล
+ * Gets statistics about bill generation.
+ * Returns counts and status information about bills in the system.
  */
 export async function getBillGenerationStats() {
-  await connectDB();
+  try {
+    await connectDB();
 
-  const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const currentYear = now.getFullYear();
+    const totalBills = await Bill.countDocuments();
+    const pendingBills = await Bill.countDocuments({ status: 'pending' });
+    const verifiedBills = await Bill.countDocuments({ status: 'verified' });
+    const rejectedBills = await Bill.countDocuments({ status: 'rejected' });
 
-  const [
-    currentMonthBills,
-    totalRooms,
-    occupiedRooms,
-    pendingBills,
-    paidBills
-  ] = await Promise.all([
-    Bill.countDocuments({ month: currentMonth, year: currentYear }),
-    Room.countDocuments({}),
-    Room.countDocuments({ isOccupied: true }),
-    Bill.countDocuments({ month: currentMonth, year: currentYear, status: 'pending' }),
-    Bill.countDocuments({ month: currentMonth, year: currentYear, status: 'paid' })
-  ]);
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    const currentMonthBills = await Bill.countDocuments({ month: currentMonth, year: currentYear });
 
-  return {
-    currentMonth: getThaiMonth(currentMonth),
-    currentYear: currentYear + 543,
-    billsGenerated: currentMonthBills,
-    totalRooms,
-    occupiedRooms,
-    pendingBills,
-    paidBills,
-    completionRate: occupiedRooms > 0 
-      ? Math.round((currentMonthBills / occupiedRooms) * 100) 
-      : 0
-  };
+    return {
+      totalBills,
+      pendingBills,
+      verifiedBills,
+      rejectedBills,
+      currentMonthBills,
+      currentMonth,
+      currentYear
+    };
+  } catch (error) {
+    console.error('Error fetching bill generation stats:', error);
+    throw new Error('Failed to fetch bill generation statistics');
+  }
 }

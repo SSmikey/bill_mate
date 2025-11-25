@@ -1,192 +1,193 @@
 // src/app/api/notifications/stats/route.ts
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import Notification from '@/models/Notification';
-import { authOptions } from '@/lib/auth';
+import User from '@/models/User';
 
-export async function GET() {
+/**
+ * GET /api/notifications/stats
+ * Get notification statistics for admin dashboard
+ */
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
 
-    // ตรวจสอบว่าเป็น admin หรือไม่
+    await connectDB();
+
+    // If userId is provided, return user-specific stats
+    if (userId) {
+      // Check if user is requesting their own stats or is admin
+      if (!session || (session.user?.id !== userId && session.user?.role !== 'admin')) {
+        return NextResponse.json(
+          { error: 'ไม่มีสิทธิ์เข้าถึง' },
+          { status: 401 }
+        );
+      }
+
+      const totalNotifications = await Notification.countDocuments({ userId });
+      const unreadNotifications = await Notification.countDocuments({ userId, read: false });
+      const readNotifications = totalNotifications - unreadNotifications;
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          total: totalNotifications,
+          unread: unreadNotifications,
+          read: readNotifications
+        }
+      });
+    }
+
+    // Check if user is admin for global stats
     if (!session || session.user?.role !== 'admin') {
       return NextResponse.json(
-        { error: 'ไม่มีสิทธิ์เข้าถึง' },
+        { error: 'ไม่มีสิทธิ์เข้าถึง - ต้องเป็น Admin เท่านั้น' },
         { status: 401 }
       );
     }
 
-    await connectDB();
+    // Get total users count
+    const totalUsers = await User.countDocuments({ role: 'tenant' });
 
-    // วันนี้ (00:00:00)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Get total notifications count
+    const totalNotifications = await Notification.countDocuments();
 
-    // สัปดาห์นี้
-    const weekAgo = new Date(today);
-    weekAgo.setDate(weekAgo.getDate() - 7);
+    // Get unread notifications count
+    const unreadNotifications = await Notification.countDocuments({ read: false });
 
-    // Query statistics แบบ parallel
-    const [
-      sentToday,
-      sentThisWeek,
-      unread,
-      totalRead,
-      totalNotifications,
-      byType,
-      recentLogs
-    ] = await Promise.all([
-      // ส่งวันนี้
-      Notification.countDocuments({ sentAt: { $gte: today } }),
-      
-      // ส่งสัปดาห์นี้
-      Notification.countDocuments({ sentAt: { $gte: weekAgo } }),
-      
-      // ยังไม่อ่าน
-      Notification.countDocuments({ read: false }),
-      
-      // อ่านแล้ว
-      Notification.countDocuments({ read: true }),
-      
-      // ทั้งหมด
-      Notification.countDocuments({}),
-      
-      // แยกตามประเภท
-      Notification.aggregate([
-        {
-          $group: {
-            _id: '$type',
-            count: { $sum: 1 }
-          }
+    // Get read notifications count
+    const readNotifications = totalNotifications - unreadNotifications;
+
+    // Get notifications by type
+    const notificationsByType = await Notification.aggregate([
+      {
+        $group: {
+          _id: '$type',
+          count: { $sum: 1 }
         }
-      ]),
-      
-      // Logs ล่าสุด 10 รายการ
-      Notification.find({})
-        .sort({ sentAt: -1 })
-        .limit(10)
-        .select('type sentAt userId read')
-        .populate('userId', 'name email')
+      },
+      {
+        $sort: { count: -1 }
+      }
     ]);
 
-    // คำนวณ read rate
-    const readRate = totalNotifications > 0
-      ? Math.round((totalRead / totalNotifications) * 100)
-      : 0;
+    // Get notifications sent in last 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    // จัด format ข้อมูลตามประเภท
-    const notificationsByType = {
-      payment_reminder: 0,
-      payment_verified: 0,
-      payment_rejected: 0,
-      overdue: 0,
-      bill_generated: 0
-    };
-
-    byType.forEach((item: any) => {
-      if (item._id in notificationsByType) {
-        notificationsByType[item._id as keyof typeof notificationsByType] = item.count;
-      }
+    const last7DaysNotifications = await Notification.countDocuments({
+      sentAt: { $gte: sevenDaysAgo }
     });
 
-    // Cron job status (next run times)
-    const now = new Date();
-    const nextRuns = calculateNextRuns(now);
+    // Get notifications sent in last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const last30DaysNotifications = await Notification.countDocuments({
+      sentAt: { $gte: thirtyDaysAgo }
+    });
+
+    // Get daily notification counts for last 7 days
+    const dailyNotifications = await Notification.aggregate([
+      {
+        $match: {
+          sentAt: { $gte: sevenDaysAgo }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: '%Y-%m-%d',
+              date: '$sentAt'
+            }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { _id: 1 }
+      }
+    ]);
+
+    // Get users with most unread notifications
+    const usersWithMostUnread = await Notification.aggregate([
+      {
+        $match: { read: false }
+      },
+      {
+        $group: {
+          _id: '$userId',
+          unreadCount: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $unwind: '$user'
+      },
+      {
+        $project: {
+          userId: '$_id',
+          name: '$user.name',
+          email: '$user.email',
+          unreadCount: 1
+        }
+      },
+      {
+        $sort: { unreadCount: -1 }
+      },
+      {
+        $limit: 10
+      }
+    ]);
+
+    // Calculate average notifications per user
+    const avgNotificationsPerUser = totalUsers > 0 ? totalNotifications / totalUsers : 0;
+
+    // Calculate read rate
+    const readRate = totalNotifications > 0 ? (readNotifications / totalNotifications) * 100 : 0;
 
     return NextResponse.json({
       success: true,
       data: {
         overview: {
-          sentToday,
-          sentThisWeek,
-          unread,
-          totalRead,
+          totalUsers,
           totalNotifications,
-          readRate
+          unreadNotifications,
+          readNotifications,
+          avgNotificationsPerUser: Math.round(avgNotificationsPerUser * 100) / 100,
+          readRate: Math.round(readRate * 100) / 100
+        },
+        timeStats: {
+          last7DaysNotifications,
+          last30DaysNotifications,
+          dailyNotifications
         },
         byType: notificationsByType,
-        cronJobs: nextRuns,
-        recentLogs: recentLogs.map((log: any) => ({
-          id: log._id,
-          type: log.type,
-          sentAt: log.sentAt,
-          read: log.read,
-          user: {
-            name: log.userId?.name || 'Unknown',
-            email: log.userId?.email || 'N/A'
-          }
-        }))
+        usersWithMostUnread
       }
     });
+
   } catch (error) {
     console.error('Error fetching notification stats:', error);
     
     return NextResponse.json(
       { 
-        error: 'ไม่สามารถดึงสถิติได้',
+        error: 'เกิดข้อผิดพลาดในการดึงข้อมูลสถิติ',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );
   }
-}
-
-// คำนวณเวลาทำงานครั้งถัดไปของแต่ละ cron job
-function calculateNextRuns(now: Date) {
-  const bangkok = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
-  
-  // Next 5-day reminder (09:00)
-  const next5Day = new Date(bangkok);
-  next5Day.setHours(9, 0, 0, 0);
-  if (next5Day <= bangkok) {
-    next5Day.setDate(next5Day.getDate() + 1);
-  }
-  
-  // Next 1-day reminder (18:00)
-  const next1Day = new Date(bangkok);
-  next1Day.setHours(18, 0, 0, 0);
-  if (next1Day <= bangkok) {
-    next1Day.setDate(next1Day.getDate() + 1);
-  }
-  
-  // Next overdue check (10:00)
-  const nextOverdue = new Date(bangkok);
-  nextOverdue.setHours(10, 0, 0, 0);
-  if (nextOverdue <= bangkok) {
-    nextOverdue.setDate(nextOverdue.getDate() + 1);
-  }
-  
-  // Next cleanup (Sunday 01:00)
-  const nextCleanup = new Date(bangkok);
-  nextCleanup.setHours(1, 0, 0, 0);
-  const daysUntilSunday = (7 - nextCleanup.getDay()) % 7;
-  nextCleanup.setDate(nextCleanup.getDate() + (daysUntilSunday || 7));
-  
-  return [
-    {
-      name: '5-day payment reminder',
-      schedule: 'Daily at 09:00',
-      nextRun: next5Day.toISOString(),
-      status: 'active'
-    },
-    {
-      name: '1-day payment reminder',
-      schedule: 'Daily at 18:00',
-      nextRun: next1Day.toISOString(),
-      status: 'active'
-    },
-    {
-      name: 'Overdue notifications',
-      schedule: 'Daily at 10:00',
-      nextRun: nextOverdue.toISOString(),
-      status: 'active'
-    },
-    {
-      name: 'Notification cleanup',
-      schedule: 'Sunday at 01:00',
-      nextRun: nextCleanup.toISOString(),
-      status: 'active'
-    }
-  ];
 }

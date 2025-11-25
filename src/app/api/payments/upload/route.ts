@@ -5,6 +5,8 @@ import Payment from '@/models/Payment';
 import Bill from '@/models/Bill';
 import { authOptions } from '@/lib/auth';
 import { performOCR } from '@/services/ocrService';
+import { parseBase64File, isValidImageType } from '@/lib/fileUtils';
+import logger from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,6 +26,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validate file type
+    const fileInfo = parseBase64File(slipImageBase64);
+    if (!fileInfo || !isValidImageType(fileInfo.contentType)) {
+      return NextResponse.json(
+        { error: 'ประเภทไฟล์ไม่ถูกต้อง กรุณาอัปโหลดรูปภาพเท่านั้น' },
+        { status: 400 }
+      );
+    }
+
     await connectDB();
 
     // Verify bill exists and belongs to user (if tenant)
@@ -36,11 +47,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Create payment record
+    // Store base64 image directly in database
+    const imageDataUrl = slipImageBase64;
+
+    logger.info('Payment slip uploaded', 'API', {
+      userId: session.user?.id,
+      billId,
+      fileSize: fileInfo.buffer.length,
+      contentType: fileInfo.contentType
+    });
+
+    // Create payment record with base64 image in database
     const payment = await Payment.create({
       billId,
       userId: session.user?.id,
-      slipImageUrl: slipImageBase64,
+      slipImageUrl: `/api/slips/${Date.now()}-${Math.round(Math.random() * 1E9)}`, // Generate a reference URL
+      slipImageData: imageDataUrl, // Store base64 in database
       ocrData: ocrData || {},
       qrData: qrData || {},
       status: 'pending',
@@ -58,7 +80,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Upload error:', error);
+    logger.error('Payment upload failed', error instanceof Error ? error : new Error(String(error)), 'API');
     return NextResponse.json({ error: 'Failed to upload slip' }, { status: 500 });
   }
 }

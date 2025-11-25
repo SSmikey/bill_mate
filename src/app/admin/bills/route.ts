@@ -42,7 +42,10 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { month, year, dueDay = 5 } = body;
+    const { month, year, dueDay = 5, roomId, tenantId, waterUnits, electricityUnits } = body;
+    
+    // Check if this is a manual bill creation or automatic generation
+    const isManualBill = roomId && tenantId && waterUnits !== undefined && electricityUnits !== undefined;
 
     // Validation
     if (!month || !year || month < 1 || month > 12) {
@@ -54,42 +57,97 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
 
-    // Get all occupied rooms with tenants
-    const rooms = await Room.find({ isOccupied: true }).populate('tenantId');
+    if (isManualBill) {
+      // Manual bill creation for a specific room
+      const room = await Room.findById(roomId);
+      
+      if (!room) {
+        return NextResponse.json({ error: 'Room not found' }, { status: 404 });
+      }
 
-    if (rooms.length === 0) {
-      return NextResponse.json({ error: 'No occupied rooms found' }, { status: 400 });
-    }
-
-    const bills = [];
-    const dueDate = new Date(year, month - 1, dueDay);
-
-    for (const room of rooms) {
-      if (!room.tenantId) continue;
-
-      const totalAmount = room.rentPrice + room.waterPrice + room.electricityPrice;
+      // Water is fixed charge (flat rate per month)
+      const waterAmount = room.waterPrice;
+      // Electricity is charged per unit
+      const electricityAmount = electricityUnits * room.electricityPrice;
+      const totalAmount = room.rentPrice + waterAmount + electricityAmount;
+      const dueDate = new Date(year, month - 1, dueDay);
 
       try {
         const bill = await Bill.create({
-          roomId: room._id,
-          tenantId: room.tenantId._id,
+          roomId,
+          tenantId,
           month,
           year,
           rentAmount: room.rentPrice,
-          waterAmount: room.waterPrice,
-          electricityAmount: room.electricityPrice,
+          waterUnits,
+          waterAmount,
+          electricityUnits,
+          electricityAmount,
           totalAmount,
           dueDate,
           status: 'pending',
         });
 
-        bills.push(bill);
+        return NextResponse.json(
+          {
+            success: true,
+            data: bill,
+            message: 'สร้างบิลใหม่เรียบร้อยแล้ว'
+          },
+          { status: 201 }
+        );
       } catch (error: any) {
-        // Skip if duplicate (bill already exists for this room/month/year)
-        if (error.code === 11000) continue;
+        if (error.code === 11000) {
+          return NextResponse.json({ error: 'Bill already exists for this room/month/year' }, { status: 400 });
+        }
         throw error;
       }
-    }
+    } else {
+      // Automatic bill generation for all occupied rooms
+      const rooms = await Room.find({ isOccupied: true }).populate('tenantId');
+
+      if (rooms.length === 0) {
+        return NextResponse.json({ error: 'No occupied rooms found' }, { status: 400 });
+      }
+
+      const bills = [];
+      const dueDate = new Date(year, month - 1, dueDay);
+
+      for (const room of rooms) {
+        if (!room.tenantId) continue;
+
+        // For automatic generation
+        // Water is fixed charge (flat rate per month)
+        // Electricity defaults to 0 units (manual entry required)
+        const waterUnits = 0; // Not used for water (it's a fixed charge)
+        const electricityUnits = 0; // Default to 0 for automatic generation
+        const waterAmount = room.waterPrice; // Water is fixed charge
+        const electricityAmount = electricityUnits * room.electricityPrice;
+        const totalAmount = room.rentPrice + waterAmount + electricityAmount;
+
+        try {
+          const bill = await Bill.create({
+            roomId: room._id,
+            tenantId: room.tenantId._id,
+            month,
+            year,
+            rentAmount: room.rentPrice,
+            waterUnits,
+            waterAmount,
+            electricityUnits,
+            electricityAmount,
+            totalAmount,
+            dueDate,
+            status: 'pending',
+          });
+
+          bills.push(bill);
+        } catch (error: any) {
+          // Skip if duplicate (bill already exists for this room/month/year)
+          if (error.code === 11000) continue;
+          throw error;
+        }
+      }
 
     return NextResponse.json(
       {
@@ -99,8 +157,9 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
-    console.error('Error generating bills:', error);
-    return NextResponse.json({ error: 'Failed to generate bills' }, { status: 500 });
   }
+} catch (error) {
+  console.error('Error generating bills:', error);
+  return NextResponse.json({ error: 'Failed to generate bills' }, { status: 500 });
+}
 }

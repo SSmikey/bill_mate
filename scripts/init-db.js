@@ -19,7 +19,12 @@ const User = mongoose.model('User', UserSchema);
 async function initializeDatabase() {
   try {
     // Connect to database
-    const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://webnextdatabase:webnext123@webnext.5wtvsao.mongodb.net/billmate?retryWrites=true&w=majority';
+    const mongoUri = process.env.MONGODB_URI;
+
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI is not set in environment variables. Please check your .env.local file.');
+    }
+
     await mongoose.connect(mongoUri);
     console.log('Connected to MongoDB');
 

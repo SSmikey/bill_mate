@@ -1,4 +1,5 @@
 import Tesseract from 'tesseract.js';
+import { ImageAnnotatorClient } from '@google-cloud/vision';
 
 export interface OCRData {
   amount?: number;
@@ -11,21 +12,92 @@ export interface OCRData {
   transactionNo?: string;
 }
 
-export async function performOCR(imageBase64: string): Promise<OCRData | null> {
+/**
+ * Main function to perform OCR. It orchestrates different OCR engines.
+ * Currently, it only uses Tesseract.
+ */
+export async function performOCR(imageBase64: string): Promise<OCRData> {
   try {
-    const result = await Tesseract.recognize(imageBase64, 'tha+eng', {
-      logger: (m) => console.log('OCR Progress:', m),
-    });
+    // Run both OCR engines in parallel to save time
+    const [tesseractResult, googleVisionResult] = await Promise.all([
+      runTesseract(imageBase64),
+      runGoogleVision(imageBase64),
+    ]);
 
-    const text = result.data.text;
-    return extractSlipInfo(text);
+    return mergeOcrResults(tesseractResult, googleVisionResult);
   } catch (error) {
     console.error('OCR Error:', error);
-    return null;
+    return {};
   }
 }
 
-function extractSlipInfo(text: string): OCRData {
+/**
+ * Runs OCR using Tesseract.js.
+ * @param imageBase64 The base64 encoded image string.
+ * @returns The extracted OCR data.
+ */
+async function runTesseract(imageBase64: string): Promise<OCRData> {
+  const result = await Tesseract.recognize(imageBase64, 'tha+eng', {
+    logger: (m) => console.warn('Tesseract Progress:', m),
+  });
+
+  const text = result.data.text;
+  return extractSlipInfoFromText(text);
+}
+
+/**
+ * Runs OCR using Google Cloud Vision API.
+ * Requires GOOGLE_APPLICATION_CREDENTIALS environment variable to be set.
+ * @param imageBase64 The base64 encoded image string.
+ * @returns The extracted OCR data.
+ */
+async function runGoogleVision(imageBase64: string): Promise<OCRData> {
+  try {
+    const client = new ImageAnnotatorClient();
+    const content = imageBase64.split(';base64,').pop() || '';
+
+    const request = {
+      image: { content: content },
+      features: [{ type: 'TEXT_DETECTION' }],
+    };
+
+    const [result] = await client.textDetection(request);
+    const fullText = result.textAnnotations?.[0]?.description || '';
+
+    console.warn('Google Vision OCR Result received.');
+    return extractSlipInfoFromText(fullText);
+  } catch (error) {
+    console.error('Google Vision API Error:', error);
+    // Return empty object on failure, so it doesn't break the flow
+    return {};
+  }
+}
+
+/**
+ * Merges results from multiple OCR engines.
+ * It prioritizes results from Google Vision as it's generally more accurate.
+ * @param tesseractResult Data from Tesseract.
+ * @param googleVisionResult Data from Google Vision.
+ * @returns A single, merged OCRData object.
+ */
+function mergeOcrResults(tesseractResult: OCRData, googleVisionResult: OCRData): OCRData {
+  const merged: OCRData = {
+    amount: googleVisionResult.amount ?? tesseractResult.amount,
+    date: googleVisionResult.date ?? tesseractResult.date,
+    time: googleVisionResult.time ?? tesseractResult.time,
+    fromAccount: googleVisionResult.fromAccount ?? tesseractResult.fromAccount,
+    toAccount: googleVisionResult.toAccount ?? tesseractResult.toAccount,
+    reference: googleVisionResult.reference ?? tesseractResult.reference,
+    transactionNo: googleVisionResult.transactionNo ?? tesseractResult.transactionNo,
+    fee: googleVisionResult.fee ?? tesseractResult.fee,
+  };
+  return merged;
+}
+
+/**
+ * Extracts structured information from raw OCR text using regex patterns.
+ */
+function extractSlipInfoFromText(text: string): OCRData {
   const data: OCRData = {};
 
   // Amount patterns
