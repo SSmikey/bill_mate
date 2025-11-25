@@ -7,7 +7,7 @@ import { authOptions } from '@/lib/auth';
 // GET single bill by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,7 +17,8 @@ export async function GET(
 
     await connectDB();
 
-    const bill = await Bill.findById(params.id)
+    const { id } = await params;
+    const bill = await Bill.findById(id)
       .populate('roomId', 'roomNumber')
       .populate('tenantId', 'name email');
 
@@ -40,7 +41,7 @@ export async function GET(
 // PATCH update bill (for payment uploads, admin verifications, etc.)
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -50,8 +51,9 @@ export async function PATCH(
 
     await connectDB();
 
+    const { id } = await params;
     const body = await req.json();
-    const bill = await Bill.findById(params.id);
+    const bill = await Bill.findById(id);
 
     if (!bill) {
       return NextResponse.json({ error: 'Bill not found' }, { status: 404 });
@@ -82,7 +84,7 @@ export async function PATCH(
 // DELETE bill (admin only)
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -92,7 +94,8 @@ export async function DELETE(
 
     await connectDB();
 
-    const bill = await Bill.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const bill = await Bill.findByIdAndDelete(id);
 
     if (!bill) {
       return NextResponse.json({ error: 'Bill not found' }, { status: 404 });
