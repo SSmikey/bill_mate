@@ -96,16 +96,17 @@ export default function RoomForm({
   const validateField = (field: keyof RoomFormData, value: any): string | null => {
     switch (field) {
       case 'roomNumber':
-        if (!value || !value.trim()) {
+        const roomNumberStr = value?.toString() || '';
+        if (!roomNumberStr || !roomNumberStr.trim()) {
           return 'กรุณากรอกหมายเลขห้อง';
         }
-        if (value.length < VALIDATION_RULES.roomNumber.minLength) {
+        if (roomNumberStr.length < VALIDATION_RULES.roomNumber.minLength) {
           return 'หมายเลขห้องต้องมีอย่างน้อย 1 ตัวอักษร';
         }
-        if (value.length > VALIDATION_RULES.roomNumber.maxLength) {
+        if (roomNumberStr.length > VALIDATION_RULES.roomNumber.maxLength) {
           return `หมายเลขห้องต้องไม่เกิน ${VALIDATION_RULES.roomNumber.maxLength} ตัวอักษร`;
         }
-        if (!VALIDATION_RULES.roomNumber.pattern.test(value)) {
+        if (!VALIDATION_RULES.roomNumber.pattern.test(roomNumberStr)) {
           return VALIDATION_RULES.roomNumber.message;
         }
         break;
@@ -123,28 +124,31 @@ export default function RoomForm({
         break;
 
       case 'rentPrice':
-        if (!value || value < 0) {
+        const rentPriceNum = Number(value);
+        if (isNaN(rentPriceNum) || rentPriceNum < 0) {
           return 'กรุณากรอกค่าเช่าที่ถูกต้อง';
         }
-        if (value > VALIDATION_RULES.rentPrice.max) {
+        if (rentPriceNum > VALIDATION_RULES.rentPrice.max) {
           return VALIDATION_RULES.rentPrice.message;
         }
         break;
 
       case 'waterPrice':
-        if (!value || value < 0) {
+        const waterPriceNum = Number(value);
+        if (isNaN(waterPriceNum) || waterPriceNum < 0) {
           return 'กรุณากรอกค่าน้ำที่ถูกต้อง';
         }
-        if (value > VALIDATION_RULES.waterPrice.max) {
+        if (waterPriceNum > VALIDATION_RULES.waterPrice.max) {
           return VALIDATION_RULES.waterPrice.message;
         }
         break;
 
       case 'electricityPrice':
-        if (!value || value < 0) {
+        const electricityPriceNum = Number(value);
+        if (isNaN(electricityPriceNum) || electricityPriceNum < 0) {
           return 'กรุณากรอกค่าไฟต่อหน่วยที่ถูกต้อง';
         }
-        if (value > VALIDATION_RULES.electricityPrice.max) {
+        if (electricityPriceNum > VALIDATION_RULES.electricityPrice.max) {
           return VALIDATION_RULES.electricityPrice.message;
         }
         break;
