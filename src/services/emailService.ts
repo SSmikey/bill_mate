@@ -1,18 +1,9 @@
 // src/services/emailService.ts
-import nodemailer from 'nodemailer';
+// Email functionality is currently disabled for deployment
+// This file contains stub functions to maintain compatibility
+
 import connectDB from '@/lib/mongodb';
 import NotificationTemplate from '@/models/NotificationTemplate';
-
-// สร้าง transporter สำหรับส่ง email
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_PORT || '587'),
-  secure: process.env.EMAIL_SECURE === 'true', // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  }
-});
 
 interface SendEmailOptions {
   to: string;
@@ -22,76 +13,30 @@ interface SendEmailOptions {
 }
 
 /**
- * ส่ง email พื้นฐาน
+ * ส่ง email พื้นฐาน (currently disabled)
  */
 export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
-  try {
-    // ตรวจสอบว่ามีการตั้งค่า email หรือไม่
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-      console.warn('⚠️ Email credentials not configured, skipping email send');
-      return false;
-    }
-
-    const info = await transporter.sendMail({
-      from: `"${process.env.EMAIL_FROM_NAME || 'ระบบหอพัก'}" <${process.env.EMAIL_USER}>`,
-      to: options.to,
-      subject: options.subject,
-      html: options.html,
-      text: options.text || options.html.replace(/<[^>]*>/g, '') // Strip HTML for text version
-    });
-
-    console.log(`📧 Email sent: ${info.messageId} to ${options.to}`);
-    return true;
-
-  } catch (error) {
-    console.error('❌ Error sending email:', error);
-    return false;
-  }
+  console.warn('⚠️ Email sending is disabled for deployment');
+  return false;
 }
 
 /**
- * ส่ง email โดยใช้ template
+ * ส่ง email โดยใช้ template (currently disabled)
  */
 export async function sendTemplateEmail(
   templateType: string,
   recipientEmail: string,
   data: Record<string, any>
 ): Promise<boolean> {
-  try {
-    await connectDB();
-
-    // ดึง template
-    const template = await NotificationTemplate.findOne({
-      type: templateType,
-      isActive: true
-    });
-
-    if (!template) {
-      console.error(`❌ Template not found or inactive: ${templateType}`);
-      return false;
-    }
-
-    // Render template with data
-    const rendered = template.render(data);
-
-    // ส่ง email
-    return await sendEmail({
-      to: recipientEmail,
-      subject: rendered.subject,
-      html: formatEmailHTML(rendered.emailBody, data)
-    });
-
-  } catch (error) {
-    console.error('❌ Error sending template email:', error);
-    return false;
-  }
+  console.warn('⚠️ Email sending is disabled for deployment');
+  return false;
 }
 
 /**
  * จัด format HTML สำหรับ email
  */
 function formatEmailHTML(body: string, data: Record<string, any>): string {
-  const logoUrl = process.env.NEXT_PUBLIC_APP_URL 
+  const logoUrl = process.env.NEXT_PUBLIC_APP_URL
     ? `${process.env.NEXT_PUBLIC_APP_URL}/logo.png`
     : '';
 
@@ -164,7 +109,7 @@ function formatEmailHTML(body: string, data: Record<string, any>): string {
       ${logoUrl ? `<img src="${logoUrl}" alt="Logo">` : ''}
       <h1>ระบบจัดการหอพัก</h1>
     </div>
-    
+
     <div class="content">
       ${body}
     </div>
@@ -191,41 +136,17 @@ function formatEmailHTML(body: string, data: Record<string, any>): string {
 }
 
 /**
- * ส่ง test email
+ * ส่ง test email (currently disabled)
  */
 export async function sendTestEmail(recipientEmail: string): Promise<boolean> {
-  return await sendEmail({
-    to: recipientEmail,
-    subject: 'ทดสอบการส่ง Email - ระบบหอพัก',
-    html: formatEmailHTML(
-      `สวัสดีครับ/ค่ะ
-
-นี่คือ email ทดสอบจากระบบจัดการหอพัก
-
-ถ้าคุณได้รับ email นี้ แสดงว่าระบบส่ง email ทำงานได้ปกติ
-
-ขอบคุณครับ/ค่ะ`,
-      { actionUrl: process.env.NEXT_PUBLIC_APP_URL }
-    )
-  });
+  console.warn('⚠️ Email sending is disabled for deployment');
+  return false;
 }
 
 /**
- * Verify email configuration
+ * Verify email configuration (currently disabled)
  */
 export async function verifyEmailConfig(): Promise<boolean> {
-  try {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-      console.error('❌ Email credentials not configured');
-      return false;
-    }
-
-    await transporter.verify();
-    console.log('✅ Email configuration verified successfully');
-    return true;
-
-  } catch (error) {
-    console.error('❌ Email configuration verification failed:', error);
-    return false;
-  }
+  console.warn('⚠️ Email configuration is disabled');
+  return false;
 }

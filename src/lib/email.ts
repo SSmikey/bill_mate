@@ -1,12 +1,5 @@
-import nodemailer from 'nodemailer';
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+// Email functionality is currently disabled for deployment
+// This file contains stub functions to maintain compatibility
 
 export interface EmailOptions {
   to: string;
@@ -15,19 +8,8 @@ export interface EmailOptions {
 }
 
 export async function sendEmail({ to, subject, html }: EmailOptions) {
-  try {
-    await transporter.sendMail({
-      from: `"${process.env.APP_NAME}" <${process.env.EMAIL_USER}>`,
-      to,
-      subject,
-      html,
-    });
-    console.log(`Email sent to ${to}`);
-    return true;
-  } catch (error) {
-    console.error('Email error:', error);
-    return false;
-  }
+  console.log('Email sending is disabled. Would have sent to:', to);
+  return false;
 }
 
 export function getPaymentReminderEmail(name: string, roomNumber: string, amount: number, dueDate: string) {
