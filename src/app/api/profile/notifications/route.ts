@@ -7,7 +7,7 @@ import { asyncHandler, createSuccessResponse, ValidationError } from '@/lib/erro
 import logger from '@/lib/logger';
 
 // GET notification preferences
-export const GET = asyncHandler(async (req: NextRequest) => {
+export const GET = asyncHandler(async (req: Request) => {
   const session = await getServerSession(authOptions);
   
   if (!session) {
@@ -58,7 +58,7 @@ export const GET = asyncHandler(async (req: NextRequest) => {
 });
 
 // PUT update notification preferences
-export const PUT = asyncHandler(async (req: NextRequest) => {
+export const PUT = asyncHandler(async (req: Request) => {
   const session = await getServerSession(authOptions);
   
   if (!session) {

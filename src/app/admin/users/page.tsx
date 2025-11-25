@@ -176,7 +176,7 @@ export default function AdminUsersPage() {
                       name: editingUser.name,
                       phone: editingUser.phone,
                       role: editingUser.role as 'admin' | 'tenant',
-                      roomId: editingUser.roomId?._id,
+                      roomId: (editingUser.roomId as { _id?: string })?._id,
                     }
                   : undefined
               }

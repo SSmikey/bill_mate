@@ -199,7 +199,7 @@ export default function RoomStatsPage() {
               <div className="col-md-4">
                 <StyledSelect
                   value={month}
-                  onChange={setMonth}
+                  onChange={(v) => setMonth(v ? String(v) : '')}
                   label="เดือน"
                   icon="bi bi-calendar-month"
                   options={Array.from({ length: 12 }, (_, i) => {

@@ -8,7 +8,7 @@ import { asyncHandler, createSuccessResponse, AuthenticationError, ValidationErr
 import logger from '@/lib/logger';
 
 // PUT change password
-export const PUT = asyncHandler(async (req: NextRequest) => {
+export const PUT = asyncHandler(async (req: Request) => {
   const session = await getServerSession(authOptions);
   
   if (!session) {

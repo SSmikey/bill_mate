@@ -6,7 +6,7 @@ import { authOptions } from '@/lib/auth';
 import { asyncHandler, AuthenticationError, createSuccessResponse } from '@/lib/errorHandling';
 
 // GET notifications for current user
-export const GET = asyncHandler(async (req: NextRequest) => {
+export const GET = asyncHandler(async (req: Request) => {
   const session = await getServerSession(authOptions);
   if (!session) {
     throw new AuthenticationError('Unauthorized');
@@ -54,7 +54,7 @@ export const GET = asyncHandler(async (req: NextRequest) => {
 });
 
 // POST mark notification as read
-export const POST = asyncHandler(async (req: NextRequest) => {
+export const POST = asyncHandler(async (req: Request) => {
   const session = await getServerSession(authOptions);
   if (!session) {
     throw new AuthenticationError('Unauthorized');

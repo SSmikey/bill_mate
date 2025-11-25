@@ -8,7 +8,7 @@ import { asyncHandler, createSuccessResponse, NotFoundError, ValidationError } f
 import logger from '@/lib/logger';
 
 // GET user profile
-export const GET = asyncHandler(async (req: NextRequest) => {
+export const GET = asyncHandler(async (req: Request) => {
   const session = await getServerSession(authOptions);
   
   if (!session) {
@@ -43,7 +43,7 @@ export const GET = asyncHandler(async (req: NextRequest) => {
 });
 
 // PUT update user profile
-export const PUT = asyncHandler(async (req: NextRequest) => {
+export const PUT = asyncHandler(async (req: Request) => {
   const session = await getServerSession(authOptions);
   
   if (!session) {

@@ -174,7 +174,7 @@ export default function AdminNotificationsPage() {
                       <div className="col-md-6">
                         <StyledSelect
                           value={notificationForm.watch('userId') || ''}
-                          onChange={(val) => notificationForm.setValue('userId', val || undefined)}
+                          onChange={(val) => notificationForm.setValue('userId', val ? String(val) : undefined)}
                           label="ผู้รับ (ปล่อยว่างสำหรับทุกคน)"
                           options={[
                             { value: '', label: 'ทุกผู้ใช้' },
