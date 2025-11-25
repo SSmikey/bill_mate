@@ -12,10 +12,10 @@ import path from 'path';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
 
     // Validate ObjectId
     if (!Types.ObjectId.isValid(id)) {
@@ -250,10 +250,10 @@ export async function POST(
 // Endpoint for checkout (unassign)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
 
     // Validate ObjectId
     if (!Types.ObjectId.isValid(id)) {

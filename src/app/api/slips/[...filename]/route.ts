@@ -4,16 +4,16 @@ import Payment from '@/models/Payment';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ filename: string[] }> }
+  { params }: { params: { filename: string[] } }
 ) {
   try {
-    const { filename } = await params;
+    const filename = params.filename.join('/');
 
     // Connect to database and find payment with this URL reference
     await connectDB();
 
     const payment = await Payment.findOne({
-      slipImageUrl: `/api/slips/${filename.join('/')}`
+      slipImageUrl: `/api/slips/${filename}`
     });
 
     if (!payment || !payment.slipImageData) {
