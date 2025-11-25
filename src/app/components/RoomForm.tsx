@@ -254,9 +254,9 @@ export default function RoomForm({
     }));
   };
 
-  // Calculate estimated monthly cost
+  // Calculate estimated monthly cost (excluding electricity as it's charged per unit)
   const estimatedMonthlyCost =
-    formData.rentPrice + formData.waterPrice + formData.electricityPrice * 30; // Assuming 30 units
+    formData.rentPrice + formData.waterPrice; // Only rent and water are fixed monthly costs
 
   return (
     <div className="card border-0 bg-white rounded-3 shadow-sm">
@@ -491,7 +491,7 @@ export default function RoomForm({
                 <div className="form-text text-info">
                   <i className="bi bi-calculator me-1"></i>
                   ตัวอย่าง: ใช้ 50 หน่วย = {(formData.electricityPrice * 50).toLocaleString('th-TH')}{' '}
-                  บาท
+                  บาท/เดือน
                 </div>
               )}
             </div>
@@ -513,9 +513,9 @@ export default function RoomForm({
                     <strong className="text-dark">{formData.waterPrice.toLocaleString('th-TH')} ฿</strong>
                   </div>
                   <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="text-muted">ค่าไฟ (30 หน่วย):</span>
+                    <span className="text-muted">ค่าไฟต่อหน่วย:</span>
                     <strong className="text-dark">
-                      {(formData.electricityPrice * 30).toLocaleString('th-TH')} ฿
+                      {formData.electricityPrice.toLocaleString('th-TH')} ฿/หน่วย
                     </strong>
                   </div>
                   <hr className="my-2" />
@@ -527,7 +527,7 @@ export default function RoomForm({
                   </div>
                   <small className="text-muted d-block mt-2">
                     <i className="bi bi-info-circle me-1"></i>
-                    * ค่าไฟคำนวณจากการใช้จริงในแต่ละเดือน
+                    * ค่าไฟคิดตามจำนวนหน่วยที่ใช้จริงในแต่ละเดือน
                   </small>
                 </div>
               </div>
