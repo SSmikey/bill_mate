@@ -145,7 +145,7 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
                       </div>
                       <div>
                         <small className="text-muted d-block">จำนวนเงิน</small>
-                        <div className="fw-bold">
+                        <div className="fw-bold text-dark">
                           {ocrData?.amount || qrData?.amount || "N/A"} บาท
                           {!ocrData && qrData?.amount && (
                             <small className="text-muted d-block">(จาก QR Code)</small>
@@ -162,7 +162,7 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
                       </div>
                       <div>
                         <small className="text-muted d-block">วันที่</small>
-                        <div className="fw-semibold">{ocrData?.date || "N/A"}</div>
+                        <div className="fw-semibold text-dark">{ocrData?.date || "N/A"}</div>
                       </div>
                     </div>
                   </div>
@@ -174,7 +174,7 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
                       </div>
                       <div>
                         <small className="text-muted d-block">เวลา</small>
-                        <div className="fw-semibold">{ocrData?.time || "N/A"}</div>
+                        <div className="fw-semibold text-dark">{ocrData?.time || "N/A"}</div>
                       </div>
                     </div>
                   </div>
@@ -187,7 +187,7 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
                         </div>
                         <div>
                           <small className="text-muted d-block">เลขอ้างอิง (QR)</small>
-                          <div className="fw-semibold font-monospace small">{qrData.reference}</div>
+                          <div className="fw-semibold font-monospace small text-dark">{qrData.reference}</div>
                         </div>
                       </div>
                     </div>

@@ -1059,10 +1059,10 @@ export default function SlipReader({
 
                           {qrData.amount && (
                             <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
-                              <small className="d-block mb-1 opacity-75">
+                              <small className="d-block mb-1 text-white">
                                 💰 จำนวนเงิน
                               </small>
-                              <div className="fs-3 fw-bold">
+                              <div className="fs-3 fw-bold text-white">
                                 {parseFloat(qrData.amount).toLocaleString(
                                   "th-TH",
                                   {
@@ -1077,16 +1077,16 @@ export default function SlipReader({
 
                           {qrData.merchantID && (
                             <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
-                              <small className="d-block mb-1 opacity-75">
+                              <small className="d-block mb-1 text-white">
                                 👤 PromptPay ID (ผู้รับเงิน)
                               </small>
-                              <div className="fs-6">{qrData.merchantID}</div>
+                              <div className="fs-6 text-white">{qrData.merchantID}</div>
                             </div>
                           )}
 
                           {qrData.reference && (
                             <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
-                              <small className="d-block mb-1 opacity-75">
+                              <small className="d-block mb-1 text-white">
                                 🔖 เลขอ้างอิง
                               </small>
                               <div className="fs-6">
@@ -1099,7 +1099,7 @@ export default function SlipReader({
 
                           {qrData.billPaymentRef1 && (
                             <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
-                              <small className="d-block mb-1 opacity-75">
+                              <small className="d-block mb-1 text-white">
                                 📋 Ref 1
                               </small>
                               <div className="fs-6">
@@ -1112,7 +1112,7 @@ export default function SlipReader({
 
                           {qrData.billPaymentRef2 && (
                             <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
-                              <small className="d-block mb-1 opacity-75">
+                              <small className="d-block mb-1 text-white">
                                 📋 Ref 2
                               </small>
                               <div className="fs-6">
