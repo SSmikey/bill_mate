@@ -172,14 +172,14 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
   const selectedTenant = tenants.find((t) => t._id === formData.tenantId);
 
   return (
-    <div className="card border-0 shadow-lg">
-      <div className="card-header bg-gradient bg-primary text-white p-4">
-        <h5 className="card-title mb-0 fw-semibold">
-          <i className="bi bi-person-plus-fill me-2"></i>
+    <div className="card border-0 rounded-3 shadow-sm">
+      <div className="card-header bg-secondary border-bottom p-4 rounded-top-3">
+        <h6 className="card-title mb-0 fw-semibold text-white">
+          <i className="bi bi-person-plus-fill me-2 text-white"></i>
           มอบหมายผู้เช่าเข้าห้อง {room.roomNumber}
-        </h5>
+        </h6>
       </div>
-      <div className="card-body p-4">
+      <div className="card-body p-4 bg-light">
         {/* Room Info */}
         <div className="alert alert-info rounded-3 border-0">
           <h6 className="fw-semibold mb-3">
@@ -296,12 +296,12 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
             <div className="row">
               {/* Move-in Date */}
               <div className="col-md-6 mb-3">
-                <label htmlFor="moveInDate" className="form-label fw-semibold">
+                <label htmlFor="moveInDate" className="form-label fw-semibold text-dark">
                   วันที่เข้าพัก <span className="text-danger">*</span>
                 </label>
                 <input
                   type="date"
-                  className={`form-control rounded-3 shadow-sm ${fieldErrors.moveInDate ? 'is-invalid' : ''}`}
+                  className={`form-control rounded-3 shadow-sm bg-white text-dark ${fieldErrors.moveInDate ? 'is-invalid' : ''}`}
                   id="moveInDate"
                   value={formData.moveInDate}
                   onChange={(e) => handleChange('moveInDate', e.target.value)}
@@ -315,12 +315,12 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
 
               {/* Rent Due Date */}
               <div className="col-md-6 mb-3">
-                <label htmlFor="rentDueDate" className="form-label fw-semibold">
+                <label htmlFor="rentDueDate" className="form-label fw-semibold text-dark">
                   วันที่ครบกำหนดชำระค่าเช่า <span className="text-danger">*</span>
                 </label>
                 <input
                   type="number"
-                  className={`form-control rounded-3 shadow-sm ${fieldErrors.rentDueDate ? 'is-invalid' : ''}`}
+                  className={`form-control rounded-3 shadow-sm bg-white text-dark ${fieldErrors.rentDueDate ? 'is-invalid' : ''}`}
                   id="rentDueDate"
                   value={formData.rentDueDate}
                   onChange={(e) => handleChange('rentDueDate', parseInt(e.target.value))}
@@ -342,13 +342,13 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
 
             {/* Deposit Amount */}
             <div className="mb-3">
-              <label htmlFor="depositAmount" className="form-label fw-semibold">
+              <label htmlFor="depositAmount" className="form-label fw-semibold text-dark">
                 จำนวนเงินมัดจำ (บาท) <span className="text-danger">*</span>
               </label>
               <div className="input-group shadow-sm rounded-3">
                 <input
                   type="number"
-                  className={`form-control rounded-start ${fieldErrors.depositAmount ? 'is-invalid' : ''}`}
+                  className={`form-control rounded-start bg-white text-dark ${fieldErrors.depositAmount ? 'is-invalid' : ''}`}
                   id="depositAmount"
                   value={formData.depositAmount}
                   onChange={(e) => handleChange('depositAmount', parseFloat(e.target.value) || 0)}
@@ -371,13 +371,13 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
 
             {/* Rental Agreement Upload */}
             <div className="mb-3">
-              <label htmlFor="rentalAgreement" className="form-label fw-semibold">
+              <label htmlFor="rentalAgreement" className="form-label fw-semibold text-dark">
                 <i className="bi bi-file-earmark-text me-2"></i>
                 สัญญาเช่า (PDF, JPG, PNG) - ไม่จำเป็น
               </label>
               <input
                 type="file"
-                className="form-control rounded-3 shadow-sm"
+                className="form-control rounded-3 shadow-sm bg-white text-dark"
                 id="rentalAgreement"
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={(e) => handleChange('rentalAgreement', e.target.files?.[0])}
@@ -399,11 +399,11 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
 
             {/* Notes */}
             <div className="mb-3">
-              <label htmlFor="notes" className="form-label fw-semibold">
+              <label htmlFor="notes" className="form-label fw-semibold text-dark">
                 หมายเหตุ
               </label>
               <textarea
-                className="form-control rounded-3 shadow-sm"
+                className="form-control rounded-3 shadow-sm bg-white text-dark"
                 id="notes"
                 rows={3}
                 value={formData.notes}
@@ -414,7 +414,7 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
             </div>
 
             {/* Summary */}
-            <div className="card bg-light border-0 rounded-3 mb-3">
+            <div className="card bg-light border-0 rounded-3 mb-3 text-dark">
               <div className="card-body p-4">
                 <h6 className="card-title fw-semibold mb-3">
                   <i className="bi bi-clipboard-check me-2"></i>
