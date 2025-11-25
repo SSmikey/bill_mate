@@ -147,115 +147,108 @@ const BillDetailPage = () => {
         </div>
       </div>
 
-      <div className="row g-4">
-        {/* Bill Details */}
-        <div className="col-lg-7">
-          {/* Bill Amount Details */}
-          <div className="card border-0 bg-white rounded-3 shadow-sm mb-4">
-            <div className="card-header bg-white border-bottom p-4 rounded-top-3">
-              <h6 className="mb-0 fw-semibold text-dark">
-                <i className="bi bi-receipt-text me-2 text-primary"></i>
-                รายละเอียดค่าใช้จ่าย
-              </h6>
-            </div>
-            <div className="card-body p-4">
-              <div className="table-responsive">
-                <table className="table table-borderless mb-0">
-                  <tbody>
-                    <tr className="border-bottom">
-                      <td className="py-3">ค่าเช่า</td>
-                      <td className="py-3 text-end fw-semibold">{bill.rentAmount.toLocaleString('th-TH')} บาท</td>
-                    </tr>
-                    <tr className="border-bottom">
-                      <td className="py-3">ค่าน้ำ</td>
-                      <td className="py-3 text-end fw-semibold">{bill.waterAmount.toLocaleString('th-TH')} บาท</td>
-                    </tr>
-                    <tr className="border-bottom">
-                      <td className="py-3">ค่าไฟ</td>
-                      <td className="py-3 text-end fw-semibold">{bill.electricityAmount.toLocaleString('th-TH')} บาท</td>
-                    </tr>
-                    <tr className="bg-light">
-                      <td className="py-3 fw-bold">ยอดรวมทั้งหมด</td>
-                      <td className="py-3 text-end fw-bold text-primary">{bill.totalAmount.toLocaleString('th-TH')} บาท</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Payment History */}
-          {payments.length > 0 && (
-            <div className="card border-0 bg-white rounded-3 shadow-sm">
-              <div className="card-header bg-white border-bottom p-4 rounded-top-3">
-                <h6 className="mb-0 fw-semibold text-dark">
-                  <i className="bi bi-clock-history me-2 text-primary"></i>
-                  ประวัติการชำระของบิลนี้
-                </h6>
-              </div>
-              <div className="card-body p-0">
-                <div className="list-group list-group-flush border-0">
-                  {payments.map(p => (
-                    <div key={p._id} className="list-group-item d-flex justify-content-between align-items-start p-4 border-bottom border-light">
-                      <div className="flex-grow-1">
-                        <div className="fw-semibold mb-2">
-                          อัปโหลดเมื่อ {new Date(p.createdAt).toLocaleDateString('th-TH', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </div>
-                        <small className="text-muted">
-                          จำนวนเงินจากสลิป: {p.ocrData?.amount ? `${p.ocrData.amount.toLocaleString('th-TH')} บาท` : 'ไม่สามารถอ่านได้'}
-                          {p.ocrData?.amount && bill && p.ocrData.amount !== bill.totalAmount && (
-                            <span className="badge bg-warning bg-opacity-10 text-warning ms-2">ยอดไม่ตรง</span>
-                          )}
-                        </small>
-                        {p.status === 'rejected' && (
-                          <div className="small text-danger mt-2">
-                            <i className="bi bi-exclamation-circle me-1"></i>
-                            เหตุผล: {p.rejectionReason}
-                          </div>
-                        )}
-                      </div>
-                      <div className="ms-2">{getPaymentStatusBadge(p.status)}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+      {/* Bill Amount Details */}
+      <div className="card border-0 bg-white rounded-3 shadow-sm mb-4">
+        <div className="card-header bg-white border-bottom p-4 rounded-top-3">
+          <h6 className="mb-0 fw-semibold text-dark">
+            <i className="bi bi-receipt-text me-2 text-primary"></i>
+            รายละเอียดค่าใช้จ่าย
+          </h6>
         </div>
-
-        {/* Payment Form or Success Alert */}
-        <div className="col-lg-5">
-          {isPaymentVerified ? (
-            <div className="card border-0 bg-success bg-opacity-10 rounded-3 shadow-sm">
-              <div className="card-body p-4">
-                <div className="text-center mb-4">
-                  <div className="rounded-circle p-3 bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
-                    <i className="bi bi-check-circle-fill fs-2 text-success"></i>
-                  </div>
-                </div>
-                <h5 className="fw-semibold text-success text-center mb-2">ชำระเงินเรียบร้อย</h5>
-                <p className="text-muted text-center small mb-4">บิลนี้ได้รับการยืนยันการชำระเงินเรียบร้อยแล้ว</p>
-                <Link href="/tenant/payments" className="btn btn-success d-block text-decoration-none">
-                  <i className="bi bi-arrow-right me-2"></i>
-                  ดูประวัติการชำระเงินทั้งหมด
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <PaymentUploadForm
-              billId={bill._id}
-              billAmount={bill.totalAmount}
-              onUploadSuccess={fetchData}
-            />
-          )}
+        <div className="card-body p-4">
+          <div className="table-responsive">
+            <table className="table table-borderless mb-0">
+              <tbody>
+                <tr className="border-bottom">
+                  <td className="py-3">ค่าเช่า</td>
+                  <td className="py-3 text-end fw-semibold">{bill.rentAmount.toLocaleString('th-TH')} บาท</td>
+                </tr>
+                <tr className="border-bottom">
+                  <td className="py-3">ค่าน้ำ</td>
+                  <td className="py-3 text-end fw-semibold">{bill.waterAmount.toLocaleString('th-TH')} บาท</td>
+                </tr>
+                <tr className="border-bottom">
+                  <td className="py-3">ค่าไฟ</td>
+                  <td className="py-3 text-end fw-semibold">{bill.electricityAmount.toLocaleString('th-TH')} บาท</td>
+                </tr>
+                <tr className="bg-light">
+                  <td className="py-3 fw-bold">ยอดรวมทั้งหมด</td>
+                  <td className="py-3 text-end fw-bold text-primary">{bill.totalAmount.toLocaleString('th-TH')} บาท</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+
+      {/* Payment Form or Success Alert */}
+      {isPaymentVerified ? (
+        <div className="card border-0 bg-success bg-opacity-10 rounded-3 shadow-sm mb-4">
+          <div className="card-body p-4">
+            <div className="text-center mb-4">
+              <div className="rounded-circle p-3 bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
+                <i className="bi bi-check-circle-fill fs-2 text-success"></i>
+              </div>
+            </div>
+            <h5 className="fw-semibold text-success text-center mb-2">ชำระเงินเรียบร้อย</h5>
+            <p className="text-muted text-center small mb-4">บิลนี้ได้รับการยืนยันการชำระเงินเรียบร้อยแล้ว</p>
+            <Link href="/tenant/payments" className="btn btn-success d-block text-decoration-none">
+              <i className="bi bi-arrow-right me-2"></i>
+              ดูประวัติการชำระเงินทั้งหมด
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <PaymentUploadForm
+          billId={bill._id}
+          billAmount={bill.totalAmount}
+          onUploadSuccess={fetchData}
+        />
+      )}
+
+      {/* Payment History */}
+      {payments.length > 0 && (
+        <div className="card border-0 bg-white rounded-3 shadow-sm mt-4">
+          <div className="card-header bg-white border-bottom p-4 rounded-top-3">
+            <h6 className="mb-0 fw-semibold text-dark">
+              <i className="bi bi-clock-history me-2 text-primary"></i>
+              ประวัติการชำระของบิลนี้
+            </h6>
+          </div>
+          <div className="card-body p-0">
+            <div className="list-group list-group-flush border-0">
+              {payments.map(p => (
+                <div key={p._id} className="list-group-item d-flex justify-content-between align-items-start p-4 border-bottom border-light">
+                  <div className="flex-grow-1">
+                    <div className="fw-semibold mb-2">
+                      อัปโหลดเมื่อ {new Date(p.createdAt).toLocaleDateString('th-TH', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </div>
+                    <small className="text-muted">
+                      จำนวนเงินจากสลิป: {p.ocrData?.amount ? `${p.ocrData.amount.toLocaleString('th-TH')} บาท` : 'ไม่สามารถอ่านได้'}
+                      {p.ocrData?.amount && bill && p.ocrData.amount !== bill.totalAmount && (
+                        <span className="badge bg-warning bg-opacity-10 text-warning ms-2">ยอดไม่ตรง</span>
+                      )}
+                    </small>
+                    {p.status === 'rejected' && (
+                      <div className="small text-danger mt-2">
+                        <i className="bi bi-exclamation-circle me-1"></i>
+                        เหตุผล: {p.rejectionReason}
+                      </div>
+                    )}
+                  </div>
+                  <div className="ms-2">{getPaymentStatusBadge(p.status)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

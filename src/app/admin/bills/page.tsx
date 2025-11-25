@@ -48,6 +48,9 @@ const AdminBillsPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string>('');
   const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'danger' }>({ show: false, message: '', type: 'success' });
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [billToDelete, setBillToDelete] = useState<Bill | null>(null);
 
   useEffect(() => {
     const fetchBills = async () => {
@@ -150,6 +153,91 @@ const AdminBillsPage = () => {
       setIsSubmitting(false);
     }
   };
+
+  const openDeleteModal = (bill: Bill) => {
+    setBillToDelete(bill);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteBill = async () => {
+    if (!billToDelete) return;
+
+    setDeletingId(billToDelete._id);
+    try {
+      const response = await fetch(`/api/bills/${billToDelete._id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('ล้มเหลวในการลบบิล');
+      }
+
+      setToast({ show: true, message: 'ลบบิลเรียบร้อยแล้ว!', type: 'success' });
+      setShowDeleteModal(false);
+      setBillToDelete(null);
+      // Refresh bills list after deletion
+      const res = await fetch('/api/bills');
+      const data = await res.json();
+      setBills(data.data || []);
+
+    } catch (err: any) {
+      setToast({ show: true, message: err.message || 'ล้มเหลวในการลบบิล', type: 'danger' });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const renderDeleteConfirmModal = () => (
+    <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+      <Modal.Header closeButton className="border-0">
+        <Modal.Title className="text-danger fw-bold">
+          <i className="bi bi-exclamation-triangle me-2"></i>ยืนยันการลบบิล
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body className="text-center py-4">
+        <div className="mb-3">
+          <i className="bi bi-trash fs-1 text-danger"></i>
+        </div>
+        <h5 className="mb-3">คุณต้องการลบบิลนี้หรือไม่?</h5>
+        {billToDelete && (
+          <div className="alert alert-light border-1 rounded-2">
+            <p className="mb-1 text-muted small">บิลสำหรับ:</p>
+            <p className="mb-0 fw-semibold">
+              ห้อง {billToDelete.roomId.roomNumber} ({billToDelete.tenantId.name}) - {billToDelete.month}/{billToDelete.year}
+            </p>
+            <p className="mb-0 text-danger fw-bold mt-2">
+              ยอดเงิน: {billToDelete.totalAmount.toLocaleString()} บาท
+            </p>
+          </div>
+        )}
+        <p className="text-muted small mb-0">
+          การกระทำนี้ไม่สามารถยกเลิกได้ กรุณาตรวจสอบก่อนลบ
+        </p>
+      </Modal.Body>
+      <Modal.Footer className="border-0">
+        <Button
+          variant="outline-secondary"
+          className="rounded-2"
+          onClick={() => setShowDeleteModal(false)}
+          disabled={deletingId !== null}
+        >
+          ยกเลิก
+        </Button>
+        <Button
+          variant="danger"
+          className="rounded-2"
+          onClick={handleDeleteBill}
+          disabled={deletingId !== null}
+        >
+          {deletingId ? (
+            <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> กำลังลบ...</>
+          ) : (
+            <>ลบบิล</>
+          )}
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
 
   const renderCreateBillModal = () => (
     <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} centered>
@@ -382,9 +470,7 @@ const AdminBillsPage = () => {
                         <th>ค่าไฟ</th>
                         <th>ครบกำหนด</th>
                         <th>สถานะ</th>
-                        <th className="text-center min-w-250px">
-                          การจัดการ
-                        </th>
+                        <th className="text-center">การจัดการ</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -398,11 +484,25 @@ const AdminBillsPage = () => {
                           <td>{b.electricityAmount ? b.electricityAmount.toLocaleString() : 0} บาท</td>
                           <td>{format(new Date(b.dueDate), 'dd MMM yy', { locale: th })}</td>
                           <td>{getBillStatusBadge(b.status)}</td>
-                          <td>
-                            {/* อาจจะลิงก์ไปหน้า Admin Payment ที่กรองตาม billId นี้ */}
-                            <Link href={`/admin/payments`} passHref>
-                              <Button variant="outline-primary" size="sm" className="rounded-2"><i className="bi bi-search me-1"></i>ดูการชำระเงิน</Button>
-                            </Link>
+                          <td className="text-center">
+                            <div className="d-flex gap-2 justify-content-center">
+                              <Link href={`/admin/payments`} passHref>
+                                <Button variant="outline-primary" size="sm" className="rounded-2"><i className="bi bi-search me-1"></i>ดู</Button>
+                              </Link>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                className="rounded-2"
+                                onClick={() => openDeleteModal(b)}
+                                disabled={deletingId === b._id}
+                              >
+                                {deletingId === b._id ? (
+                                  <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> ลบ</>
+                                ) : (
+                                  <><i className="bi bi-trash me-1"></i>ลบ</>
+                                )}
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -415,6 +515,7 @@ const AdminBillsPage = () => {
         </>
       )}
       {renderCreateBillModal()}
+      {renderDeleteConfirmModal()}
     </div>
   );
 };

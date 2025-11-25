@@ -125,15 +125,8 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
   );
 
   return (
-    <div className="card border-0 shadow">
-      <div className="card-header bg-white border-bottom p-4">
-        <h5 className="card-title mb-0 fw-semibold">
-          <i className="bi bi-upload text-primary me-2"></i>
-          อัปโหลดสลิปการชำระเงิน
-        </h5>
-      </div>
-      <div className="card-body p-4">
-        <SlipReader onScanComplete={handleScanComplete} isEmbedded={true} />
+    <div>
+      <SlipReader onScanComplete={handleScanComplete} isEmbedded={true} />
 
         {(ocrData || qrData) && (
           <div className="mt-4">
@@ -278,7 +271,6 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 };

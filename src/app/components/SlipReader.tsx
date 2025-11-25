@@ -630,65 +630,38 @@ export default function SlipReader({
     <div className="min-vh-100 d-flex align-items-center justify-content-center py-4 bg-primary">
       {isEmbedded && (
         <div className="w-100">
-          {" "}
-          {/* Use w-100 to make it take full width in embedded mode */}
-          <div className="row justify-content-center">
-            <div className="col-lg-12">
-              {" "}
-              {/* Adjust column size for embedded */}
-              <div className="card shadow-lg rounded-3">
-                {" "}
-                {/* Smaller border radius for embedded */}
-                <div className="card-body p-3">
-                  {" "}
-                  {/* Smaller padding for embedded */}
-                  {!previewImage && (
-                    <div
-                      className={`border border-3 border-dashed rounded-3 p-3 text-center ${
-                        dragging ? "border-primary bg-light" : "border-primary bg-light"
-                      }`}
-                      style={{
-                        cursor: "pointer",
-                        transition: "all 0.3s ease",
-                      }}
-                      onClick={() => fileInputRef.current?.click()}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                    >
-                      <div className="fs-1 mb-2">
-                        📄
-                      </div>{" "}
-                      {/* Smaller icon for embedded */}
-                      <div className="text-primary fw-semibold fs-6 mb-1">
-                        คลิกเพื่ออัปโหลดสลิป หรือลากไฟล์มาวางที่นี่
-                      </div>
-                      <div className="text-muted small">
-                        รองรับไฟล์ JPG, PNG
-                      </div>
-                    </div>
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="d-none"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                  />
-                  {loading && (
-                    <p className="text-center mt-2 text-primary">
-                      {progress.message} ({progress.percent}%)
-                    </p>
-                  )}
-                  {error && (
-                    <div className="alert alert-danger mt-2 small" role="alert">
-                      ❌ {error}
-                    </div>
-                  )}
-                </div>
+          {!previewImage && (
+            <div
+              className={`border border-3 border-dashed rounded-3 p-4 text-center ${
+                dragging ? "border-primary bg-light" : "border-primary bg-light"
+              }`}
+              style={{
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <div className="fs-1 mb-2">
+                📄
+              </div>
+              <div className="text-primary fw-semibold fs-6 mb-1">
+                คลิกเพื่ออัปโหลดสลิป หรือลากไฟล์มาวางที่นี่
+              </div>
+              <div className="text-muted small">
+                รองรับไฟล์ JPG, PNG
               </div>
             </div>
-          </div>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="d-none"
+            accept="image/*"
+            onChange={handleFileSelect}
+          />
         </div>
       )}
       <div className="container">
