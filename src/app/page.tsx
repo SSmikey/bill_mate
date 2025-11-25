@@ -59,9 +59,9 @@ export default function Home() {
         <div className="row mt-5 pt-5">
           <div className="col-md-4 mb-4">
             <div className="card border-0 shadow-sm h-100">
-              <div className="card-body text-center">
+              <div className="card-body text-center bg-light">
                 <i className="bi bi-house-fill text-primary" style={{ fontSize: '2.5rem' }}></i>
-                <h5 className="card-title mt-3">จัดการห้องพัก</h5>
+                <h5 className="card-title mt-3 text-dark">จัดการห้องพัก</h5>
                 <p className="card-text text-muted">บันทึกข้อมูลห้องและผู้เช่า</p>
               </div>
             </div>
@@ -69,9 +69,9 @@ export default function Home() {
 
           <div className="col-md-4 mb-4">
             <div className="card border-0 shadow-sm h-100">
-              <div className="card-body text-center">
+              <div className="card-body text-center bg-light">
                 <i className="bi bi-receipt text-success" style={{ fontSize: '2.5rem' }}></i>
-                <h5 className="card-title mt-3">เรียกเก็บค่าใช้บริการ</h5>
+                <h5 className="card-title mt-3 text-dark">เรียกเก็บค่าใช้บริการ</h5>
                 <p className="card-text text-muted">สร้างบิลและติดตามการชำระเงิน</p>
               </div>
             </div>
@@ -79,9 +79,9 @@ export default function Home() {
 
           <div className="col-md-4 mb-4">
             <div className="card border-0 shadow-sm h-100">
-              <div className="card-body text-center">
+              <div className="card-body text-center bg-light">
                 <i className="bi bi-qr-code text-info" style={{ fontSize: '2.5rem' }}></i>
-                <h5 className="card-title mt-3">อ่านสลิปธนาคาร</h5>
+                <h5 className="card-title mt-3 text-dark">อ่านสลิปธนาคาร</h5>
                 <p className="card-text text-muted">ยืนยันการชำระด้วย OCR และ QR Code</p>
               </div>
             </div>
