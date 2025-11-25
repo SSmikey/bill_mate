@@ -22,7 +22,7 @@ let s3Client: S3Client | null = null;
 if (useCloudStorage && process.env.AWS_S3_BUCKET_NAME) {
   // Check if all required AWS credentials are available
   if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_S3_REGION) {
-    console.warn('AWS S3 credentials not fully configured. Missing:', {
+    logger.debug('AWS S3 credentials not fully configured', 'FileStorage', {
       accessKeyId: !!process.env.AWS_ACCESS_KEY_ID,
       secretAccessKey: !!process.env.AWS_SECRET_ACCESS_KEY,
       region: !!process.env.AWS_S3_REGION,
@@ -36,13 +36,13 @@ if (useCloudStorage && process.env.AWS_S3_BUCKET_NAME) {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
       },
     });
-    console.log('S3 client initialized successfully', {
+    logger.info('S3 client initialized successfully', 'FileStorage', {
       region: process.env.AWS_S3_REGION,
       bucketName: process.env.AWS_S3_BUCKET_NAME
     });
   }
 } else {
-  console.warn('Cloud storage disabled or S3 bucket not configured', {
+  logger.debug('Cloud storage disabled or S3 bucket not configured', 'FileStorage', {
     useCloudStorage,
     bucketName: process.env.AWS_S3_BUCKET_NAME
   });
@@ -204,14 +204,10 @@ async function uploadToLocal(
   const publicDir = path.join(process.cwd(), 'public');
   const folderDir = path.join(publicDir, folder);
 
-  console.log('uploadToLocal - Creating directory:', folderDir);
-
   // Ensure the directory exists
   try {
     await fs.mkdir(folderDir, { recursive: true });
-    console.log('uploadToLocal - Directory created/exists');
   } catch (error) {
-    console.error('uploadToLocal - Failed to create directory:', error);
     logger.error('Failed to create directory', error as Error, 'FileStorage', { folderDir });
     throw new Error(`Failed to create directory: ${folderDir}`);
   }
@@ -219,22 +215,17 @@ async function uploadToLocal(
   const filePath = path.join(folderDir, fileName);
   const url = `/${folder}/${fileName}`;
 
-  console.log('uploadToLocal - Writing file to:', filePath);
-
   // Write the file to disk
   try {
     await fs.writeFile(filePath, buffer);
-    console.log('uploadToLocal - File written successfully, size:', buffer.length);
     logger.info('File saved to local storage', 'FileStorage', {
       fileName,
       folder,
       url,
       size: buffer.length,
-      contentType,
-      filePath
+      contentType
     });
   } catch (error) {
-    console.error('uploadToLocal - Failed to save file:', error);
     logger.error('Failed to save file to local storage', error as Error, 'FileStorage', { filePath });
     throw new Error(`Failed to save file: ${filePath}`);
   }
