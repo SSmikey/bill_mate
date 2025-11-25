@@ -7,12 +7,5 @@
   "regions": ["sin1"],
   "env": {
     "NODE_ENV": "production"
-  },
-  "build": {
-    "env": {
-      "MONGODB_URI": "@mongodb_url",
-      "NEXTAUTH_SECRET": "@nextauth_secret",
-      "NEXTAUTH_URL": "@nextauth_url"
-    }
   }
 }
