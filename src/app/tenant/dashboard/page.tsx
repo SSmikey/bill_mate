@@ -17,11 +17,15 @@ interface Bill {
 export default function TenantDashboard() {
   const { data: session } = useSession();
   const [bills, setBills] = useState<Bill[]>([]);
+  const [userRoom, setUserRoom] = useState<{ roomNumber: string; floor?: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchBills();
-  }, []);
+    if (session) {
+      fetchBills();
+      fetchUserData();
+    }
+  }, [session]);
 
   const fetchBills = async () => {
     try {
@@ -35,6 +39,23 @@ export default function TenantDashboard() {
       console.error('Failed to fetch bills');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch('/api/profile');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data && data.data.roomId) {
+          setUserRoom({
+            roomNumber: data.data.roomId.roomNumber,
+            floor: data.data.roomId.floor
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
     }
   };
 
@@ -131,7 +152,9 @@ export default function TenantDashboard() {
               <div className="d-flex align-items-center justify-content-between">
                 <div>
                   <p className="text-muted small mb-1">ห้องของคุณ</p>
-                  <h3 className="mb-0 fw-bold text-dark">-</h3>
+                  <h3 className="mb-0 fw-bold text-dark">
+                    {userRoom ? userRoom.roomNumber : '-'}
+                  </h3>
                 </div>
                 <div className="rounded-circle p-3 bg-info bg-opacity-10">
                   <i className="bi bi-house-door-fill fs-4 text-info"></i>

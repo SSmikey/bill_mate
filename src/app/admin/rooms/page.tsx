@@ -61,7 +61,6 @@ export default function AdminRoomsPage() {
 
   // State สำหรับการค้นหาและเรียงลำดับ
   const [searchQuery, setSearchQuery] = useState('');
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 999999 });
   const [floorFilter, setFloorFilter] = useState<number | 'all'>('all');
   const [sortField, setSortField] = useState<SortField>('roomNumber');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -78,7 +77,7 @@ export default function AdminRoomsPage() {
   // อัปเดต filteredRooms เมื่อมีการเปลี่ยนแปลง
   useEffect(() => {
     applyFiltersAndSort();
-  }, [rooms, filter, searchQuery, priceRange, floorFilter, sortField, sortOrder]);
+  }, [rooms, filter, searchQuery, floorFilter, sortField, sortOrder]);
 
   // ฟังก์ชันดึงข้อมูลห้องจาก API
   const fetchRooms = async () => {
@@ -124,10 +123,6 @@ export default function AdminRoomsPage() {
       );
     }
 
-    // Filter by price range
-    filtered = filtered.filter(
-      (r) => r.rentPrice >= priceRange.min && r.rentPrice <= priceRange.max
-    );
 
     // Filter by floor
     if (floorFilter !== 'all') {
@@ -591,35 +586,6 @@ export default function AdminRoomsPage() {
               />
             </div>
 
-            {/* Price Range */}
-            <div className="col-md-4">
-              <label className="form-label fw-semibold text-dark">
-                <i className="bi bi-cash me-2"></i>
-                ช่วงราคา
-              </label>
-              <div className="d-flex gap-2">
-                <input
-                  type="number"
-                  className="form-control rounded-2 bg-white"
-                  placeholder="ต่ำสุด"
-                  value={priceRange.min}
-                  onChange={(e) =>
-                    setPriceRange({ ...priceRange, min: Number(e.target.value) })
-                  }
-                  style={{ color: '#000' }}
-                />
-                <input
-                  type="number"
-                  className="form-control rounded-2 bg-white"
-                  placeholder="สูงสุด"
-                  value={priceRange.max}
-                  onChange={(e) =>
-                    setPriceRange({ ...priceRange, max: Number(e.target.value) })
-                  }
-                  style={{ color: '#000' }}
-                />
-              </div>
-            </div>
 
             {/* Floor Filter */}
             <div className="col-md-2">
@@ -669,7 +635,6 @@ export default function AdminRoomsPage() {
               className="btn btn-sm btn-outline-secondary rounded-2"
               onClick={() => {
                 setSearchQuery('');
-                setPriceRange({ min: 0, max: 999999 });
                 setFloorFilter('all');
                 setSortField('roomNumber');
                 setSortOrder('asc');
@@ -753,7 +718,7 @@ export default function AdminRoomsPage() {
                     <i className="bi bi-inbox fs-1 text-muted"></i>
                   </div>
                   <h5 className="text-muted">
-                    {searchQuery || priceRange.min > 0 || floorFilter !== 'all'
+                    {searchQuery || floorFilter !== 'all'
                       ? 'ไม่พบห้องที่ตรงกับเงื่อนไขการค้นหา'
                       : filter === 'all'
                       ? 'ยังไม่มีห้องในระบบ'

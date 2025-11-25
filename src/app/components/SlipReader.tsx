@@ -257,7 +257,7 @@ export default function SlipReader({
       console.log("Starting OCR processing...");
       
       // Add timeout and retry logic for OCR
-      const OCR_TIMEOUT = 30000; // 30 seconds timeout
+      const OCR_TIMEOUT = 60000; // 60 seconds timeout
       
       const result = await Promise.race([
         (async () => {
@@ -275,6 +275,11 @@ export default function SlipReader({
                   setProgress({
                     message: `กำลังโหลดข้อมูลภาษา...`,
                     percent: 45,
+                  });
+                } else if (m.status === "initializing tesseract") {
+                  setProgress({
+                    message: `กำลังเริ่มต้นระบบ OCR...`,
+                    percent: 30,
                   });
                 }
               },
@@ -420,7 +425,7 @@ export default function SlipReader({
     };
 
     const cleanText = text
-      .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s\.\,\:\-\/\(\)\฿]/g, " ")
+      .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s\.\,\:\-\/\(\)\฿\.\,]/g, " ")
       .replace(/\s+/g, " ")
       .trim();
 
@@ -432,6 +437,8 @@ export default function SlipReader({
       /฿[:\s]*([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})/,
       /([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})\s*(?:บาท|Baht)/i,
       /\b([1-9][0-9]{0,2}(?:,?[0-9]{3})*\.[0-9]{2})\b/,
+      /(?:จำนวน|ยอด)[:\s]*([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})/i,
+      /([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})\s*บาท/i,
     ];
 
     for (const pattern of amountPatterns) {
