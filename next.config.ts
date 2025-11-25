@@ -1,11 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Enable SWR caching for better performance
-  swcMinify: true,
-
   // Production optimizations
-  compress: true,
   productionBrowserSourceMaps: false,
 
   webpack: (config) => {

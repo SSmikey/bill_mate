@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config({ path: '.env.local' });
+
 const bcryptjs = require('bcryptjs');
 const mongoose = require('mongoose');
 const User = require('../src/models/User');
@@ -5,7 +8,11 @@ const User = require('../src/models/User');
 // Import connectDB function
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://webnextdatabase:webnext123@webnext.5wtvsao.mongodb.net/billmate?retryWrites=true&w=majority');
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI is not set in environment variables. Please check your .env.local file.');
+    }
+    const conn = await mongoose.connect(mongoUri);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error('Database connection error:', error);
@@ -19,21 +26,26 @@ async function createAdmin() {
     await connectDB();
     console.log('Connected to MongoDB');
 
-    // Admin credentials
+    // Admin credentials from environment variables
     const adminData = {
-      email: 'admin@billmate.com',
-      password: 'admin123',
-      name: 'System Administrator',
-      phone: '0800000000',
+      email: process.env.ADMIN_EMAIL,
+      password: process.env.ADMIN_PASSWORD,
+      name: process.env.ADMIN_NAME,
+      phone: process.env.ADMIN_PHONE,
       role: 'admin'
     };
+
+    // Validate required fields
+    if (!adminData.email || !adminData.password || !adminData.name) {
+      throw new Error('Missing required admin credentials in environment variables. Please check ADMIN_EMAIL, ADMIN_PASSWORD, and ADMIN_NAME in .env.local');
+    }
 
     // Check if admin already exists
     const existingAdmin = await User.findOne({ email: adminData.email });
     if (existingAdmin) {
-      console.log('Admin user already exists!');
+      console.log('✅ Admin user already exists!');
       console.log(`Email: ${adminData.email}`);
-      console.log('Password: admin123');
+      console.log('Check .env.local for the password');
       return;
     }
 
@@ -50,17 +62,17 @@ async function createAdmin() {
       role: adminData.role
     });
 
-    console.log('Admin user created successfully!');
+    console.log('✅ Admin user created successfully!');
     console.log('===============================');
     console.log(`Email: ${adminData.email}`);
-    console.log(`Password: ${adminData.password}`);
     console.log(`Name: ${adminData.name}`);
     console.log(`Role: ${adminData.role}`);
     console.log('===============================');
-    console.log('Please save these credentials securely!');
+    console.log('Check your .env.local file for the password');
+    console.log('You can now login at: http://localhost:3000/login');
 
   } catch (error) {
-    console.error('Error creating admin user:', error);
+    console.error('❌ Error creating admin user:', error.message);
   } finally {
     await mongoose.disconnect();
     console.log('Disconnected from MongoDB');
