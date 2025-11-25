@@ -4,10 +4,11 @@ import Payment from '@/models/Payment';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { filename: string[] } }
+  { params }: { params: Promise<{ filename: string[] }> }
 ) {
   try {
-    const filename = params.filename.join('/');
+    const { filename: filenameArray } = await params;
+    const filename = filenameArray.join('/');
 
     // Connect to database and find payment with this URL reference
     await connectDB();
