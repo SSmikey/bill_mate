@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Navbar from '@/app/components/Navbar';
 import SidebarToggle from '@/app/components/SidebarToggle';
-import Link from 'next/link';
+import ActiveNavLink from '@/app/components/ActiveNavLink';
 
 export default async function AdminLayout({
   children,
@@ -41,14 +41,11 @@ export default async function AdminLayout({
           </div>
 
           <div className="nav flex-column px-2">
-            <Link
+            <ActiveNavLink
               href="/admin/dashboard"
-              className="nav-link active d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3"
-              style={{ backgroundColor: 'rgba(33, 53, 85, 0.1)', color: 'var(--primary-color)' }}
-            >
-              <i className="bi bi-speedometer2" style={{ fontSize: '1.2rem' }}></i>
-              <span>แดชบอร์ด</span>
-            </Link>
+              icon={<i className="bi bi-speedometer2"></i>}
+              label="แดชบอร์ด"
+            />
           </div>
 
           <hr className="mx-3 my-3" style={{ borderColor: '#f1f5f9' }} />
@@ -58,50 +55,35 @@ export default async function AdminLayout({
           </div>
 
           <div className="nav flex-column px-2">
-            <Link
+            <ActiveNavLink
               href="/admin/rooms"
-              className="nav-link d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3 text-dark hover-bg-light"
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              <i className="bi bi-house" style={{ fontSize: '1.2rem' }}></i>
-              <span>จัดการห้องพัก</span>
-            </Link>
+              icon={<i className="bi bi-house"></i>}
+              label="จัดการห้องพัก"
+            />
 
-            <Link
+            <ActiveNavLink
               href="/admin/users"
-              className="nav-link d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3 text-dark hover-bg-light"
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              <i className="bi bi-people" style={{ fontSize: '1.2rem' }}></i>
-              <span>จัดการผู้เช่า</span>
-            </Link>
+              icon={<i className="bi bi-people"></i>}
+              label="จัดการผู้เช่า"
+            />
 
-            <Link
+            <ActiveNavLink
               href="/admin/bills"
-              className="nav-link d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3 text-dark hover-bg-light"
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              <i className="bi bi-receipt" style={{ fontSize: '1.2rem' }}></i>
-              <span>บิลค่าใช้บริการ</span>
-            </Link>
+              icon={<i className="bi bi-receipt"></i>}
+              label="บิลค่าใช้บริการ"
+            />
 
-            <Link
+            <ActiveNavLink
               href="/admin/payments"
-              className="nav-link d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3 text-dark hover-bg-light"
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              <i className="bi bi-check-circle" style={{ fontSize: '1.2rem' }}></i>
-              <span>ยืนยันการชำระเงิน</span>
-            </Link>
+              icon={<i className="bi bi-check-circle"></i>}
+              label="ยืนยันการชำระเงิน"
+            />
 
-            <Link
+            <ActiveNavLink
               href="/admin/rooms/maintenance"
-              className="nav-link d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3 text-dark hover-bg-light"
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              <i className="bi bi-tools" style={{ fontSize: '1.2rem' }}></i>
-              <span>จัดการการแจ้งซ่อม</span>
-            </Link>
+              icon={<i className="bi bi-tools"></i>}
+              label="จัดการการแจ้งซ่อม"
+            />
           </div>
 
           <hr className="mx-3 my-3" style={{ borderColor: '#f1f5f9' }} />
@@ -111,14 +93,11 @@ export default async function AdminLayout({
           </div>
 
           <div className="nav flex-column px-2">
-            <Link
+            <ActiveNavLink
               href="/admin/rooms/stats"
-              className="nav-link d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3 text-dark hover-bg-light"
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              <i className="bi bi-graph-up" style={{ fontSize: '1.2rem' }}></i>
-              <span>สถิติห้องพัก</span>
-            </Link>
+              icon={<i className="bi bi-graph-up"></i>}
+              label="สถิติห้องพัก"
+            />
           </div>
 
           <hr className="mx-3 my-3" style={{ borderColor: '#f1f5f9' }} />
@@ -128,14 +107,11 @@ export default async function AdminLayout({
           </div>
 
           <div className="nav flex-column px-2">
-            <Link
+            <ActiveNavLink
               href="/admin/profile"
-              className="nav-link d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3 text-dark hover-bg-light"
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              <i className="bi bi-person" style={{ fontSize: '1.2rem' }}></i>
-              <span>โปรไฟล์</span>
-            </Link>
+              icon={<i className="bi bi-person"></i>}
+              label="โปรไฟล์"
+            />
           </div>
 
           <div className="p-3 mt-auto">

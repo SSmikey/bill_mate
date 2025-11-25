@@ -3,9 +3,9 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Navbar from '@/app/components/Navbar';
 import SidebarToggle from '@/app/components/SidebarToggle';
-import Link from 'next/link';
 import SessionProvider from '@/app/components/SessionProvider';
 import IconLoader from '@/app/components/IconLoader';
+import ActiveNavLink from '@/app/components/ActiveNavLink';
 
 export default async function TenantLayout({
   children,
@@ -44,41 +44,29 @@ export default async function TenantLayout({
           </div>
 
           <div className="nav flex-column px-2">
-            <Link
+            <ActiveNavLink
               href="/tenant/dashboard"
-              className="nav-link active d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3"
-              style={{ backgroundColor: 'rgba(33, 53, 85, 0.1)', color: 'var(--primary-color)' }}
-            >
-              <i className="bi bi-speedometer2" style={{ fontSize: '1.2rem' }}></i>
-              <span>แดชบอร์ด</span>
-            </Link>
+              icon={<i className="bi bi-speedometer2"></i>}
+              label="แดชบอร์ด"
+            />
 
-            <Link
+            <ActiveNavLink
               href="/tenant/bills"
-              className="nav-link d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3 text-dark hover-bg-light"
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              <i className="bi bi-receipt" style={{ fontSize: '1.2rem' }}></i>
-              <span>บิลของฉัน</span>
-            </Link>
+              icon={<i className="bi bi-receipt"></i>}
+              label="บิลของฉัน"
+            />
 
-            <Link
+            <ActiveNavLink
               href="/tenant/payments"
-              className="nav-link d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3 text-dark hover-bg-light"
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              <i className="bi bi-credit-card" style={{ fontSize: '1.2rem' }}></i>
-              <span>ประวัติการชำระ</span>
-            </Link>
+              icon={<i className="bi bi-credit-card"></i>}
+              label="ประวัติการชำระ"
+            />
 
-            <Link
+            <ActiveNavLink
               href="/tenant/maintenance"
-              className="nav-link d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3 text-dark hover-bg-light"
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              <i className="bi bi-tools" style={{ fontSize: '1.2rem' }}></i>
-              <span>แจ้งซ่อมบำรุง</span>
-            </Link>
+              icon={<i className="bi bi-tools"></i>}
+              label="แจ้งซ่อมบำรุง"
+            />
           </div>
 
           <hr className="mx-3 my-3" style={{ borderColor: '#f1f5f9' }} />
@@ -88,14 +76,11 @@ export default async function TenantLayout({
           </div>
 
           <div className="nav flex-column px-2">
-            <Link
+            <ActiveNavLink
               href="/tenant/profile"
-              className="nav-link d-flex align-items-center gap-3 px-3 py-2 mb-1 rounded-3 text-dark hover-bg-light"
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              <i className="bi bi-person" style={{ fontSize: '1.2rem' }}></i>
-              <span>โปรไฟล์</span>
-            </Link>
+              icon={<i className="bi bi-person"></i>}
+              label="โปรไฟล์"
+            />
           </div>
 
           <div className="p-3 mt-auto">
