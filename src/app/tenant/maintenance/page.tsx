@@ -95,7 +95,7 @@ export default function MaintenancePage() {
       const response = await fetch('/api/profile');
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.data.roomId) {
+        if (data.success && data.data && data.data.roomId) {
           setUserRoom(data.data.roomId);
         }
       }
@@ -212,9 +212,8 @@ export default function MaintenancePage() {
             </p>
           </div>
           <button
-            className="btn btn-primary rounded-3"
+            className="btn btn-secondary rounded-3"
             onClick={() => setShowForm(!showForm)}
-            disabled={!userRoom}
           >
             <i className="bi bi-plus-circle me-2"></i>
             แจ้งซ่อมใหม่
@@ -262,13 +261,13 @@ export default function MaintenancePage() {
                 </div>
               </div>
               <div className="mb-3">
-                <label className="form-label fw-semibold">
+                <label className="form-label fw-semibold text-muted">
                   <i className="bi bi-chat-left-text me-2 text-muted"></i>
                   หัวข้อ
                 </label>
                 <input
                   type="text"
-                  className="form-control rounded-2"
+                  className="form-control rounded-2 bg-light "
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="ระบุหัวข้อการแจ้งซ่อม"
@@ -276,12 +275,12 @@ export default function MaintenancePage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="form-label fw-semibold">
+                <label className="form-label fw-semibold text-muted">
                   <i className="bi bi-text-paragraph me-2 text-muted"></i>
                   รายละเอียด
                 </label>
                 <textarea
-                  className="form-control rounded-2"
+                  className="form-control rounded-2 bg-light"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="อธิบายปัญหาที่พบโดยละเอียด"
@@ -290,7 +289,7 @@ export default function MaintenancePage() {
                 />
               </div>
               <div className="d-flex gap-2">
-                <button type="submit" className="btn btn-primary rounded-2">
+                <button type="submit" className="btn btn-warning rounded-2">
                   <i className="bi bi-send me-2"></i>
                   ส่งคำขอ
                 </button>
