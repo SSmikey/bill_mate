@@ -158,17 +158,63 @@ const AdminPaymentsPage = () => {
   const handleOcrInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editableOcrData) return;
     const { name, value } = e.target;
-    setEditableOcrData({
-      ...editableOcrData,
-      [name]: name === 'amount' ? parseFloat(value) || 0 : value,
-    });
+    
+    // Validate input based on field type
+    if (name === 'amount') {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue >= 0 && numValue <= 10000000) {
+        setEditableOcrData({
+          ...editableOcrData,
+          [name]: numValue,
+        });
+      } else if (value === '') {
+        setEditableOcrData({
+          ...editableOcrData,
+          [name]: 0,
+        });
+      }
+      // Don't update if invalid
+    } else {
+      // For string fields, update directly
+      setEditableOcrData({
+        ...editableOcrData,
+        [name]: value,
+      });
+    }
   };
 
   const handleSaveOcr = async () => {
     if (!selectedPayment || !editableOcrData) return;
+    
+    // Validate OCR data before saving
+    if (editableOcrData.amount !== undefined && editableOcrData.amount !== null) {
+      if (isNaN(editableOcrData.amount) || editableOcrData.amount < 0) {
+        alert('จำนวนเงินต้องเป็นตัวเลขที่มากกว่าหรือเท่ากับ 0');
+        return;
+      }
+    }
+    
+    // Validate date format if provided
+    if (editableOcrData.date) {
+      const dateRegex = /^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/;
+      if (!dateRegex.test(editableOcrData.date)) {
+        alert('รูปแบบวันที่ไม่ถูกต้อง (ต้องเป็น DD/MM/YYYY หรือ DD-MM-YYYY)');
+        return;
+      }
+    }
+    
+    // Validate time format if provided
+    if (editableOcrData.time) {
+      const timeRegex = /^\d{1,2}:\d{2}(:\d{2})?$/;
+      if (!timeRegex.test(editableOcrData.time)) {
+        alert('รูปแบบเวลาไม่ถูกต้อง (ต้องเป็น HH:MM หรือ HH:MM:SS)');
+        return;
+      }
+    }
+    
     setIsVerifying(true);
     try {
-      const response = await fetch(`/api/payments/${selectedPayment._id}/ocr`, {
+      const response = await fetch(`/api/payments/${selectedPayment._id}/orc`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ocrData: editableOcrData }),
@@ -218,8 +264,13 @@ const AdminPaymentsPage = () => {
 
     const billAmount = selectedPayment.billId.totalAmount;
     const ocrAmount = isEditingOcr ? editableOcrData?.amount : selectedPayment.ocrData?.amount;
+    const qrAmount = selectedPayment.qrData?.amount;
+    
+    // Use OCR amount first, fallback to QR amount if OCR is not available
+    const effectiveAmount = ocrAmount ?? qrAmount;
     const isAmountMatch =
-      ocrAmount !== undefined && Math.abs(ocrAmount - billAmount) < 0.01;
+      effectiveAmount !== undefined && effectiveAmount !== null &&
+      !isNaN(effectiveAmount) && Math.abs(effectiveAmount - billAmount) < 0.01;
 
     return (
       <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
@@ -316,14 +367,17 @@ const AdminPaymentsPage = () => {
                       ) : (
                         <div className="d-flex align-items-center">
                           <span className="fw-bold fs-5">
-                            {ocrAmount
-                              ? ocrAmount.toLocaleString("th-TH", {
+                            {effectiveAmount !== undefined && effectiveAmount !== null && !isNaN(effectiveAmount)
+                              ? effectiveAmount.toLocaleString("th-TH", {
                                   style: "currency",
                                   currency: "THB",
                                 })
                               : "N/A"}
+                            {!ocrAmount && qrAmount && (
+                              <small className="text-muted d-block">(จาก QR Code)</small>
+                            )}
                           </span>
-                          {ocrAmount !== undefined &&
+                          {effectiveAmount !== undefined && effectiveAmount !== null && !isNaN(effectiveAmount) &&
                             (isAmountMatch ? (
                               <Badge bg="success" className="ms-2">
                                 <i className="bi bi-check-circle me-1"></i>ตรงกัน
@@ -331,6 +385,9 @@ const AdminPaymentsPage = () => {
                             ) : (
                               <Badge bg="danger" className="ms-2">
                                 <i className="bi bi-x-circle me-1"></i>ไม่ตรงกัน
+                                <small className="d-block">
+                                  ต่างกัน {Math.abs((effectiveAmount || 0) - billAmount).toLocaleString('th-TH')} บาท
+                                </small>
                               </Badge>
                             ))}
                         </div>
@@ -442,8 +499,10 @@ const AdminPaymentsPage = () => {
                 className="rounded-2"
                 onClick={handleApprove}
                 disabled={isVerifying || selectedPayment.status !== 'pending'}
+                title={!isAmountMatch ? "คำเตือน: ยอดเงินไม่ตรงกับบิล" : ""}
               >
                 <i className="bi bi-check-lg me-1"></i>อนุมัติ
+                {!isAmountMatch && <i className="bi bi-exclamation-triangle ms-1"></i>}
               </Button>
             </>
           )}

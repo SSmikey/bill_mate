@@ -118,7 +118,7 @@ const AdminBillsPage = () => {
       month: Number(formData.get('month')),
       year: Number(formData.get('year')),
       waterUnits: 0, // ค่าน้ำเป็นเหมาจ่าย ส่ง 0 หน่วย
-      electricityUnits: Number(formData.get('electricityPrice')), // ส่งค่าไฟต่อหน่วย
+      electricityUnits: Number(formData.get('electricityUnits')), // ส่งหน่วยไฟฟ้าที่ใช้ไป
     };
 
     if (!billData.tenantId) {
@@ -299,28 +299,21 @@ const AdminBillsPage = () => {
               />
             </div>
           </Form.Group>
-          <Form.Group className="mb-3" controlId="waterPrice">
+          {/* Water charge is fixed per month - no input needed */}
+          <Form.Group className="mb-3">
             <Form.Label className="fw-semibold text-dark">ค่าน้ำ (บาท/เดือน)</Form.Label>
-            <Form.Control
-              name="waterPrice"
-              type="number"
-              placeholder="0.00"
-              required
-              step="0.01"
-              min="0"
-              className="form-control rounded-2 bg-white"
-              style={{ color: '#000' }}
-              defaultValue={rooms.find(r => r._id === selectedRoomId)?.waterPrice || 0}
-            />
-            <Form.Text className="text-muted">
+            <div className="form-control rounded-2 bg-white d-flex align-items-center" style={{ minHeight: '38px', color: '#000' }}>
               {(() => {
                 const selectedRoom = rooms.find(r => r._id === selectedRoomId);
-                return selectedRoom ? `ค่าน้ำแบบเหมาจ่ายรายเดือน: ${selectedRoom.waterPrice || 0} บาท` : 'กรุณาเลือกห้องเพื่อดึงค่าน้ำ';
+                return selectedRoom ? `${selectedRoom.waterPrice || 0} บาท (ค่าน้ำแบบเหมาจ่ายรายเดือน)` : 'กรุณาเลือกห้องเพื่อดึงค่าน้ำ';
               })()}
+            </div>
+            <Form.Text className="text-muted">
+              ค่าน้ำเป็นค่าคงที่จ่ายรายเดือน ไม่ต้องกรอกจำนวน
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="electricityUnits">
-            <Form.Label className="fw-semibold text-dark">หน่วยไฟฟ้า (kWh)</Form.Label>
+            <Form.Label className="fw-semibold text-dark">หน่วยไฟฟ้าที่ใช้ (kWh)</Form.Label>
             <Form.Control
               name="electricityUnits"
               type="number"
