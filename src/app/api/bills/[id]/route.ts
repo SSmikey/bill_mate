@@ -61,15 +61,22 @@ export async function PATCH(
 
     // Update bill based on user role
     if (session.user?.role === 'tenant') {
-      // Tenant can only update payment info
-      if (body.paymentSlip || body.status === 'paid') {
-        bill.paymentSlip = body.paymentSlip || bill.paymentSlip;
+      // Tenant can only mark bill as paid
+      if (body.status === 'paid') {
         bill.status = 'paid';
-        bill.paymentDate = new Date();
       }
     } else if (session.user?.role === 'admin') {
-      // Admin can update anything
-      Object.assign(bill, body);
+      // Admin can update status and other fields
+      if (body.status) {
+        bill.status = body.status;
+      }
+      // Admin can update amounts if needed
+      if (body.electricityUnits !== undefined) {
+        bill.electricityUnits = body.electricityUnits;
+      }
+      if (body.waterUnits !== undefined) {
+        bill.waterUnits = body.waterUnits;
+      }
     }
 
     await bill.save();
