@@ -192,7 +192,7 @@ async function uploadToS3(
 }
 
 /**
- * Upload file to local storage (database only - no actual file storage)
+ * Upload file to local storage
  */
 async function uploadToLocal(
   buffer: Buffer,
@@ -200,20 +200,45 @@ async function uploadToLocal(
   contentType: string,
   folder: string
 ): Promise<FileUploadResult> {
-  // Generate a mock URL for database storage
-  const url = `/${folder}/${fileName}`;
-  
-  // Log that we're storing in database only
-  logger.info('File stored in database only (no physical file created)', 'FileStorage', {
-    fileName,
-    folder,
-    url,
-    size: buffer.length,
-    contentType,
-    note: 'Physical file not created - data stored in database only'
-  });
+  // Create the full file path
+  const publicDir = path.join(process.cwd(), 'public');
+  const folderDir = path.join(publicDir, folder);
 
-  // Return the URL without actually creating the file
+  console.log('uploadToLocal - Creating directory:', folderDir);
+
+  // Ensure the directory exists
+  try {
+    await fs.mkdir(folderDir, { recursive: true });
+    console.log('uploadToLocal - Directory created/exists');
+  } catch (error) {
+    console.error('uploadToLocal - Failed to create directory:', error);
+    logger.error('Failed to create directory', error as Error, 'FileStorage', { folderDir });
+    throw new Error(`Failed to create directory: ${folderDir}`);
+  }
+
+  const filePath = path.join(folderDir, fileName);
+  const url = `/${folder}/${fileName}`;
+
+  console.log('uploadToLocal - Writing file to:', filePath);
+
+  // Write the file to disk
+  try {
+    await fs.writeFile(filePath, buffer);
+    console.log('uploadToLocal - File written successfully, size:', buffer.length);
+    logger.info('File saved to local storage', 'FileStorage', {
+      fileName,
+      folder,
+      url,
+      size: buffer.length,
+      contentType,
+      filePath
+    });
+  } catch (error) {
+    console.error('uploadToLocal - Failed to save file:', error);
+    logger.error('Failed to save file to local storage', error as Error, 'FileStorage', { filePath });
+    throw new Error(`Failed to save file: ${filePath}`);
+  }
+
   return {
     url,
     size: buffer.length,

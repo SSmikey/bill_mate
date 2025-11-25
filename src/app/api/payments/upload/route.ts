@@ -5,7 +5,6 @@ import Payment from '@/models/Payment';
 import Bill from '@/models/Bill';
 import { authOptions } from '@/lib/auth';
 import { performOCR } from '@/services/ocrService';
-import { uploadFile } from '@/lib/fileStorage';
 import { parseBase64File, isValidImageType } from '@/lib/fileUtils';
 import logger from '@/lib/logger';
 
@@ -48,25 +47,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Upload file using optimized storage service
-    const uploadResult = await uploadFile(slipImageBase64, {
-      folder: 'slips',
-      contentType: fileInfo.contentType,
-      maxSize: 5 * 1024 * 1024, // 5MB limit for payment slips
-    });
+    // Store base64 image directly in database
+    const imageDataUrl = slipImageBase64;
 
     logger.info('Payment slip uploaded', 'API', {
       userId: session.user?.id,
       billId,
-      fileSize: uploadResult.size,
-      contentType: uploadResult.contentType
+      fileSize: fileInfo.buffer.length,
+      contentType: fileInfo.contentType
     });
 
-    // Create payment record
+    // Create payment record with base64 image in database
     const payment = await Payment.create({
       billId,
       userId: session.user?.id,
-      slipImageUrl: uploadResult.url,
+      slipImageUrl: `/api/slips/${Date.now()}-${Math.round(Math.random() * 1E9)}`, // Generate a reference URL
+      slipImageData: imageDataUrl, // Store base64 in database
       ocrData: ocrData || {},
       qrData: qrData || {},
       status: 'pending',

@@ -3,7 +3,8 @@ import mongoose, { Schema, Model } from 'mongoose';
 export interface IPayment extends mongoose.Document {
   billId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
-  slipImageUrl: string;
+  slipImageUrl: string; // URL to fetch the image from API
+  slipImageData?: string; // Base64 image stored in database
   ocrData: {
     amount?: number;
     fee?: number;
@@ -33,6 +34,7 @@ const PaymentSchema = new Schema<IPayment>(
     billId: { type: Schema.Types.ObjectId, ref: 'Bill', required: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     slipImageUrl: { type: String, required: true },
+    slipImageData: { type: String }, // Base64 image stored in database
     ocrData: {
       amount: Number,
       fee: Number,

@@ -288,7 +288,7 @@ const AdminPaymentsPage = () => {
     return (
       <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
         <Modal.Header closeButton className="bg-light">
-          <Modal.Title className="fw-bold">
+          <Modal.Title className="fw-bold text-dark">
             <i className="bi bi-receipt-cutoff me-2 text-primary"></i>ตรวจสอบการชำระเงิน
           </Modal.Title>
         </Modal.Header>
@@ -321,21 +321,19 @@ const AdminPaymentsPage = () => {
                       }}
                       onError={(e) => {
                         console.error('Image load error - URL:', selectedPayment.slipImageUrl);
-                        console.error('Error event:', e);
                         const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
                         const parent = target.parentElement;
                         if (parent) {
-                          parent.innerHTML = `
-                            <div class="text-center py-5">
-                              <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
-                              <p class="text-muted mt-2">ไม่สามารถโหลดรูปภาพสลิปได้</p>
-                              <small class="text-muted">URL: ${selectedPayment.slipImageUrl}</small>
-                            </div>
+                          const errorDiv = document.createElement('div');
+                          errorDiv.className = 'text-center py-5';
+                          errorDiv.innerHTML = `
+                            <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
+                            <p class="text-muted mt-2">ไม่สามารถโหลดรูปภาพสลิปได้</p>
+                            <small class="text-muted d-block mb-3">URL: ${selectedPayment.slipImageUrl}</small>
                           `;
+                          parent.appendChild(errorDiv);
                         }
-                      }}
-                      onLoad={() => {
-                        console.log('Image loaded successfully:', selectedPayment.slipImageUrl);
                       }}
                     />
                   </div>
@@ -352,18 +350,18 @@ const AdminPaymentsPage = () => {
                 <div className="rounded-circle p-2 me-2 bg-info bg-opacity-10">
                   <i className="bi bi-file-earmark-text fs-5 text-info"></i>
                 </div>
-                <h6 className="mb-0 fw-semibold">ข้อมูลบิล</h6>
+                <h6 className="mb-0 fw-semibold text-dark">ข้อมูลบิล</h6>
               </div>
               <div className="card border-0 bg-light rounded-3 mb-3">
                 <div className="card-body">
                   <div className="row g-3">
                     <div className="col-6">
                       <small className="text-muted d-block">ห้อง</small>
-                      <span className="fw-semibold">{selectedPayment.billId?.roomId?.roomNumber || 'N/A'}</span>
+                      <span className="fw-semibold text-dark">{selectedPayment.billId?.roomId?.roomNumber || 'N/A'}</span>
                     </div>
                     <div className="col-6">
                       <small className="text-muted d-block">ผู้เช่า</small>
-                      <span className="fw-semibold">{selectedPayment.userId?.name || 'N/A'}</span>
+                      <span className="fw-semibold text-dark">{selectedPayment.userId?.name || 'N/A'}</span>
                     </div>
                     <div className="col-12">
                       <small className="text-muted d-block">ยอดบิล</small>
@@ -383,7 +381,7 @@ const AdminPaymentsPage = () => {
                   <div className="rounded-circle p-2 me-2 bg-warning bg-opacity-10">
                     <i className="bi bi-search fs-5 text-warning"></i>
                   </div>
-                  <h6 className="mb-0 fw-semibold">ข้อมูลจาก OCR</h6>
+                  <h6 className="mb-0 fw-semibold text-dark">ข้อมูลจาก OCR</h6>
                 </div>
                 {!isEditingOcr && selectedPayment.status === 'pending' && (
                   <Button variant="outline-primary" size="sm" className="rounded-2" onClick={() => setIsEditingOcr(true)}>
@@ -405,7 +403,7 @@ const AdminPaymentsPage = () => {
                           onChange={handleOcrInputChange}
                         />
                       ) : (
-                        <div className="d-flex align-items-center">
+                        <div className="d-flex align-items-center text-dark">
                           <span className="fw-bold fs-5">
                             {effectiveAmount !== undefined && effectiveAmount !== null && !isNaN(effectiveAmount)
                               ? effectiveAmount.toLocaleString("th-TH", {
@@ -433,15 +431,15 @@ const AdminPaymentsPage = () => {
                         </div>
                       )}
                     </div>
-                    <div className="col-12">
+                    <div className="col-12 text-dark">
                       <small className="text-muted d-block">วันที่-เวลา</small>
                       {isEditingOcr ? (
                         <div className="d-flex gap-2">
-                          <input type="text" name="date" className="form-control form-control-sm rounded-2" value={editableOcrData?.date || ''} onChange={handleOcrInputChange} placeholder="DD/MM/YYYY" />
-                          <input type="text" name="time" className="form-control form-control-sm rounded-2" value={editableOcrData?.time || ''} onChange={handleOcrInputChange} placeholder="HH:MM" />
+                          <input type="text" name="date" className="form-control form-control-sm rounded-2 text-dark" value={editableOcrData?.date || ''} onChange={handleOcrInputChange} placeholder="DD/MM/YYYY" />
+                          <input type="text" name="time" className="form-control form-control-sm rounded-2 text-dark" value={editableOcrData?.time || ''} onChange={handleOcrInputChange} placeholder="HH:MM" />
                         </div>
                       ) : (
-                        <span className="fw-semibold">
+                        <span className="fw-semibold text-dark">
                           {selectedPayment.ocrData.date || "N/A"} - {selectedPayment.ocrData.time || "N/A"}
                         </span>
                       )}
@@ -449,25 +447,25 @@ const AdminPaymentsPage = () => {
                     <div className="col-12">
                       <small className="text-muted d-block">จากบัญชี</small>
                       {isEditingOcr ? (
-                        <input type="text" name="fromAccount" className="form-control form-control-sm rounded-2" value={editableOcrData?.fromAccount || ''} onChange={handleOcrInputChange} />
+                        <input type="text" name="fromAccount" className="form-control form-control-sm rounded-2 text-dark" value={editableOcrData?.fromAccount || ''} onChange={handleOcrInputChange} />
                       ) : (
-                        <span className="fw-semibold">{selectedPayment.ocrData.fromAccount || "N/A"}</span>
+                        <span className="fw-semibold text-dark">{selectedPayment.ocrData.fromAccount || "N/A"}</span>
                       )}
                     </div>
                     <div className="col-12">
                       <small className="text-muted d-block">ไปบัญชี</small>
                       {isEditingOcr ? (
-                        <input type="text" name="toAccount" className="form-control form-control-sm rounded-2" value={editableOcrData?.toAccount || ''} onChange={handleOcrInputChange} />
+                        <input type="text" name="toAccount" className="form-control form-control-sm rounded-2 text-dark" value={editableOcrData?.toAccount || ''} onChange={handleOcrInputChange} />
                       ) : (
-                        <span className="fw-semibold">{selectedPayment.ocrData.toAccount || "N/A"}</span>
+                        <span className="fw-semibold text-dark">{selectedPayment.ocrData.toAccount || "N/A"}</span>
                       )}
                     </div>
                     <div className="col-12">
                       <small className="text-muted d-block">เลขที่อ้างอิง</small>
                       {isEditingOcr ? (
-                        <input type="text" name="reference" className="form-control form-control-sm rounded-2" value={editableOcrData?.reference || ''} onChange={handleOcrInputChange} />
+                        <input type="text" name="reference" className="form-control form-control-sm rounded-2 text-dark" value={editableOcrData?.reference || ''} onChange={handleOcrInputChange} />
                       ) : (
-                        <span className="fw-semibold">{selectedPayment.ocrData.reference || "N/A"}</span>
+                        <span className="fw-semibold text-dark">{selectedPayment.ocrData.reference || "N/A"}</span>
                       )}
                     </div>
                   </div>
@@ -488,14 +486,14 @@ const AdminPaymentsPage = () => {
                     <div className="rounded-circle p-2 me-2 bg-success bg-opacity-10">
                       <i className="bi bi-qr-code fs-5 text-success"></i>
                     </div>
-                    <h6 className="mb-0 fw-semibold">ข้อมูลจาก QR Code</h6>
+                    <h6 className="mb-0 fw-semibold text-dark">ข้อมูลจาก QR Code</h6>
                   </div>
                   <div className="card border-0 bg-light rounded-3">
                     <div className="card-body">
                       <div className="row g-3">
                         <div className="col-12">
                           <small className="text-muted d-block">จำนวนเงิน</small>
-                          <span className="fw-bold">
+                          <span className="fw-bold text-dark">
                             {selectedPayment.qrData.amount
                               ? selectedPayment.qrData.amount.toLocaleString(
                                   "th-TH",
@@ -847,7 +845,7 @@ const AdminPaymentsPage = () => {
                       </label>
                       <textarea
                         id="rejectReason"
-                        className="form-control rounded-2 border-2"
+                        className="form-control rounded-2 border-2 bg-light"
                         rows={4}
                         value={rejectReason}
                         onChange={(e) => setRejectReason(e.target.value)}
