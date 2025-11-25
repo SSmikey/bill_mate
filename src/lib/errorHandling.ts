@@ -187,7 +187,7 @@ export function handleApiError(error: any): Response {
 /**
  * Async error handler wrapper for API routes
  */
-export function asyncHandler(fn: Function) {
+export function asyncHandler(fn: (req: Request, ...args: any[]) => Promise<Response>) {
   return async (req: Request, ...args: any[]) => {
     try {
       return await fn(req, ...args);

@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const occupancyRate = totalRooms > 0 ? ((occupiedRooms / totalRooms) * 100).toFixed(2) : '0';
 
     // 2. Revenue statistics based on verified payments
-    let paymentMatchStage: any = { status: 'verified' };
+    const paymentMatchStage: any = { status: 'verified' };
     
     const revenueStats = await Payment.aggregate([
       {

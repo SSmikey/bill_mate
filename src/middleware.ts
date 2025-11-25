@@ -35,7 +35,7 @@ export default withAuth(
     }
 
     // Create response with security headers
-    let response = NextResponse.next();
+    const response = NextResponse.next();
     
     // Add CORS headers for API routes
     if (req.nextUrl.pathname.startsWith('/api/')) {

@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
     const available = searchParams.get('available');
 
     await connectDB();
-    
-    let query: any = {};
+
+    const query: any = {};
     
     // Filter by role if specified
     if (role) {

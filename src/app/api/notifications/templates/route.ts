@@ -255,7 +255,7 @@ export async function PUT() {
     ];
 
     let createdCount = 0;
-    let updatedCount = 0;
+    const updatedCount = 0;
 
     for (const templateData of defaultTemplates) {
       const existingTemplate = await NotificationTemplate.findOne({ type: templateData.type });

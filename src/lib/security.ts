@@ -1,5 +1,5 @@
 // Security utilities for enhanced application security
-
+// @ts-expect-error - crypto module used only in Node.js runtime, not Edge Runtime
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 
