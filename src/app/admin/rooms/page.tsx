@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import RoomForm from '@/app/components/RoomForm';
 import RoomAssignmentForm from '@/app/components/RoomAssignmentForm';
+import StyledSelect from '@/app/components/StyledSelect';
 
 // Interface สำหรับข้อมูลห้อง
 interface Room {
@@ -379,23 +380,89 @@ export default function AdminRoomsPage() {
   const occupiedCount = rooms.filter((r) => r.isOccupied).length;
 
   return (
-    <div className="container-fluid">
-      <div className="row">
-        <div className="col-12">
-          {/* Header */}
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <h2>
-                <i className="bi bi-house me-2"></i>
-                จัดการห้องพัก
-              </h2>
-              <small className="text-muted">
-                ทั้งหมด {rooms.length} ห้อง | แสดง {filteredRooms.length} ห้อง
-              </small>
+    <div className="fade-in">
+      {/* Header - Clean and minimal */}
+      <div className="mb-5">
+        <h1 className="fw-bold text-dark mb-2">จัดการห้องพัก</h1>
+        <p className="text-muted mb-0">จัดการข้อมูลห้องพักและผู้เช่าในระบบ</p>
+      </div>
+
+      {/* Stats Cards - Clean white background */}
+      <div className="row mb-5 g-3">
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <p className="text-muted small mb-1">ห้องทั้งหมด</p>
+                  <h3 className="mb-0 fw-bold text-dark">{rooms.length}</h3>
+                </div>
+                <div className="rounded-circle p-3 bg-primary bg-opacity-10">
+                  <i className="bi bi-house-fill fs-4 text-primary"></i>
+                </div>
+              </div>
             </div>
-            <div className="d-flex gap-2">
+          </div>
+        </div>
+
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <p className="text-muted small mb-1">ห้องว่าง</p>
+                  <h3 className="mb-0 fw-bold text-dark">{availableCount}</h3>
+                </div>
+                <div className="rounded-circle p-3 bg-success bg-opacity-10">
+                  <i className="bi bi-door-closed fs-4 text-success"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <p className="text-muted small mb-1">มีผู้เช่า</p>
+                  <h3 className="mb-0 fw-bold text-dark">{occupiedCount}</h3>
+                </div>
+                <div className="rounded-circle p-3 bg-warning bg-opacity-10">
+                  <i className="bi bi-people-fill fs-4 text-warning"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <p className="text-muted small mb-1">อัตราการเข้าพัก</p>
+                  <h3 className="mb-0 fw-bold text-primary">
+                    {rooms.length > 0 ? Math.round((occupiedCount / rooms.length) * 100) : 0}%
+                  </h3>
+                </div>
+                <div className="rounded-circle p-3 bg-info bg-opacity-10">
+                  <i className="bi bi-graph-up fs-4 text-info"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div className="d-flex gap-2 flex-wrap">
               <button
-                className="btn btn-outline-secondary"
+                className="btn btn-outline-primary d-flex align-items-center justify-content-center py-2 text-decoration-none fw-medium rounded-2"
                 onClick={handleExportCSV}
                 disabled={filteredRooms.length === 0}
               >
@@ -403,426 +470,471 @@ export default function AdminRoomsPage() {
                 Export CSV
               </button>
               <button
-                className={`btn ${bulkMode ? 'btn-warning' : 'btn-outline-secondary'}`}
+                className={`btn d-flex align-items-center justify-content-center py-2 text-decoration-none fw-medium rounded-2 ${
+                  bulkMode ? 'btn-warning' : 'btn-outline-primary'
+                }`}
                 onClick={toggleBulkMode}
               >
                 <i className="bi bi-check-square me-2"></i>
                 {bulkMode ? 'ยกเลิกโหมดเลือก' : 'เลือกหลายรายการ'}
               </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  setEditingRoom(null);
-                  setShowForm(true);
-                }}
-                disabled={showForm}
-              >
-                <i className="bi bi-plus-lg me-2"></i>
-                เพิ่มห้องใหม่
-              </button>
             </div>
+            <button
+              className="btn btn-primary d-flex align-items-center justify-content-center py-2 text-white text-decoration-none fw-medium rounded-2"
+              onClick={() => {
+                setEditingRoom(null);
+                setShowForm(true);
+              }}
+              disabled={showForm}
+            >
+              <i className="bi bi-plus-circle-fill me-2"></i>
+              เพิ่มห้องใหม่
+            </button>
           </div>
-
-          {/* Success Alert */}
-          {success && (
-            <div className="alert alert-success alert-dismissible fade show" role="alert">
-              <i className="bi bi-check-circle me-2"></i>
-              {success}
-              <button
-                type="button"
-                className="btn-close"
-                onClick={() => setSuccess('')}
-                aria-label="Close"
-              ></button>
-            </div>
-          )}
-
-          {/* Error Alert */}
-          {error && (
-            <div className="alert alert-danger alert-dismissible fade show" role="alert">
-              <i className="bi bi-exclamation-triangle me-2"></i>
-              {error}
-              <button
-                type="button"
-                className="btn-close"
-                onClick={() => setError('')}
-                aria-label="Close"
-              ></button>
-            </div>
-          )}
-
-          {/* Form Section */}
-          {showForm && (
-            <div className="mb-4">
-              <RoomForm
-                initialData={editingRoom || undefined}
-                onSubmit={editingRoom ? handleEdit : handleCreate}
-                isLoading={loading}
-                isEditing={!!editingRoom}
-              />
-              <button
-                className="btn btn-outline-secondary mt-2"
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingRoom(null);
-                }}
-              >
-                <i className="bi bi-x-lg me-2"></i>
-                ยกเลิก
-              </button>
-            </div>
-          )}
-
-          {/* Assignment Form Section */}
-          {showAssignForm && assigningRoom && (
-            <div className="mb-4">
-              <RoomAssignmentForm
-                room={assigningRoom}
-                onSuccess={handleAssignSuccess}
-                onCancel={() => {
-                  setShowAssignForm(false);
-                  setAssigningRoom(null);
-                }}
-              />
-            </div>
-          )}
-
-          {/* Advanced Filters */}
-          <div className="card mb-3">
-            <div className="card-body">
-              <div className="row g-3">
-                {/* Search */}
-                <div className="col-md-4">
-                  <label className="form-label">
-                    <i className="bi bi-search me-2"></i>
-                    ค้นหา
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="หมายเลขห้อง, ชื่อผู้เช่า, อีเมล"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-
-                {/* Price Range */}
-                <div className="col-md-4">
-                  <label className="form-label">
-                    <i className="bi bi-cash me-2"></i>
-                    ช่วงราคา
-                  </label>
-                  <div className="d-flex gap-2">
-                    <input
-                      type="number"
-                      className="form-control"
-                      placeholder="ต่ำสุด"
-                      value={priceRange.min}
-                      onChange={(e) =>
-                        setPriceRange({ ...priceRange, min: Number(e.target.value) })
-                      }
-                    />
-                    <input
-                      type="number"
-                      className="form-control"
-                      placeholder="สูงสุด"
-                      value={priceRange.max}
-                      onChange={(e) =>
-                        setPriceRange({ ...priceRange, max: Number(e.target.value) })
-                      }
-                    />
-                  </div>
-                </div>
-
-                {/* Floor Filter */}
-                <div className="col-md-2">
-                  <label className="form-label">
-                    <i className="bi bi-building me-2"></i>
-                    ชั้น
-                  </label>
-                  <select
-                    className="form-select"
-                    value={floorFilter}
-                    onChange={(e) =>
-                      setFloorFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))
-                    }
-                  >
-                    <option value="all">ทั้งหมด</option>
-                    {uniqueFloors.sort((a, b) => a! - b!).map((floor) => (
-                      <option key={floor} value={floor}>
-                        ชั้น {floor}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Sort */}
-                <div className="col-md-2">
-                  <label className="form-label">
-                    <i className="bi bi-sort-down me-2"></i>
-                    เรียงตาม
-                  </label>
-                  <select
-                    className="form-select"
-                    value={`${sortField}-${sortOrder}`}
-                    onChange={(e) => {
-                      const [field, order] = e.target.value.split('-');
-                      setSortField(field as SortField);
-                      setSortOrder(order as SortOrder);
-                    }}
-                  >
-                    <option value="roomNumber-asc">หมายเลขห้อง (A-Z)</option>
-                    <option value="roomNumber-desc">หมายเลขห้อง (Z-A)</option>
-                    <option value="floor-asc">ชั้น (น้อย-มาก)</option>
-                    <option value="floor-desc">ชั้น (มาก-น้อย)</option>
-                    <option value="rentPrice-asc">ราคา (ถูก-แพง)</option>
-                    <option value="rentPrice-desc">ราคา (แพง-ถูก)</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Reset Filters */}
-              <div className="mt-3">
-                <button
-                  className="btn btn-sm btn-outline-secondary"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setPriceRange({ min: 0, max: 999999 });
-                    setFloorFilter('all');
-                    setSortField('roomNumber');
-                    setSortOrder('asc');
-                  }}
-                >
-                  <i className="bi bi-arrow-counterclockwise me-2"></i>
-                  รีเซ็ตตัวกรอง
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Filter Badges */}
-          <div className="mb-3 d-flex justify-content-between align-items-center">
-            <div>
-              <span
-                className={`badge ${filter === 'all' ? 'bg-primary' : 'bg-secondary'} me-2`}
-                onClick={() => setFilter('all')}
-                style={{ cursor: 'pointer', fontSize: '0.9rem', padding: '0.5rem 0.75rem' }}
-              >
-                ทั้งหมด ({rooms.length})
-              </span>
-              <span
-                className={`badge ${filter === 'available' ? 'bg-success' : 'bg-secondary'} me-2`}
-                onClick={() => setFilter('available')}
-                style={{ cursor: 'pointer', fontSize: '0.9rem', padding: '0.5rem 0.75rem' }}
-              >
-                ห้องว่าง ({availableCount})
-              </span>
-              <span
-                className={`badge ${filter === 'occupied' ? 'bg-warning' : 'bg-secondary'}`}
-                onClick={() => setFilter('occupied')}
-                style={{ cursor: 'pointer', fontSize: '0.9rem', padding: '0.5rem 0.75rem' }}
-              >
-                มีผู้เช่า ({occupiedCount})
-              </span>
-            </div>
-
-            {/* Bulk Actions */}
-            {bulkMode && selectedRooms.length > 0 && (
-              <div>
-                <button className="btn btn-sm btn-danger" onClick={handleBulkDelete}>
-                  <i className="bi bi-trash-fill me-2"></i>
-                  ลบที่เลือก ({selectedRooms.length})
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Loading State */}
-          {pageLoading ? (
-            <div className="text-center py-5">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">กำลังโหลด...</span>
-              </div>
-              <p className="mt-3 text-muted">กำลังโหลดข้อมูลห้อง...</p>
-            </div>
-          ) : (
-            <>
-              {/* Table */}
-              <div className="card">
-                <div className="card-body">
-                  {filteredRooms.length === 0 ? (
-                    <div className="text-center py-5">
-                      <i className="bi bi-inbox" style={{ fontSize: '3rem', color: '#ccc' }}></i>
-                      <p className="mt-3 text-muted">
-                        {searchQuery || priceRange.min > 0 || floorFilter !== 'all'
-                          ? 'ไม่พบห้องที่ตรงกับเงื่อนไขการค้นหา'
-                          : filter === 'all'
-                          ? 'ยังไม่มีห้องในระบบ'
-                          : filter === 'available'
-                          ? 'ไม่มีห้องว่าง'
-                          : 'ไม่มีห้องที่มีผู้เช่า'}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="table-responsive">
-                      <table className="table table-hover">
-                        <thead className="table-light">
-                          <tr>
-                            {bulkMode && (
-                              <th style={{ width: '50px' }}>
-                                <input
-                                  type="checkbox"
-                                  className="form-check-input"
-                                  checked={
-                                    selectedRooms.length === filteredRooms.length &&
-                                    filteredRooms.length > 0
-                                  }
-                                  onChange={selectAllRooms}
-                                />
-                              </th>
-                            )}
-                            <th>หมายเลขห้อง</th>
-                            <th>ชั้น</th>
-                            <th className="text-end">ค่าเช่า</th>
-                            <th className="text-end">ค่าน้ำ</th>
-                            <th className="text-end">ค่าไฟ/หน่วย</th>
-                            <th>สถานะ/ผู้เช่า</th>
-                            <th className="text-center" style={{ minWidth: '250px' }}>
-                              การจัดการ
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredRooms.map((room) => (
-                            <tr key={room._id}>
-                              {bulkMode && (
-                                <td>
-                                  <input
-                                    type="checkbox"
-                                    className="form-check-input"
-                                    checked={selectedRooms.includes(room._id)}
-                                    onChange={() => toggleRoomSelection(room._id)}
-                                  />
-                                </td>
-                              )}
-                              <td>
-                                <strong>{room.roomNumber}</strong>
-                              </td>
-                              <td>{room.floor || '-'}</td>
-                              <td className="text-end">{room.rentPrice.toLocaleString('th-TH')} ฿</td>
-                              <td className="text-end">{room.waterPrice.toLocaleString('th-TH')} ฿</td>
-                              <td className="text-end">
-                                {room.electricityPrice.toLocaleString('th-TH')} ฿
-                              </td>
-                              <td>
-                                {room.isOccupied ? (
-                                  <>
-                                    <span className="badge bg-warning text-dark">มีผู้เช่า</span>
-                                    {room.tenantId && (
-                                      <>
-                                        <div className="small text-muted mt-1">{room.tenantId.name}</div>
-                                        <div className="small text-muted">{room.tenantId.email}</div>
-                                        {room.moveInDate && (
-                                          <div className="small text-muted">
-                                            เข้าพัก: {new Date(room.moveInDate).toLocaleDateString('th-TH')}
-                                          </div>
-                                        )}
-                                        {room.rentDueDate && (
-                                          <div className="small text-muted">
-                                            ครบกำหนด: วันที่ {room.rentDueDate} ของเดือน
-                                          </div>
-                                        )}
-                                        {room.depositAmount && (
-                                          <div className="small text-muted">
-                                            มัดจำ: {room.depositAmount.toLocaleString('th-TH')} ฿
-                                          </div>
-                                        )}
-                                        {room.rentalAgreement && (
-                                          <div className="mt-1">
-                                            <a
-                                              href={room.rentalAgreement}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              className="btn btn-sm btn-outline-primary"
-                                            >
-                                              <i className="bi bi-file-earmark-text me-1"></i>
-                                              ดูสัญญาเช่า
-                                            </a>
-                                          </div>
-                                        )}
-                                      </>
-                                    )}
-                                  </>
-                                ) : (
-                                  <span className="badge bg-success">ว่าง</span>
-                                )}
-                              </td>
-                              <td className="text-center">
-                                <div className="btn-group" role="group">
-                                  {!room.isOccupied && (
-                                    <button
-                                      className="btn btn-success btn-sm"
-                                      onClick={() => handleAssignClick(room)}
-                                      title="มอบหมายผู้เช่า"
-                                    >
-                                      <i className="bi bi-person-plus-fill me-1"></i>
-                                      มอบหมาย
-                                    </button>
-                                  )}
-                                  {room.isOccupied && (
-                                    <button
-                                      className="btn btn-warning btn-sm"
-                                      onClick={() => handleCheckout(room)}
-                                      title="ปลดผู้เช่าออกจากห้อง"
-                                    >
-                                      <i className="bi bi-person-dash-fill me-1"></i>
-                                      ปลดผู้เช่า
-                                    </button>
-                                  )}
-                                  <button
-                                    className="btn btn-primary btn-sm"
-                                    onClick={() => {
-                                      setEditingRoom(room);
-                                      setShowForm(true);
-                                    }}
-                                    title="แก้ไขข้อมูลห้อง"
-                                  >
-                                    <i className="bi bi-pencil-square me-1"></i>
-                                    แก้ไข
-                                  </button>
-                                  <button
-                                    className="btn btn-danger btn-sm"
-                                    onClick={() => handleDelete(room._id, room.roomNumber)}
-                                    title="ลบห้อง"
-                                    disabled={room.isOccupied}
-                                  >
-                                    <i className="bi bi-trash-fill me-1"></i>
-                                    ลบ
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Summary */}
-              {filteredRooms.length > 0 && (
-                <div className="mt-3 text-muted">
-                  <small>
-                    แสดง {filteredRooms.length} ห้อง จากทั้งหมด {rooms.length} ห้อง
-                    {selectedRooms.length > 0 && ` | เลือก ${selectedRooms.length} ห้อง`}
-                  </small>
-                </div>
-              )}
-            </>
-          )}
         </div>
       </div>
+
+      {/* Success Alert */}
+      {success && (
+        <div className="alert alert-success alert-dismissible fade show" role="alert">
+          <i className="bi bi-check-circle me-2"></i>
+          {success}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setSuccess('')}
+            aria-label="Close"
+          ></button>
+        </div>
+      )}
+
+      {/* Error Alert */}
+      {error && (
+        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          <i className="bi bi-exclamation-triangle me-2"></i>
+          {error}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError('')}
+            aria-label="Close"
+          ></button>
+        </div>
+      )}
+
+      {/* Form Section */}
+      {showForm && (
+        <div className="card border-0 bg-white rounded-3 shadow-sm mb-4">
+          <div className="card-body p-4">
+            <RoomForm
+              initialData={editingRoom || undefined}
+              onSubmit={editingRoom ? handleEdit : handleCreate}
+              isLoading={loading}
+              isEditing={!!editingRoom}
+            />
+            <button
+              className="btn btn-outline-secondary mt-3"
+              onClick={() => {
+                setShowForm(false);
+                setEditingRoom(null);
+              }}
+            >
+              <i className="bi bi-x-lg me-2"></i>
+              ยกเลิก
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Assignment Form Section */}
+      {showAssignForm && assigningRoom && (
+        <div className="card border-0 bg-white rounded-3 shadow-sm mb-4">
+          <div className="card-body p-4">
+            <RoomAssignmentForm
+              room={assigningRoom}
+              onSuccess={handleAssignSuccess}
+              onCancel={() => {
+                setShowAssignForm(false);
+                setAssigningRoom(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Advanced Filters */}
+      <div className="card border-0 bg-white rounded-3 shadow-sm mb-4">
+        <div className="card-body p-4">
+          <div className="d-flex align-items-center mb-4">
+            <div className="rounded-circle p-3 me-3 bg-primary bg-opacity-10">
+              <i className="bi bi-funnel fs-5 text-primary"></i>
+            </div>
+            <div>
+              <h6 className="mb-0 fw-semibold text-dark">ตัวกรองขั้นสูง</h6>
+              <p className="mb-0 small text-muted">ค้นหาและกรองห้องตามเงื่อนไขที่ต้องการ</p>
+            </div>
+          </div>
+          <div className="row g-3">
+            {/* Search */}
+            <div className="col-md-4">
+              <label className="form-label fw-semibold text-dark">
+                <i className="bi bi-search me-2"></i>
+                ค้นหา
+              </label>
+              <input
+                type="text"
+                className="form-control rounded-2 bg-white"
+                placeholder="หมายเลขห้อง, ชื่อผู้เช่า, อีเมล"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ color: '#000' }}
+              />
+            </div>
+
+            {/* Price Range */}
+            <div className="col-md-4">
+              <label className="form-label fw-semibold text-dark">
+                <i className="bi bi-cash me-2"></i>
+                ช่วงราคา
+              </label>
+              <div className="d-flex gap-2">
+                <input
+                  type="number"
+                  className="form-control rounded-2 bg-white"
+                  placeholder="ต่ำสุด"
+                  value={priceRange.min}
+                  onChange={(e) =>
+                    setPriceRange({ ...priceRange, min: Number(e.target.value) })
+                  }
+                  style={{ color: '#000' }}
+                />
+                <input
+                  type="number"
+                  className="form-control rounded-2 bg-white"
+                  placeholder="สูงสุด"
+                  value={priceRange.max}
+                  onChange={(e) =>
+                    setPriceRange({ ...priceRange, max: Number(e.target.value) })
+                  }
+                  style={{ color: '#000' }}
+                />
+              </div>
+            </div>
+
+            {/* Floor Filter */}
+            <div className="col-md-2">
+              <StyledSelect
+                value={floorFilter}
+                onChange={(val) =>
+                  setFloorFilter(val === 'all' ? 'all' : Number(val))
+                }
+                label="ชั้น"
+                icon="bi bi-building"
+                options={[
+                  { value: 'all', label: 'ทั้งหมด' },
+                  ...uniqueFloors.sort((a, b) => a! - b!).map((floor) => ({
+                    value: floor!.toString(),
+                    label: `ชั้น ${floor}`,
+                  })),
+                ]}
+              />
+            </div>
+
+            {/* Sort */}
+            <div className="col-md-2">
+              <StyledSelect
+                value={`${sortField}-${sortOrder}`}
+                onChange={(val) => {
+                  const [field, order] = val.split('-');
+                  setSortField(field as SortField);
+                  setSortOrder(order as SortOrder);
+                }}
+                label="เรียงตาม"
+                icon="bi bi-sort-down"
+                options={[
+                  { value: 'roomNumber-asc', label: 'หมายเลขห้อง (A-Z)' },
+                  { value: 'roomNumber-desc', label: 'หมายเลขห้อง (Z-A)' },
+                  { value: 'floor-asc', label: 'ชั้น (น้อย-มาก)' },
+                  { value: 'floor-desc', label: 'ชั้น (มาก-น้อย)' },
+                  { value: 'rentPrice-asc', label: 'ราคา (ถูก-แพง)' },
+                  { value: 'rentPrice-desc', label: 'ราคา (แพง-ถูก)' },
+                ]}
+              />
+            </div>
+          </div>
+
+          {/* Reset Filters */}
+          <div className="mt-3">
+            <button
+              className="btn btn-sm btn-outline-secondary rounded-2"
+              onClick={() => {
+                setSearchQuery('');
+                setPriceRange({ min: 0, max: 999999 });
+                setFloorFilter('all');
+                setSortField('roomNumber');
+                setSortOrder('asc');
+              }}
+            >
+              <i className="bi bi-arrow-counterclockwise me-2"></i>
+              รีเซ็ตตัวกรอง
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Badges */}
+      <div className="mb-4 d-flex justify-content-between align-items-center">
+        <div className="d-flex gap-2 flex-wrap">
+          <span
+            className={`badge px-3 py-2 rounded-2 cursor-pointer ${
+              filter === 'all'
+                ? 'bg-primary bg-opacity-10 text-primary border border-primary'
+                : 'bg-light text-muted border'
+            }`}
+            onClick={() => setFilter('all')}
+            style={{ transition: 'all 0.2s ease' }}
+          >
+            <i className="bi bi-grid-3x3-gap me-2"></i>
+            ทั้งหมด ({rooms.length})
+          </span>
+          <span
+            className={`badge px-3 py-2 rounded-2 cursor-pointer ${
+              filter === 'available'
+                ? 'bg-success bg-opacity-10 text-success border border-success'
+                : 'bg-light text-muted border'
+            }`}
+            onClick={() => setFilter('available')}
+            style={{ transition: 'all 0.2s ease' }}
+          >
+            <i className="bi bi-door-closed me-2"></i>
+            ห้องว่าง ({availableCount})
+          </span>
+          <span
+            className={`badge px-3 py-2 rounded-2 cursor-pointer ${
+              filter === 'occupied'
+                ? 'bg-warning bg-opacity-10 text-warning border border-warning'
+                : 'bg-light text-muted border'
+            }`}
+            onClick={() => setFilter('occupied')}
+            style={{ transition: 'all 0.2s ease' }}
+          >
+            <i className="bi bi-people me-2"></i>
+            มีผู้เช่า ({occupiedCount})
+          </span>
+        </div>
+
+        {/* Bulk Actions */}
+        {bulkMode && selectedRooms.length > 0 && (
+          <div>
+            <button className="btn btn-sm btn-danger rounded-2" onClick={handleBulkDelete}>
+              <i className="bi bi-trash-fill me-2"></i>
+              ลบที่เลือก ({selectedRooms.length})
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Loading State */}
+      {pageLoading ? (
+        <div className="text-center py-5">
+          <div className="spinner-border text-primary" role="status" style={{ width: '3rem', height: '3rem' }}>
+            <span className="visually-hidden">กำลังโหลด...</span>
+          </div>
+          <p className="mt-3 text-muted">กำลังโหลดข้อมูลห้อง...</p>
+        </div>
+      ) : (
+        <>
+          {/* Table */}
+          <div className="card border-0 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-0">
+              {filteredRooms.length === 0 ? (
+                <div className="text-center py-5">
+                  <div className="rounded-circle p-4 bg-light mb-3 d-inline-block">
+                    <i className="bi bi-inbox fs-1 text-muted"></i>
+                  </div>
+                  <h5 className="text-muted">
+                    {searchQuery || priceRange.min > 0 || floorFilter !== 'all'
+                      ? 'ไม่พบห้องที่ตรงกับเงื่อนไขการค้นหา'
+                      : filter === 'all'
+                      ? 'ยังไม่มีห้องในระบบ'
+                      : filter === 'available'
+                      ? 'ไม่มีห้องว่าง'
+                      : 'ไม่มีห้องที่มีผู้เช่า'}
+                  </h5>
+                  <p className="text-muted mt-2">
+                    ลองปรับเปลี่ยนเงื่อนไขการค้นหาหรือเพิ่มห้องใหม่ในระบบ
+                  </p>
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table table-hover mb-0">
+                    <thead className="table-dark">
+                      <tr>
+                        {bulkMode && (
+                          <th className="w-50px">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={
+                                selectedRooms.length === filteredRooms.length &&
+                                filteredRooms.length > 0
+                              }
+                              onChange={selectAllRooms}
+                            />
+                          </th>
+                        )}
+                        <th>หมายเลขห้อง</th>
+                        <th>ชั้น</th>
+                        <th className="text-end">ค่าเช่า</th>
+                        <th className="text-end">ค่าน้ำ</th>
+                        <th className="text-end">ค่าไฟ/หน่วย</th>
+                        <th>สถานะ/ผู้เช่า</th>
+                        <th className="text-center min-w-250px">
+                          การจัดการ
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredRooms.map((room) => (
+                        <tr key={room._id}>
+                          {bulkMode && (
+                            <td>
+                              <input
+                                type="checkbox"
+                                className="form-check-input"
+                                checked={selectedRooms.includes(room._id)}
+                                onChange={() => toggleRoomSelection(room._id)}
+                              />
+                            </td>
+                          )}
+                          <td>
+                            <strong>{room.roomNumber}</strong>
+                          </td>
+                          <td>{room.floor || '-'}</td>
+                          <td className="text-end">{room.rentPrice.toLocaleString('th-TH')} ฿</td>
+                          <td className="text-end">{room.waterPrice.toLocaleString('th-TH')} ฿</td>
+                          <td className="text-end">
+                            {room.electricityPrice.toLocaleString('th-TH')} ฿
+                          </td>
+                          <td>
+                            {room.isOccupied ? (
+                              <>
+                                <span className="badge bg-warning bg-opacity-10 text-warning border border-warning">มีผู้เช่า</span>
+                                {room.tenantId && (
+                                  <>
+                                    <div className="small text-muted mt-1">{room.tenantId.name}</div>
+                                    <div className="small text-muted">{room.tenantId.email}</div>
+                                    {room.moveInDate && (
+                                      <div className="small text-muted">
+                                        เข้าพัก: {new Date(room.moveInDate).toLocaleDateString('th-TH')}
+                                      </div>
+                                    )}
+                                    {room.rentDueDate && (
+                                      <div className="small text-muted">
+                                        ครบกำหนด: วันที่ {room.rentDueDate} ของเดือน
+                                      </div>
+                                    )}
+                                    {room.depositAmount && (
+                                      <div className="small text-muted">
+                                        มัดจำ: {room.depositAmount.toLocaleString('th-TH')} ฿
+                                      </div>
+                                    )}
+                                    {room.rentalAgreement && (
+                                      <div className="mt-1">
+                                        <a
+                                          href={room.rentalAgreement}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="btn btn-sm btn-outline-primary rounded-2"
+                                        >
+                                          <i className="bi bi-file-earmark-text me-1"></i>
+                                          ดูสัญญาเช่า
+                                        </a>
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </>
+                            ) : (
+                              <span className="badge bg-success bg-opacity-10 text-success border border-success">ว่าง</span>
+                            )}
+                          </td>
+                          <td className="text-center">
+                            <div className="btn-group" role="group">
+                              {!room.isOccupied && (
+                                <button
+                                  className="btn btn-success btn-sm rounded-2"
+                                  onClick={() => handleAssignClick(room)}
+                                  title="มอบหมายผู้เช่า"
+                                >
+                                  <i className="bi bi-person-plus-fill me-1"></i>
+                                  มอบหมาย
+                                </button>
+                              )}
+                              {room.isOccupied && (
+                                <button
+                                  className="btn btn-warning btn-sm rounded-2"
+                                  onClick={() => handleCheckout(room)}
+                                  title="ปลดผู้เช่าออกจากห้อง"
+                                >
+                                  <i className="bi bi-person-dash-fill me-1"></i>
+                                  ปลดผู้เช่า
+                                </button>
+                              )}
+                              <button
+                                className="btn btn-primary btn-sm rounded-2"
+                                onClick={() => {
+                                  setEditingRoom(room);
+                                  setShowForm(true);
+                                }}
+                                title="แก้ไขข้อมูลห้อง"
+                              >
+                                <i className="bi bi-pencil-square me-1"></i>
+                                แก้ไข
+                              </button>
+                              <button
+                                className="btn btn-danger btn-sm rounded-2"
+                                onClick={() => handleDelete(room._id, room.roomNumber)}
+                                title="ลบห้อง"
+                                disabled={room.isOccupied}
+                              >
+                                <i className="bi bi-trash-fill me-1"></i>
+                                ลบ
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Summary */}
+          {filteredRooms.length > 0 && (
+            <div className="card border-0 bg-light rounded-3">
+              <div className="card-body p-3">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div className="text-muted">
+                    <small>
+                      แสดง {filteredRooms.length} ห้อง จากทั้งหมด {rooms.length} ห้อง
+                      {selectedRooms.length > 0 && ` | เลือก ${selectedRooms.length} ห้อง`}
+                    </small>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <button className="btn btn-sm btn-outline-primary rounded-2" onClick={handleExportCSV}>
+                      <i className="bi bi-download me-2"></i>
+                      Export CSV
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

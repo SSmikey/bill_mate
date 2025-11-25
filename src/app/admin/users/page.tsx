@@ -18,6 +18,8 @@ export default function AdminUsersPage() {
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState<'all' | 'admin' | 'tenant'>('all');
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -56,6 +58,38 @@ export default function AdminUsersPage() {
       setShowForm(false);
     } catch (error: any) {
       throw error;
+    }
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setShowForm(true);
+  };
+
+  const handleUpdateUser = async (formData: any) => {
+    if (!editingUser) return;
+
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/users/${editingUser._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update user');
+      }
+
+      fetchUsers();
+      setEditingUser(null);
+      setShowForm(false);
+    } catch (error: any) {
+      throw error;
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -110,8 +144,13 @@ export default function AdminUsersPage() {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="fw-bold">จัดการผู้ใช้</h2>
         <button
-          className="btn btn-primary"
-          onClick={() => setShowForm(!showForm)}
+          className="btn btn-secondary"
+          onClick={() => {
+            setShowForm(!showForm);
+            if (showForm) {
+              setEditingUser(null);
+            }
+          }}
         >
           <i className="bi bi-plus-circle me-2"></i>
           {showForm ? 'ยกเลิก' : 'เพิ่มผู้ใช้ใหม่'}
@@ -120,12 +159,31 @@ export default function AdminUsersPage() {
 
       {/* Form Section */}
       {showForm && (
-        <div className="card border-0 shadow-sm mb-4">
-          <div className="card-header bg-light border-bottom">
-            <h5 className="mb-0 fw-bold">เพิ่มผู้ใช้ใหม่</h5>
+        <div className="card border-0 bg-white rounded-3 shadow-sm mb-4">
+          <div className="card-header bg-white border-bottom p-4 rounded-top-3">
+            <h6 className="mb-0 fw-semibold text-dark">
+              <i className={`bi me-2 text-primary ${editingUser ? 'bi-pencil-square' : 'bi-person-plus'}`}></i>
+              {editingUser ? 'แก้ไขผู้ใช้' : 'เพิ่มผู้ใช้ใหม่'}
+            </h6>
           </div>
-          <div className="card-body">
-            <UserForm onSubmit={handleCreateUser} />
+          <div className="card-body p-4">
+            <UserForm
+              initialData={
+                editingUser
+                  ? {
+                      _id: editingUser._id,
+                      email: editingUser.email,
+                      name: editingUser.name,
+                      phone: editingUser.phone,
+                      role: editingUser.role as 'admin' | 'tenant',
+                      roomId: editingUser.roomId?._id,
+                    }
+                  : undefined
+              }
+              onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
+              isEditing={!!editingUser}
+              isLoading={saving}
+            />
           </div>
         </div>
       )}
@@ -209,7 +267,8 @@ export default function AdminUsersPage() {
                             type="button"
                             className="btn btn-outline-warning"
                             title="แก้ไข"
-                            disabled
+                            onClick={() => handleEditUser(user)}
+                            disabled={saving || deleting === user._id}
                           >
                             <i className="bi bi-pencil"></i>
                           </button>
@@ -218,7 +277,7 @@ export default function AdminUsersPage() {
                             className="btn btn-outline-danger"
                             title="ลบ"
                             onClick={() => handleDeleteUser(user._id)}
-                            disabled={deleting === user._id}
+                            disabled={deleting === user._id || saving}
                           >
                             {deleting === user._id ? (
                               <span

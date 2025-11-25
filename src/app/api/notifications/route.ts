@@ -14,19 +14,42 @@ export const GET = asyncHandler(async (req: NextRequest) => {
 
   await connectDB();
 
-  const notifications = await Notification.find({ userId: session.user?.id })
-    .populate('billId', 'roomId month year totalAmount')
-    .sort({ sentAt: -1 })
-    .limit(50);
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get('userId') || session.user?.id;
+  const limit = parseInt(searchParams.get('limit') || '50');
+  const includeRead = searchParams.get('includeRead') === 'true';
 
+  // Only allow users to access their own notifications or admins to access any
+  if (userId !== session.user?.id && session.user?.role !== 'admin') {
+    throw new AuthenticationError('Unauthorized');
+  }
+
+  // Build query
+  const query: any = { userId };
+  if (!includeRead) {
+    query.read = false;
+  }
+
+  const notifications = await Notification.find(query)
+    .populate('billId', 'roomId month year totalAmount')
+    .sort({ createdAt: -1 }) // Changed from sentAt to createdAt to match schema
+    .limit(limit);
+
+  // Get stats
+  const totalCount = await Notification.countDocuments({ userId });
   const unreadCount = await Notification.countDocuments({
-    userId: session.user?.id,
+    userId,
     read: false
   });
+  const readCount = totalCount - unreadCount;
 
   return createSuccessResponse({
     notifications,
-    unreadCount
+    stats: {
+      total: totalCount,
+      unread: unreadCount,
+      read: readCount
+    }
   });
 });
 

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useMemo } from "react";
-import { Table, Badge, Spinner, Alert, Button, Form, Modal, Toast } from "react-bootstrap";
+import React, { useState, useEffect, useMemo } from 'react';
+import { Table, Badge, Spinner, Alert, Button, Form, Modal, Toast } from 'react-bootstrap';
 import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
 import Link from 'next/link';
@@ -20,6 +20,8 @@ interface Bill {
   month: number;
   year: number;
   totalAmount: number;
+  waterAmount?: number;
+  electricityAmount?: number;
   dueDate: string;
   status: BillStatus;
 }
@@ -157,11 +159,12 @@ const AdminBillsPage = () => {
       <Form onSubmit={handleCreateBill}>
         <Modal.Body>
           <Form.Group className="mb-3" controlId="roomId">
-            <Form.Label>ห้อง</Form.Label>
+            <Form.Label className="fw-semibold text-dark">ห้อง</Form.Label>
             <Form.Select
               name="roomId"
               required
               disabled={rooms.length === 0}
+              className="form-select rounded-2 bg-white text-dark"
               onChange={(e) => setSelectedRoomId(e.target.value)}
             >
               <option value="">-- เลือกห้อง --</option>
@@ -173,14 +176,33 @@ const AdminBillsPage = () => {
             </Form.Select>
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label>สำหรับเดือน/ปี</Form.Label>
-            <div className="d-flex">
-              <Form.Control name="month" type="number" placeholder="เดือน (1-12)" required className="me-2" min="1" max="12" defaultValue={new Date().getMonth() + 1} />
-              <Form.Control name="year" type="number" placeholder="ปี (ค.ศ.)" required min="2020" defaultValue={new Date().getFullYear()} />
+            <Form.Label className="fw-semibold text-dark">สำหรับเดือน/ปี</Form.Label>
+            <div className="d-flex gap-2">
+              <Form.Control 
+                name="month" 
+                type="number" 
+                placeholder="เดือน (1-12)" 
+                required 
+                className="form-control rounded-2 bg-white" 
+                min="1" 
+                max="12" 
+                defaultValue={new Date().getMonth() + 1}
+                style={{ color: '#000' }}
+              />
+              <Form.Control 
+                name="year" 
+                type="number" 
+                placeholder="ปี (ค.ศ.)" 
+                required 
+                className="form-control rounded-2 bg-white" 
+                min="2020" 
+                defaultValue={new Date().getFullYear()}
+                style={{ color: '#000' }}
+              />
             </div>
           </Form.Group>
           <Form.Group className="mb-3" controlId="waterUnits">
-            <Form.Label>หน่วยน้ำ (ลบ.ม.)</Form.Label>
+            <Form.Label className="fw-semibold text-dark">หน่วยน้ำ (ลบ.ม.)</Form.Label>
             <Form.Control
               name="waterUnits"
               type="number"
@@ -188,6 +210,8 @@ const AdminBillsPage = () => {
               required
               step="0.01"
               min="0"
+              className="form-control rounded-2 bg-white"
+              style={{ color: '#000' }}
             />
             <Form.Text className="text-muted">
               {(() => {
@@ -197,7 +221,7 @@ const AdminBillsPage = () => {
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="electricityUnits">
-            <Form.Label>หน่วยไฟฟ้า (kWh)</Form.Label>
+            <Form.Label className="fw-semibold text-dark">หน่วยไฟฟ้า (kWh)</Form.Label>
             <Form.Control
               name="electricityUnits"
               type="number"
@@ -205,6 +229,8 @@ const AdminBillsPage = () => {
               required
               step="0.01"
               min="0"
+              className="form-control rounded-2 bg-white"
+              style={{ color: '#000' }}
             />
             <Form.Text className="text-muted">
               {(() => {
@@ -215,8 +241,8 @@ const AdminBillsPage = () => {
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCreateModal(false)} disabled={isSubmitting}>ยกเลิก</Button>
-          <Button variant="primary" type="submit" disabled={isSubmitting}>
+          <Button variant="outline-secondary" className="rounded-2" onClick={() => setShowCreateModal(false)} disabled={isSubmitting}>ยกเลิก</Button>
+          <Button variant="primary" className="rounded-2" type="submit" disabled={isSubmitting}>
             {isSubmitting ? <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> กำลังบันทึก...</> : 'บันทึกและสร้างบิล'}
           </Button>
         </Modal.Footer>
@@ -225,29 +251,81 @@ const AdminBillsPage = () => {
   );
 
   return (
-    <div className="container-fluid mt-4">
-      <div className="card">
-        <div className="card-header">
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <h3><i className="bi bi-journal-text me-2"></i>จัดการบิลทั้งหมด</h3>
-              <p className="text-muted mb-0">ดูและจัดการบิลทั้งหมดในระบบ</p>
+    <div className="fade-in">
+      {/* Header - Clean and minimal */}
+      <div className="mb-5">
+        <h1 className="fw-bold text-dark mb-2">จัดการบิลทั้งหมด</h1>
+        <p className="text-muted mb-0">ดูและจัดการบิลทั้งหมดในระบบ</p>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div className="d-flex gap-2 flex-wrap">
+              <Button
+                variant="outline-primary"
+                className="d-flex align-items-center justify-content-center py-2 text-decoration-none fw-medium rounded-2"
+                onClick={() => setShowCreateModal(true)}
+              >
+                <i className="bi bi-plus-circle me-2"></i>
+                สร้างบิลใหม่
+              </Button>
             </div>
-            <Button variant="primary" onClick={() => setShowCreateModal(true)}>
-              <i className="bi bi-plus-circle me-2"></i>สร้างบิลใหม่
-            </Button>
           </div>
         </div>
-        <div className="card-body">
-          <Toast onClose={() => setToast({ ...toast, show: false })} show={toast.show} delay={3000} autohide bg={toast.type} className="position-fixed top-0 end-0 m-3 text-white" style={{ zIndex: 1055 }}>
-            <Toast.Header closeButton={false}>
-              <strong className="me-auto">{toast.type === 'success' ? 'สำเร็จ' : 'เกิดข้อผิดพลาด'}</strong>
-            </Toast.Header>
-            <Toast.Body>{toast.message}</Toast.Body>
-          </Toast>
+      </div>
+
+      {/* Success Alert */}
+      {toast.show && (
+        <div className="alert alert-success alert-dismissible fade show" role="alert">
+          <i className="bi bi-check-circle me-2"></i>
+          {toast.message}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setToast({ ...toast, show: false })}
+            aria-label="Close"
+          ></button>
+        </div>
+      )}
+
+      {/* Error Alert */}
+      {error && (
+        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          <i className="bi bi-exclamation-triangle me-2"></i>
+          {error}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError('')}
+            aria-label="Close"
+          ></button>
+        </div>
+      )}
+
+      {/* Filter Section */}
+      <div className="card border-0 bg-white rounded-3 shadow-sm mb-4">
+        <div className="card-body p-4">
+          <div className="d-flex align-items-center mb-4">
+            <div className="rounded-circle p-3 me-3 bg-primary bg-opacity-10">
+              <i className="bi bi-funnel fs-5 text-primary"></i>
+            </div>
+            <div>
+              <h6 className="mb-0 fw-semibold text-dark">กรองตามสถานะ</h6>
+              <p className="mb-0 small text-muted">กรองบิลตามสถานะที่ต้องการ</p>
+            </div>
+          </div>
           <Form.Group className="mb-3" controlId="statusFilter">
-            <Form.Label>กรองตามสถานะ</Form.Label>
-            <Form.Select onChange={(e) => setFilter(e.target.value as any)} value={filter}>
+            <Form.Label className="fw-semibold text-dark">
+              <i className="bi bi-funnel me-2"></i>
+              กรองตามสถานะ
+            </Form.Label>
+            <Form.Select 
+              className="form-select rounded-2 bg-white text-dark"
+              onChange={(e) => setFilter(e.target.value as any)} 
+              value={filter}
+            >
               <option value="all">ทั้งหมด</option>
               <option value="pending">ยังไม่ชำระ</option>
               <option value="paid">ชำระแล้ว (รอตรวจสอบ)</option>
@@ -255,50 +333,87 @@ const AdminBillsPage = () => {
               <option value="overdue">เกินกำหนด</option>
             </Form.Select>
           </Form.Group>
-
-          {loading && <div className="text-center py-5"><Spinner animation="border" /></div>}
-          {error && <Alert variant="danger">{error}</Alert>}
-          {!loading && !error && (
-            <div className="table-responsive">
-              <Table hover striped>
-                <thead className="table-light">
-                  <tr>
-                    <th>เดือน/ปี</th>
-                    <th>ห้อง</th>
-                    <th>ผู้เช่า</th>
-                    <th>ยอดรวม</th>
-                    <th>ครบกำหนด</th>
-                    <th>สถานะ</th>
-                    <th>การจัดการ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredBills.length > 0 ? (
-                    filteredBills.map(b => (
-                      <tr key={b._id}>
-                        <td>{b.month}/{b.year}</td>
-                        <td>{b.roomId.roomNumber}</td>
-                        <td>{b.tenantId.name}</td>
-                        <td>{b.totalAmount.toLocaleString()} บาท</td>
-                        <td>{format(new Date(b.dueDate), 'dd MMM yy', { locale: th })}</td>
-                        <td>{getBillStatusBadge(b.status)}</td>
-                        <td>
-                          {/* อาจจะลิงก์ไปหน้า Admin Payment ที่กรองตาม billId นี้ */}
-                          <Link href={`/admin/payments`} passHref>
-                             <Button variant="outline-primary" size="sm"><i className="bi bi-search me-1"></i>ดูการชำระเงิน</Button>
-                          </Link>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr><td colSpan={7} className="text-center py-4">ไม่พบบิลในหมวดหมู่นี้</td></tr>
-                  )}
-                </tbody>
-              </Table>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Loading State */}
+      {loading ? (
+        <div className="text-center py-5">
+          <div className="spinner-border text-primary" role="status" style={{ width: '3rem', height: '3rem' }}>
+            <span className="visually-hidden">กำลังโหลด...</span>
+          </div>
+          <p className="mt-3 text-muted">กำลังโหลดข้อมูลบิล...</p>
+        </div>
+      ) : (
+        <>
+          {/* Table */}
+          <div className="card border-0 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-0">
+              {filteredBills.length === 0 ? (
+                <div className="text-center py-5">
+                  <div className="rounded-circle p-4 bg-light mb-3 d-inline-block">
+                    <i className="bi bi-inbox fs-1 text-muted"></i>
+                  </div>
+                  <h5 className="text-muted">
+                    {filter === 'all'
+                      ? 'ยังไม่พบบิลในระบบ'
+                      : filter === 'pending'
+                      ? 'ไม่พบบิลที่รอการชำระ'
+                      : filter === 'paid'
+                      ? 'ไม่พบบิลที่ชำระแล้วแล้ว'
+                      : filter === 'verified'
+                      ? 'ไม่พบบิลที่ยืนยันแล้ว'
+                      : 'ไม่พบบิลที่เกินกำหนด'}
+                  </h5>
+                  <p className="text-muted mt-2">
+                    ลองปรับเปลี่ยนเงื่อนไขการกรองหรือเพิ่มบิลใหม่ในระบบ
+                  </p>
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <Table hover className="mb-0">
+                    <thead className="table-dark">
+                      <tr>
+                        <th>เดือน/ปี</th>
+                        <th>ห้อง</th>
+                        <th>ผู้เช่า</th>
+                        <th>ยอดรวม</th>
+                        <th>ค่าน้ำ</th>
+                        <th>ค่าไฟ</th>
+                        <th>ครบกำหนด</th>
+                        <th>สถานะ</th>
+                        <th className="text-center min-w-250px">
+                          การจัดการ
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredBills.map(b => (
+                        <tr key={b._id}>
+                          <td>{b.month}/{b.year}</td>
+                          <td>{b.roomId.roomNumber}</td>
+                          <td>{b.tenantId.name}</td>
+                          <td>{b.totalAmount.toLocaleString()} บาท</td>
+                          <td>{b.waterAmount ? b.waterAmount.toLocaleString() : 0} บาท</td>
+                          <td>{b.electricityAmount ? b.electricityAmount.toLocaleString() : 0} บาท</td>
+                          <td>{format(new Date(b.dueDate), 'dd MMM yy', { locale: th })}</td>
+                          <td>{getBillStatusBadge(b.status)}</td>
+                          <td>
+                            {/* อาจจะลิงก์ไปหน้า Admin Payment ที่กรองตาม billId นี้ */}
+                            <Link href={`/admin/payments`} passHref>
+                              <Button variant="outline-primary" size="sm" className="rounded-2"><i className="bi bi-search me-1"></i>ดูการชำระเงิน</Button>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
       {renderCreateBillModal()}
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import StyledSelect from './StyledSelect';
 
 interface Room {
   _id: string;
@@ -126,8 +127,9 @@ export default function UserForm({
   return (
     <form onSubmit={handleSubmit}>
       {error && (
-        <div className="alert alert-danger alert-dismissible fade show" role="alert">
-          {error}
+        <div className="alert alert-danger alert-dismissible fade show d-flex align-items-start rounded-3" role="alert">
+          <i className="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
+          <div className="flex-grow-1">{error}</div>
           <button
             type="button"
             className="btn-close"
@@ -138,8 +140,9 @@ export default function UserForm({
       )}
 
       {success && (
-        <div className="alert alert-success alert-dismissible fade show" role="alert">
-          {success}
+        <div className="alert alert-success alert-dismissible fade show d-flex align-items-start rounded-3" role="alert">
+          <i className="bi bi-check-circle-fill me-2 mt-1"></i>
+          <div className="flex-grow-1">{success}</div>
           <button
             type="button"
             className="btn-close"
@@ -151,12 +154,12 @@ export default function UserForm({
 
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label htmlFor="name" className="form-label fw-bold">
+          <label htmlFor="name" className="form-label fw-semibold text-dark">
             ชื่อ-นามสกุล <span className="text-danger">*</span>
           </label>
           <input
             type="text"
-            className="form-control"
+            className="form-control rounded-3 shadow-sm bg-white text-dark"
             id="name"
             name="name"
             value={formData.name}
@@ -167,12 +170,12 @@ export default function UserForm({
         </div>
 
         <div className="col-md-6 mb-3">
-          <label htmlFor="email" className="form-label fw-bold">
+          <label htmlFor="email" className="form-label fw-semibold text-dark">
             อีเมล <span className="text-danger">*</span>
           </label>
           <input
             type="email"
-            className="form-control"
+            className="form-control rounded-3 shadow-sm bg-white text-dark"
             id="email"
             name="email"
             value={formData.email}
@@ -185,12 +188,12 @@ export default function UserForm({
 
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label htmlFor="password" className="form-label fw-bold">
+          <label htmlFor="password" className="form-label fw-semibold text-dark">
             รหัสผ่าน {!isEditing && <span className="text-danger">*</span>}
           </label>
           <input
             type="password"
-            className="form-control"
+            className="form-control rounded-3 shadow-sm bg-white text-dark"
             id="password"
             name="password"
             placeholder={isEditing ? 'ปล่อยว่างถ้าไม่เปลี่ยน' : ''}
@@ -199,17 +202,20 @@ export default function UserForm({
             disabled={isLoading}
           />
           {isEditing && (
-            <small className="text-muted">ปล่อยว่างถ้าไม่ต้องการเปลี่ยน</small>
+            <small className="text-muted form-text">
+              <i className="bi bi-info-circle me-1"></i>
+              ปล่อยว่างถ้าไม่ต้องการเปลี่ยน
+            </small>
           )}
         </div>
 
         <div className="col-md-6 mb-3">
-          <label htmlFor="phone" className="form-label fw-bold">
+          <label htmlFor="phone" className="form-label fw-semibold text-dark">
             เบอร์โทรศัพท์
           </label>
           <input
             type="tel"
-            className="form-control"
+            className="form-control rounded-3 shadow-sm bg-white text-dark"
             id="phone"
             name="phone"
             value={formData.phone || ''}
@@ -219,45 +225,36 @@ export default function UserForm({
         </div>
       </div>
 
-      <div className="row">
-        <div className="col-md-6 mb-3">
-          <label htmlFor="role" className="form-label fw-bold">
-            บทบาท <span className="text-danger">*</span>
-          </label>
-          <select
-            className="form-select"
-            id="role"
-            name="role"
+      <div className="row g-3">
+        <div className="col-md-6">
+          <StyledSelect
             value={formData.role}
-            onChange={handleChange}
-            disabled={isLoading}
+            onChange={(val) => handleChange({ target: { name: 'role', value: val } } as any)}
+            label="บทบาท"
             required
-          >
-            <option value="tenant">ผู้เช่า</option>
-            <option value="admin">เจ้าของหอ</option>
-          </select>
+            disabled={isLoading}
+            options={[
+              { value: 'tenant', label: 'ผู้เช่า' },
+              { value: 'admin', label: 'เจ้าของหอ' },
+            ]}
+          />
         </div>
 
         {formData.role === 'tenant' && (
-          <div className="col-md-6 mb-3">
-            <label htmlFor="roomId" className="form-label fw-bold">
-              ห้องพัก
-            </label>
-            <select
-              className="form-select"
-              id="roomId"
-              name="roomId"
+          <div className="col-md-6">
+            <StyledSelect
               value={formData.roomId || ''}
-              onChange={handleChange}
+              onChange={(val) => handleChange({ target: { name: 'roomId', value: val } } as any)}
+              label="ห้องพัก"
               disabled={isLoading}
-            >
-              <option value="">-- เลือกห้อง --</option>
-              {rooms.map((room) => (
-                <option key={room._id} value={room._id}>
-                  {room.roomNumber}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: '', label: '-- เลือกห้อง --' },
+                ...rooms.map((room) => ({
+                  value: room._id,
+                  label: room.roomNumber,
+                })),
+              ]}
+            />
           </div>
         )}
       </div>
@@ -265,7 +262,7 @@ export default function UserForm({
       <div className="d-flex gap-2 mt-4">
         <button
           type="submit"
-          className="btn btn-primary"
+          className="btn btn-primary rounded-3 shadow-sm px-4"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -278,12 +275,23 @@ export default function UserForm({
               กำลังบันทึก...
             </>
           ) : isEditing ? (
-            'อัพเดท'
+            <>
+              <i className="bi bi-check-circle me-2"></i>
+              อัพเดท
+            </>
           ) : (
-            'สร้างผู้ใช้'
+            <>
+              <i className="bi bi-person-plus me-2"></i>
+              สร้างผู้ใช้
+            </>
           )}
         </button>
-        <button type="reset" className="btn btn-outline-secondary" disabled={isLoading}>
+        <button
+          type="reset"
+          className="btn btn-outline-secondary rounded-3 px-4"
+          disabled={isLoading}
+        >
+          <i className="bi bi-arrow-clockwise me-2"></i>
           รีเซ็ต
         </button>
       </div>

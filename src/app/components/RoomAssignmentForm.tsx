@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import StyledSelect from './StyledSelect';
 
 interface Room {
   _id: string;
@@ -171,21 +172,21 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
   const selectedTenant = tenants.find((t) => t._id === formData.tenantId);
 
   return (
-    <div className="card border-primary">
-      <div className="card-header bg-primary text-white">
-        <h5 className="card-title mb-0">
+    <div className="card border-0 shadow-lg">
+      <div className="card-header bg-gradient bg-primary text-white p-4">
+        <h5 className="card-title mb-0 fw-semibold">
           <i className="bi bi-person-plus-fill me-2"></i>
           มอบหมายผู้เช่าเข้าห้อง {room.roomNumber}
         </h5>
       </div>
-      <div className="card-body">
+      <div className="card-body p-4">
         {/* Room Info */}
-        <div className="alert alert-info">
-          <h6>
+        <div className="alert alert-info rounded-3 border-0">
+          <h6 className="fw-semibold mb-3">
             <i className="bi bi-house me-2"></i>
             ข้อมูลห้อง
           </h6>
-          <div className="row">
+          <div className="row g-2">
             <div className="col-md-6">
               <small>
                 <strong>หมายเลขห้อง:</strong> {room.roomNumber}
@@ -216,9 +217,9 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
 
         {/* Error Alert */}
         {error && (
-          <div className="alert alert-danger alert-dismissible fade show" role="alert">
-            <i className="bi bi-exclamation-triangle me-2"></i>
-            {error}
+          <div className="alert alert-danger alert-dismissible fade show d-flex align-items-start rounded-3" role="alert">
+            <i className="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
+            <div className="flex-grow-1">{error}</div>
             <button
               type="button"
               className="btn-close"
@@ -240,29 +241,26 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
           <form onSubmit={handleSubmit}>
             {/* Tenant Selection */}
             <div className="mb-3">
-              <label htmlFor="tenantId" className="form-label">
-                เลือกผู้เช่า <span className="text-danger">*</span>
-              </label>
-              <select
-                className={`form-select ${fieldErrors.tenantId ? 'is-invalid' : ''}`}
-                id="tenantId"
+              <StyledSelect
                 value={formData.tenantId}
-                onChange={(e) => handleChange('tenantId', e.target.value)}
+                onChange={(val) => handleChange('tenantId', val)}
+                label="เลือกผู้เช่า"
+                icon="bi bi-person"
                 disabled={loading || tenants.length === 0}
                 required
-              >
-                <option value="">-- เลือกผู้เช่า --</option>
-                {tenants.map((tenant) => (
-                  <option key={tenant._id} value={tenant._id}>
-                    {tenant.name} ({tenant.email})
-                  </option>
-                ))}
-              </select>
+                options={[
+                  { value: '', label: '-- เลือกผู้เช่า --' },
+                  ...tenants.map((tenant) => ({
+                    value: tenant._id,
+                    label: `${tenant.name} (${tenant.email})`,
+                  })),
+                ]}
+              />
               {fieldErrors.tenantId && (
-                <div className="invalid-feedback">{fieldErrors.tenantId}</div>
+                <div className="text-danger small mt-2">{fieldErrors.tenantId}</div>
               )}
               {tenants.length === 0 && !fetchingTenants && (
-                <div className="form-text text-warning">
+                <div className="text-warning small mt-2">
                   <i className="bi bi-exclamation-triangle me-1"></i>
                   ไม่มีผู้เช่าว่างในระบบ กรุณาเพิ่มผู้เช่าก่อน
                 </div>
@@ -271,24 +269,24 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
 
             {/* Selected Tenant Info */}
             {selectedTenant && (
-              <div className="alert alert-success">
-                <h6>
+              <div className="alert alert-success rounded-3 border-0">
+                <h6 className="fw-semibold mb-3">
                   <i className="bi bi-person-check-fill me-2"></i>
                   ข้อมูลผู้เช่าที่เลือก
                 </h6>
-                <div>
+                <div className="mb-2">
                   <strong>ชื่อ:</strong> {selectedTenant.name}
                 </div>
-                <div>
+                <div className="mb-2">
                   <strong>อีเมล:</strong> {selectedTenant.email}
                 </div>
                 {selectedTenant.phone && (
-                  <div>
+                  <div className="mb-2">
                     <strong>เบอร์โทร:</strong> {selectedTenant.phone}
                   </div>
                 )}
                 {selectedTenant.idCard && (
-                  <div>
+                  <div className="mb-2">
                     <strong>เลขบัตรประชาชน:</strong> {selectedTenant.idCard}
                   </div>
                 )}
@@ -298,12 +296,12 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
             <div className="row">
               {/* Move-in Date */}
               <div className="col-md-6 mb-3">
-                <label htmlFor="moveInDate" className="form-label">
+                <label htmlFor="moveInDate" className="form-label fw-semibold">
                   วันที่เข้าพัก <span className="text-danger">*</span>
                 </label>
                 <input
                   type="date"
-                  className={`form-control ${fieldErrors.moveInDate ? 'is-invalid' : ''}`}
+                  className={`form-control rounded-3 shadow-sm ${fieldErrors.moveInDate ? 'is-invalid' : ''}`}
                   id="moveInDate"
                   value={formData.moveInDate}
                   onChange={(e) => handleChange('moveInDate', e.target.value)}
@@ -317,12 +315,12 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
 
               {/* Rent Due Date */}
               <div className="col-md-6 mb-3">
-                <label htmlFor="rentDueDate" className="form-label">
+                <label htmlFor="rentDueDate" className="form-label fw-semibold">
                   วันที่ครบกำหนดชำระค่าเช่า <span className="text-danger">*</span>
                 </label>
                 <input
                   type="number"
-                  className={`form-control ${fieldErrors.rentDueDate ? 'is-invalid' : ''}`}
+                  className={`form-control rounded-3 shadow-sm ${fieldErrors.rentDueDate ? 'is-invalid' : ''}`}
                   id="rentDueDate"
                   value={formData.rentDueDate}
                   onChange={(e) => handleChange('rentDueDate', parseInt(e.target.value))}
@@ -344,13 +342,13 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
 
             {/* Deposit Amount */}
             <div className="mb-3">
-              <label htmlFor="depositAmount" className="form-label">
+              <label htmlFor="depositAmount" className="form-label fw-semibold">
                 จำนวนเงินมัดจำ (บาท) <span className="text-danger">*</span>
               </label>
-              <div className="input-group">
+              <div className="input-group shadow-sm rounded-3">
                 <input
                   type="number"
-                  className={`form-control ${fieldErrors.depositAmount ? 'is-invalid' : ''}`}
+                  className={`form-control rounded-start ${fieldErrors.depositAmount ? 'is-invalid' : ''}`}
                   id="depositAmount"
                   value={formData.depositAmount}
                   onChange={(e) => handleChange('depositAmount', parseFloat(e.target.value) || 0)}
@@ -360,7 +358,7 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
                   disabled={loading}
                   required
                 />
-                <span className="input-group-text">฿</span>
+                <span className="input-group-text rounded-end">฿</span>
                 {fieldErrors.depositAmount && (
                   <div className="invalid-feedback">{fieldErrors.depositAmount}</div>
                 )}
@@ -373,13 +371,13 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
 
             {/* Rental Agreement Upload */}
             <div className="mb-3">
-              <label htmlFor="rentalAgreement" className="form-label">
+              <label htmlFor="rentalAgreement" className="form-label fw-semibold">
                 <i className="bi bi-file-earmark-text me-2"></i>
                 สัญญาเช่า (PDF, JPG, PNG) - ไม่จำเป็น
               </label>
               <input
                 type="file"
-                className="form-control"
+                className="form-control rounded-3 shadow-sm"
                 id="rentalAgreement"
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={(e) => handleChange('rentalAgreement', e.target.files?.[0])}
@@ -391,7 +389,7 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
               </div>
               {formData.rentalAgreement && (
                 <div className="mt-2">
-                  <span className="badge bg-success">
+                  <span className="badge bg-success rounded-pill px-3 py-2">
                     <i className="bi bi-check-circle me-1"></i>
                     {formData.rentalAgreement.name}
                   </span>
@@ -401,11 +399,11 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
 
             {/* Notes */}
             <div className="mb-3">
-              <label htmlFor="notes" className="form-label">
+              <label htmlFor="notes" className="form-label fw-semibold">
                 หมายเหตุ
               </label>
               <textarea
-                className="form-control"
+                className="form-control rounded-3 shadow-sm"
                 id="notes"
                 rows={3}
                 value={formData.notes}
@@ -416,13 +414,13 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
             </div>
 
             {/* Summary */}
-            <div className="card bg-light mb-3">
-              <div className="card-body">
-                <h6 className="card-title">
+            <div className="card bg-light border-0 rounded-3 mb-3">
+              <div className="card-body p-4">
+                <h6 className="card-title fw-semibold mb-3">
                   <i className="bi bi-clipboard-check me-2"></i>
                   สรุปการมอบหมายห้อง
                 </h6>
-                <ul className="mb-0">
+                <ul className="mb-0 lh-lg">
                   <li>
                     <strong>ห้อง:</strong> {room.roomNumber} {room.floor && `(ชั้น ${room.floor})`}
                   </li>
@@ -450,7 +448,7 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
             <div className="d-flex gap-2">
               <button
                 type="submit"
-                className="btn btn-primary"
+                className="btn btn-primary rounded-3 shadow-sm px-4 flex-grow-1"
                 disabled={loading || tenants.length === 0}
               >
                 {loading ? (
@@ -472,7 +470,7 @@ export default function RoomAssignmentForm({ room, onSuccess, onCancel }: RoomAs
 
               <button
                 type="button"
-                className="btn btn-outline-secondary"
+                className="btn btn-outline-secondary rounded-3 px-4"
                 onClick={onCancel}
                 disabled={loading}
               >

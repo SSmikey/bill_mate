@@ -47,94 +47,185 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="text-center py-5">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">กำลังโหลด...</span>
+      <div className="d-flex justify-content-center align-items-center vh-80">
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}>
+            <span className="visually-hidden">กำลังโหลด...</span>
+          </div>
+          <h5 className="text-muted">กำลังโหลดข้อมูล...</h5>
         </div>
       </div>
     );
   }
 
+  const occupancyRate = stats?.totalRooms ? Math.round(((stats.occupiedRooms / stats.totalRooms) * 100)) : 0;
+  const paymentRate = stats?.totalBills ? Math.round(((stats.paidBills / stats.totalBills) * 100)) : 0;
+
   return (
-    <div>
-      <h2 className="mb-4 fw-bold">แดชบอร์ด</h2>
+    <div className="fade-in">
+      {/* Header - Clean and minimal */}
+      <div className="mb-5">
+        <h1 className="fw-bold text-dark mb-2">แดชบอร์ด</h1>
+        <p className="text-muted mb-0">ภาพรวมของระบบจัดการหอพัก</p>
+      </div>
 
-      {/* Stats Cards */}
-      <div className="row mb-4">
-        <div className="col-md-3 mb-3">
-          <div className="card border-0 shadow-sm bg-primary text-white">
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
+      {/* Stats Cards - Clean white background */}
+      <div className="row mb-5 g-3">
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
                 <div>
-                  <h6 className="card-title text-white-50 mb-0">ห้องทั้งหมด</h6>
-                  <h2 className="mb-0">{stats?.totalRooms || 0}</h2>
+                  <p className="text-muted small mb-1">ห้องทั้งหมด</p>
+                  <h3 className="mb-0 fw-bold text-dark">{stats?.totalRooms || 0}</h3>
                 </div>
-                <i className="bi bi-house-fill" style={{ fontSize: '2.5rem', opacity: 0.3 }}></i>
+                <div className="rounded-circle p-3 bg-primary bg-opacity-10">
+                  <i className="bi bi-house-fill fs-4 text-primary"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-3 mb-3">
-          <div className="card border-0 shadow-sm bg-success text-white">
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
                 <div>
-                  <h6 className="card-title text-white-50 mb-0">ห้องว่าง</h6>
-                  <h2 className="mb-0">{(stats?.totalRooms || 0) - (stats?.occupiedRooms || 0)}</h2>
+                  <p className="text-muted small mb-1">ห้องว่าง</p>
+                  <h3 className="mb-0 fw-bold text-dark">{(stats?.totalRooms || 0) - (stats?.occupiedRooms || 0)}</h3>
                 </div>
-                <i className="bi bi-door-closed" style={{ fontSize: '2.5rem', opacity: 0.3 }}></i>
+                <div className="rounded-circle p-3 bg-info bg-opacity-10">
+                  <i className="bi bi-door-closed fs-4 text-info"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-3 mb-3">
-          <div className="card border-0 shadow-sm bg-info text-white">
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
                 <div>
-                  <h6 className="card-title text-white-50 mb-0">ค้างชำระ</h6>
-                  <h2 className="mb-0">{stats?.pendingBills || 0}</h2>
+                  <p className="text-muted small mb-1">ค้างชำระ</p>
+                  <h3 className="mb-0 fw-bold text-dark">{stats?.pendingBills || 0}</h3>
                 </div>
-                <i className="bi bi-exclamation-circle" style={{ fontSize: '2.5rem', opacity: 0.3 }}></i>
+                <div className="rounded-circle p-3 bg-warning bg-opacity-10">
+                  <i className="bi bi-exclamation-circle fs-4 text-warning"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-3 mb-3">
-          <div className="card border-0 shadow-sm bg-warning text-white">
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
                 <div>
-                  <h6 className="card-title text-white-50 mb-0">ชำระแล้ว</h6>
-                  <h2 className="mb-0">{stats?.paidBills || 0}</h2>
+                  <p className="text-muted small mb-1">ชำระแล้ว</p>
+                  <h3 className="mb-0 fw-bold text-dark">{stats?.paidBills || 0}</h3>
                 </div>
-                <i className="bi bi-check-circle" style={{ fontSize: '2.5rem', opacity: 0.3 }}></i>
+                <div className="rounded-circle p-3 bg-success bg-opacity-10">
+                  <i className="bi bi-check-circle fs-4 text-success"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="row">
-        <div className="col-md-6 mb-4">
-          <div className="card border-0 shadow-sm">
-            <div className="card-body">
-              <h5 className="card-title fw-bold mb-3">การกระทำเร็ว</h5>
+      {/* Progress Cards */}
+      <div className="row mb-5 g-3">
+        <div className="col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center mb-3">
+                <div className="rounded-circle p-3 me-3 bg-primary bg-opacity-10">
+                  <i className="bi bi-house-door-fill fs-5 text-primary"></i>
+                </div>
+                <div>
+                  <h6 className="mb-0 fw-semibold text-dark">อัตราการเข้าพัก</h6>
+                  <p className="mb-0 small text-muted">สัดส่วนห้องที่ถูกเช่า</p>
+                </div>
+              </div>
+              <div className="d-flex align-items-center">
+                <h3 className="mb-0 fw-bold me-3 text-primary">{occupancyRate}%</h3>
+                <div className="flex-grow-1">
+                  <div className="progress bg-light rounded-3" style={{ height: '8px' }}>
+                    <div
+                      className="progress-bar bg-primary"
+                      style={{ width: `${occupancyRate}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div className="d-flex justify-content-between mt-2 small">
+                <span className="text-muted">{stats?.occupiedRooms || 0} ห้อง</span>
+                <span className="text-muted">จาก {stats?.totalRooms || 0} ห้อง</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center mb-3">
+                <div className="rounded-circle p-3 me-3 bg-success bg-opacity-10">
+                  <i className="bi bi-credit-card-fill fs-5 text-success"></i>
+                </div>
+                <div>
+                  <h6 className="mb-0 fw-semibold text-dark">อัตราการชำระเงิน</h6>
+                  <p className="mb-0 small text-muted">สัดส่วนบิลที่ชำระแล้ว</p>
+                </div>
+              </div>
+              <div className="d-flex align-items-center">
+                <h3 className="mb-0 fw-bold me-3 text-success">{paymentRate}%</h3>
+                <div className="flex-grow-1">
+                  <div className="progress bg-light rounded-3" style={{ height: '8px' }}>
+                    <div
+                      className="progress-bar bg-success"
+                      style={{ width: `${paymentRate}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div className="d-flex justify-content-between mt-2 small">
+                <span className="text-muted">{stats?.paidBills || 0} บิล</span>
+                <span className="text-muted">จาก {stats?.totalBills || 0} บิล</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions & Important Info */}
+      <div className="row g-3">
+        <div className="col-lg-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center mb-4">
+                <div className="rounded-circle p-3 me-3 bg-primary bg-opacity-10">
+                  <i className="bi bi-lightning-charge-fill fs-5 text-primary"></i>
+                </div>
+                <div>
+                  <h6 className="mb-0 fw-semibold text-dark">การกระทำเร็ว</h6>
+                  <p className="mb-0 small text-muted">ทำงานที่ใช้บ่อย</p>
+                </div>
+              </div>
               <div className="d-grid gap-2">
-                <a href="/admin/rooms" className="btn btn-outline-primary">
-                  <i className="bi bi-plus-circle me-2"></i>
+                <a href="/admin/rooms" className="btn btn-primary d-flex align-items-center justify-content-center py-2 text-white text-decoration-none fw-medium rounded-2">
+                  <i className="bi bi-plus-circle-fill me-2"></i>
                   เพิ่มห้องพัก
                 </a>
-                <a href="/admin/bills" className="btn btn-outline-success">
-                  <i className="bi bi-file-earmark-plus me-2"></i>
+                <a href="/admin/bills" className="btn btn-outline-primary d-flex align-items-center justify-content-center py-2 text-decoration-none fw-medium rounded-2">
+                  <i className="bi bi-file-earmark-plus-fill me-2"></i>
                   สร้างบิล
                 </a>
-                <a href="/admin/payments" className="btn btn-outline-info">
-                  <i className="bi bi-check-square me-2"></i>
+                <a href="/admin/payments" className="btn btn-outline-primary d-flex align-items-center justify-content-center py-2 text-decoration-none fw-medium rounded-2">
+                  <i className="bi bi-check-square-fill me-2"></i>
                   ตรวจสอบการชำระ
                 </a>
               </div>
@@ -142,19 +233,60 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="col-md-6 mb-4">
-          <div className="card border-0 shadow-sm">
-            <div className="card-body">
-              <h5 className="card-title fw-bold mb-3">ข้อมูลสำคัญ</h5>
-              <div className="list-group list-group-flush">
-                <div className="list-group-item">
-                  <strong>ห้องเช่าที่นั่ง:</strong> {stats?.occupiedRooms || 0} ห้อง
+        <div className="col-lg-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center mb-4">
+                <div className="rounded-circle p-3 me-3 bg-info bg-opacity-10">
+                  <i className="bi bi-graph-up-arrow fs-5 text-info"></i>
                 </div>
-                <div className="list-group-item">
-                  <strong>บิลทั้งหมด:</strong> {stats?.totalBills || 0} รายการ
+                <div>
+                  <h6 className="mb-0 fw-semibold text-dark">ข้อมูลสำคัญ</h6>
+                  <p className="mb-0 small text-muted">สถิติที่น่าสนใจ</p>
                 </div>
-                <div className="list-group-item">
-                  <strong>อัตราการชำระ:</strong> {stats?.totalBills ? Math.round((((stats?.paidBills || 0) / stats?.totalBills) * 100)) : 0}%
+              </div>
+              <div className="list-group list-group-flush border-0">
+                <div className="list-group-item d-flex justify-content-between align-items-center px-0 py-3 border-bottom border-light">
+                  <div className="d-flex align-items-center">
+                    <div className="rounded-circle p-2 me-3 bg-primary bg-opacity-10">
+                      <i className="bi bi-house-door-fill fs-5 text-primary"></i>
+                    </div>
+                    <div>
+                      <div className="fw-semibold text-dark">ห้องเช่าที่นั่ง</div>
+                      <small className="text-muted">ขณะนี้</small>
+                    </div>
+                  </div>
+                  <span className="badge bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1 rounded-2">
+                    {stats?.occupiedRooms || 0}
+                  </span>
+                </div>
+                <div className="list-group-item d-flex justify-content-between align-items-center px-0 py-3 border-bottom border-light">
+                  <div className="d-flex align-items-center">
+                    <div className="rounded-circle p-2 me-3 bg-info bg-opacity-10">
+                      <i className="bi bi-receipt-cutoff fs-5 text-info"></i>
+                    </div>
+                    <div>
+                      <div className="fw-semibold text-dark">บิลทั้งหมด</div>
+                      <small className="text-muted">เดือนนี้</small>
+                    </div>
+                  </div>
+                  <span className="badge bg-info bg-opacity-10 text-info fw-semibold px-2 py-1 rounded-2">
+                    {stats?.totalBills || 0}
+                  </span>
+                </div>
+                <div className="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                  <div className="d-flex align-items-center">
+                    <div className="rounded-circle p-2 me-3 bg-success bg-opacity-10">
+                      <i className="bi bi-cash-stack fs-5 text-success"></i>
+                    </div>
+                    <div>
+                      <div className="fw-semibold text-dark">รายได้ประจำเดือน</div>
+                      <small className="text-muted">โดยประมาณ</small>
+                    </div>
+                  </div>
+                  <span className="badge bg-success bg-opacity-10 text-success fw-semibold px-2 py-1 rounded-2">
+                    ฿{(stats?.paidBills || 0) * 3000}
+                  </span>
                 </div>
               </div>
             </div>

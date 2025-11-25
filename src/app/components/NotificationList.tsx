@@ -16,23 +16,31 @@ interface Notification {
   data?: any;
 }
 
+interface NotificationStats {
+  total: number;
+  unread: number;
+  read: number;
+}
+
 interface NotificationListProps {
   userId?: string;
   limit?: number;
   showRead?: boolean;
   refreshTrigger?: number;
+  onStatsUpdate?: (stats: NotificationStats) => void;
 }
 
-export default function NotificationList({ 
-  userId, 
-  limit = 10, 
+export default function NotificationList({
+  userId,
+  limit = 10,
   showRead = false,
-  refreshTrigger = 0
+  refreshTrigger = 0,
+  onStatsUpdate
 }: NotificationListProps) {
   const { data: session } = useSession();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [markingAsRead, setMarkingAsRead] = useState<string | null>(null);
+  const [markingAsRead, setMarkingAsRead] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchNotifications();
@@ -59,6 +67,11 @@ export default function NotificationList({
 
       if (result.success) {
         setNotifications(result.data?.notifications || []);
+        
+        // Update stats if callback provided
+        if (onStatsUpdate && result.data?.stats) {
+          onStatsUpdate(result.data.stats);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
@@ -68,8 +81,11 @@ export default function NotificationList({
   };
 
   const markAsRead = async (notificationId: string) => {
+    // Prevent multiple clicks on same notification
+    if (markingAsRead.has(notificationId)) return;
+    
     try {
-      setMarkingAsRead(notificationId);
+      setMarkingAsRead(prev => new Set(prev).add(notificationId));
       const response = await fetch(`/api/notifications/${notificationId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -77,16 +93,33 @@ export default function NotificationList({
       });
 
       if (response.ok) {
-        setNotifications(prev => 
-          prev.map(notif => 
+        setNotifications(prev =>
+          prev.map(notif =>
             notif._id === notificationId ? { ...notif, read: true } : notif
           )
         );
+        
+        // Update stats if callback provided
+        if (onStatsUpdate) {
+          // Get current stats from notifications
+          const currentUnread = notifications.filter(n => !n.read && n._id !== notificationId).length;
+          const currentRead = notifications.filter(n => n.read || n._id === notificationId).length;
+          
+          onStatsUpdate({
+            total: notifications.length,
+            unread: currentUnread,
+            read: currentRead
+          });
+        }
       }
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
     } finally {
-      setMarkingAsRead(null);
+      setMarkingAsRead(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(notificationId);
+        return newSet;
+      });
     }
   };
 
@@ -127,19 +160,40 @@ export default function NotificationList({
 
   if (loading) {
     return (
-      <div className="text-center py-3">
-        <div className="spinner-border spinner-border-sm" role="status">
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" role="status" style={{ width: '3rem', height: '3rem' }}>
           <span className="visually-hidden">กำลังโหลด...</span>
         </div>
+        <p className="mt-3 text-muted">กำลังโหลดการแจ้งเตือน...</p>
       </div>
     );
   }
 
   if (notifications.length === 0) {
     return (
-      <div className="text-center py-4 text-muted">
-        <i className="bi bi-bell-slash fs-1 d-block mb-2"></i>
-        <p>ไม่มีการแจ้งเตือน</p>
+      <div className="text-center py-5">
+        <div className="rounded-circle p-4 bg-light bg-opacity-50 mb-4 d-inline-block animate-slide-in-top">
+          <i className="bi bi-bell-slash fs-1 text-muted" style={{ fontSize: '3rem' }}></i>
+        </div>
+        <h5 className="text-muted mb-3 animate-slide-in-top" style={{ animationDelay: '0.1s' }}>
+          {showRead ? 'ไม่มีการแจ้งเตือน' : 'ไม่มีการแจ้งเตือนที่ยังไม่ได้อ่าน'}
+        </h5>
+        <p className="text-muted animate-slide-in-top" style={{ animationDelay: '0.2s' }}>
+          {showRead
+            ? 'คุณไม่มีการแจ้งเตือนในขณะนี้'
+            : 'การแจ้งเตือนทั้งหมดของคุณได้ถูกอ่านแล้ว'
+          }
+        </p>
+        {!showRead && (
+          <button
+            className="btn btn-outline-primary rounded-2 mt-3 animate-slide-in-top"
+            style={{ animationDelay: '0.3s' }}
+            onClick={() => window.location.reload()}
+          >
+            <i className="bi bi-arrow-clockwise me-2"></i>
+            รีเฟรช
+          </button>
+        )}
       </div>
     );
   }
@@ -149,46 +203,65 @@ export default function NotificationList({
       {notifications.map((notification) => (
         <div
           key={notification._id}
-          className={`card mb-2 ${!notification.read ? 'border-primary' : ''}`}
-          style={{ cursor: 'pointer' }}
-          onClick={() => !notification.read && markAsRead(notification._id)}
+          className={`card border bg-white rounded-3 shadow-sm mb-3 transition-all duration-200 hover-lift notification-list-item ${
+            !notification.read ? 'border-primary border-2' : 'border-light'
+          }`}
+          style={{ cursor: notification.read && !markingAsRead.has(notification._id) ? 'default' : 'pointer' }}
+          onClick={() => !notification.read && !markingAsRead.has(notification._id) && markAsRead(notification._id)}
         >
-          <div className="card-body py-2">
-            <div className="d-flex align-items-start">
-              <div className="me-3">
-                <i className={`bi ${getNotificationIcon(notification.type)} fs-5`}></i>
+          <div className="card-body p-4">
+            <div className="row align-items-start">
+              <div className="col-auto">
+                <div className={`rounded-circle p-3 bg-opacity-10 transition-all duration-200 ${
+                  notification.type === 'paymentReminder' ? 'bg-warning' :
+                  notification.type === 'paymentVerified' ? 'bg-success' :
+                  notification.type === 'paymentRejected' ? 'bg-danger' :
+                  notification.type === 'overdue' ? 'bg-danger' :
+                  notification.type === 'billGenerated' ? 'bg-info' :
+                  notification.type === 'maintenance' ? 'bg-warning' :
+                  'bg-primary'
+                }`}>
+                  <i className={`bi ${getNotificationIcon(notification.type)} fs-5`} style={{ fontSize: '1.2rem' }}></i>
+                </div>
               </div>
-              <div className="flex-grow-1">
-                <div className="d-flex justify-content-between align-items-start">
-                  <h6 className={`mb-1 ${!notification.read ? 'fw-bold' : ''}`}>
+              <div className="col">
+                <div className="d-flex justify-content-between align-items-start mb-2">
+                  <h6 className={`mb-0 transition-all duration-200 ${
+                    !notification.read ? 'fw-bold text-dark' : 'fw-medium text-dark'
+                  }`}>
                     {notification.title}
                   </h6>
-                  <small className="text-muted ms-2">
+                  <small className="text-muted ms-2 flex-shrink-0">
                     {formatNotificationDate(notification.createdAt)}
                   </small>
                 </div>
-                <p className="mb-0 small">{notification.message}</p>
+                <p className="mb-2 text-dark text-break">{notification.message}</p>
                 {notification.data && (
-                  <div className="mt-2">
+                  <div className="d-flex gap-2 flex-wrap">
                     {notification.data.billId && (
-                      <small className="text-muted">
+                      <span className="badge bg-light text-dark border rounded-2 px-2 py-1">
+                        <i className="bi bi-receipt me-1"></i>
                         บิล #{notification.data.billId}
-                      </small>
+                      </span>
                     )}
                     {notification.data.paymentId && (
-                      <small className="text-muted ms-2">
+                      <span className="badge bg-light text-dark border rounded-2 px-2 py-1">
+                        <i className="bi bi-credit-card me-1"></i>
                         การชำระ #{notification.data.paymentId}
-                      </small>
+                      </span>
                     )}
                   </div>
                 )}
               </div>
-              <div className="ms-2">
+              <div className="col-auto">
                 {!notification.read && (
-                  <span className="badge bg-primary">ใหม่</span>
+                  <span className="badge bg-primary bg-opacity-10 text-primary border border-primary rounded-2 px-2 py-1">
+                    <i className="bi bi-circle-fill me-1" style={{ fontSize: '0.5rem' }}></i>
+                    ใหม่
+                  </span>
                 )}
-                {markingAsRead === notification._id && (
-                  <div className="spinner-border spinner-border-sm" role="status">
+                {markingAsRead.has(notification._id) && (
+                  <div className="spinner-border spinner-border-sm text-primary" role="status">
                     <span className="visually-hidden">กำลังอัปเดต...</span>
                   </div>
                 )}

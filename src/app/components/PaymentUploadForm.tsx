@@ -125,74 +125,157 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
   );
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h5>อัปโหลดสลิปการชำระเงิน</h5>
+    <div className="card border-0 shadow">
+      <div className="card-header bg-white border-bottom p-4">
+        <h5 className="card-title mb-0 fw-semibold">
+          <i className="bi bi-upload text-primary me-2"></i>
+          อัปโหลดสลิปการชำระเงิน
+        </h5>
       </div>
-      <div className="card-body">
-        <SlipReader onScanComplete={handleScanComplete} isEmbedded={true} />{" "}
-        {/* Pass isEmbedded prop */}
+      <div className="card-body p-4">
+        <SlipReader onScanComplete={handleScanComplete} isEmbedded={true} />
+
         {(ocrData || qrData) && (
-          <div className="mt-3">
-            <h6>ข้อมูลที่ตรวจพบจากสลิป:</h6>
-            <table className="table table-sm">
-              <tbody>
-                <tr>
-                  <td>จำนวนเงิน:</td>
-                  <td>
-                    {ocrData?.amount || qrData?.amount || "N/A"} บาท
-                    {!ocrData && qrData?.amount && (
-                      <small className="text-muted d-block">(จาก QR Code)</small>
-                    )}
-                  </td>
-                  <td className="text-end">
-                    {(ocrData?.amount || qrData?.amount) ? (
-                      parseFloat(ocrData?.amount || qrData?.amount || "0") === billAmount ? (
-                        <span className="badge bg-success">ตรงกับบิล</span>
-                      ) : (
-                        <span className="badge bg-warning">ไม่ตรงกับบิล</span>
-                      )
-                    ) : null}
-                  </td>
-                </tr>
-                <tr>
-                  <td>วันที่:</td>
-                  <td>{ocrData?.date || "N/A"}</td>
-                </tr>
-                <tr>
-                  <td>เวลา:</td>
-                  <td>{ocrData?.time || "N/A"}</td>
-                </tr>
-                {qrData?.reference && (
-                  <tr>
-                    <td>เลขอ้างอิง (QR):</td>
-                    <td colSpan={2}>
-                      <small className="font-monospace">{qrData.reference}</small>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <div className="mt-4">
+            <div className="d-flex align-items-center mb-3">
+              <i className="bi bi-info-circle text-primary me-2"></i>
+              <h6 className="mb-0 fw-semibold">ข้อมูลที่ตรวจพบจากสลิป:</h6>
+            </div>
+
+            <div className="card bg-light border-0 rounded-3">
+              <div className="card-body p-4">
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <div className="d-flex align-items-center">
+                      <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                        <i className="bi bi-currency-dollar text-primary"></i>
+                      </div>
+                      <div>
+                        <small className="text-muted d-block">จำนวนเงิน</small>
+                        <div className="fw-bold">
+                          {ocrData?.amount || qrData?.amount || "N/A"} บาท
+                          {!ocrData && qrData?.amount && (
+                            <small className="text-muted d-block">(จาก QR Code)</small>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <div className="d-flex align-items-center">
+                      <div className="bg-info bg-opacity-10 rounded-circle p-3 me-3">
+                        <i className="bi bi-calendar text-info"></i>
+                      </div>
+                      <div>
+                        <small className="text-muted d-block">วันที่</small>
+                        <div className="fw-semibold">{ocrData?.date || "N/A"}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <div className="d-flex align-items-center">
+                      <div className="bg-warning bg-opacity-10 rounded-circle p-3 me-3">
+                        <i className="bi bi-clock text-warning"></i>
+                      </div>
+                      <div>
+                        <small className="text-muted d-block">เวลา</small>
+                        <div className="fw-semibold">{ocrData?.time || "N/A"}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {qrData?.reference && (
+                    <div className="col-md-6 mb-3">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-secondary bg-opacity-10 rounded-circle p-3 me-3">
+                          <i className="bi bi-upc-scan text-secondary"></i>
+                        </div>
+                        <div>
+                          <small className="text-muted d-block">เลขอ้างอิง (QR)</small>
+                          <div className="fw-semibold font-monospace small">{qrData.reference}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-3 pt-3 border-top">
+                  <div className="d-flex align-items-center justify-content-between">
+                    <div>
+                      <small className="text-muted">การตรวจสอบกับบิล:</small>
+                      <div className="mt-1">
+                        {(ocrData?.amount || qrData?.amount) ? (
+                          parseFloat(ocrData?.amount || qrData?.amount || "0") === billAmount ? (
+                            <span className="badge bg-success-subtle text-success rounded-pill px-3 py-2">
+                              <i className="bi bi-check-circle me-1"></i>
+                              ตรงกับบิล
+                            </span>
+                          ) : (
+                            <span className="badge bg-warning-subtle text-warning rounded-pill px-3 py-2">
+                              <i className="bi bi-exclamation-triangle me-1"></i>
+                              ไม่ตรงกับบิล
+                            </span>
+                          )
+                        ) : (
+                          <span className="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-2">
+                            <i className="bi bi-dash-circle me-1"></i>
+                            ไม่สามารถตรวจสอบได้
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Display warning if amount doesn't match but we allow submission */}
             {validationResult?.type === "warning" && (
-              <div className="alert alert-warning" role="alert">
-                {validationResult.message}
+              <div className="alert alert-warning alert-dismissible fade show d-flex align-items-start mt-3 rounded-3" role="alert">
+                <i className="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
+                <div className="flex-grow-1">{validationResult.message}</div>
               </div>
             )}
 
             {uploadError && (
-              <div className="alert alert-danger" role="alert">
-                {uploadError}
+              <div className="alert alert-danger alert-dismissible fade show d-flex align-items-start mt-3 rounded-3" role="alert">
+                <i className="bi bi-x-circle-fill me-2 mt-1"></i>
+                <div className="flex-grow-1">{uploadError}</div>
               </div>
             )}
 
-            <button
-              className="btn btn-primary"
-              onClick={handleSubmit}
-              disabled={uploading}
-            >
-              {uploading ? "กำลังอัปโหลด..." : "ยืนยันการชำระเงิน"}
-            </button>
+            <div className="d-flex gap-2 mt-4">
+              <button
+                className="btn btn-primary shadow-sm flex-grow-1 rounded-3 py-2"
+                onClick={handleSubmit}
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    กำลังอัปโหลด...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-check-circle me-2"></i>
+                    ยืนยันการชำระเงิน
+                  </>
+                )}
+              </button>
+              <button
+                className="btn btn-outline-secondary rounded-3 py-2 px-4"
+                onClick={() => {
+                  setSlipImageBase64(null);
+                  setOcrData(null);
+                  setQrData(null);
+                }}
+              >
+                <i className="bi bi-arrow-clockwise me-2"></i>
+                ลองใหม่
+              </button>
+            </div>
           </div>
         )}
       </div>

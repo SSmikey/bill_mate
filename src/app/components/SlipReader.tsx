@@ -627,12 +627,7 @@ export default function SlipReader({
   };
 
   return (
-    <div
-      className="min-vh-100 d-flex align-items-center justify-content-center py-4"
-      style={{
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      }}
-    >
+    <div className="min-vh-100 d-flex align-items-center justify-content-center py-4 bg-primary">
       {isEmbedded && (
         <div className="w-100">
           {" "}
@@ -641,7 +636,7 @@ export default function SlipReader({
             <div className="col-lg-12">
               {" "}
               {/* Adjust column size for embedded */}
-              <div className="card shadow-lg" style={{ borderRadius: "10px" }}>
+              <div className="card shadow-lg rounded-3">
                 {" "}
                 {/* Smaller border radius for embedded */}
                 <div className="card-body p-3">
@@ -649,13 +644,11 @@ export default function SlipReader({
                   {/* Smaller padding for embedded */}
                   {!previewImage && (
                     <div
-                      className={`border border-3 rounded-3 p-3 text-center ${
-                        dragging ? "border-primary bg-light" : "border-primary"
+                      className={`border border-3 border-dashed rounded-3 p-3 text-center ${
+                        dragging ? "border-primary bg-light" : "border-primary bg-light"
                       }`}
                       style={{
-                        borderStyle: "dashed",
                         cursor: "pointer",
-                        backgroundColor: dragging ? "#e8ebff" : "#f8f9ff",
                         transition: "all 0.3s ease",
                       }}
                       onClick={() => fileInputRef.current?.click()}
@@ -663,7 +656,7 @@ export default function SlipReader({
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
                     >
-                      <div style={{ fontSize: "2em" }} className="mb-2">
+                      <div className="fs-1 mb-2">
                         📄
                       </div>{" "}
                       {/* Smaller icon for embedded */}
@@ -701,7 +694,7 @@ export default function SlipReader({
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-lg-8">
-            <div className="card shadow-lg" style={{ borderRadius: "20px" }}>
+            <div className="card shadow-lg rounded-4">
               <div className="card-body p-4 p-md-5">
                 <h1 className="text-center mb-2">🏦 ตัวอ่านสลิปธนาคาร</h1>
                 <p className="text-center text-muted mb-4">
@@ -716,7 +709,7 @@ export default function SlipReader({
                         ref={imageRef}
                         src={previewImage}
                         alt="Preview"
-                        className="img-fluid rounded shadow"
+                        className="img-fluid rounded-3 shadow"
                         style={{ maxHeight: "400px" }}
                       />
                     </div>
@@ -730,13 +723,9 @@ export default function SlipReader({
                           </h6>
                           <div className="progress" style={{ height: "8px" }}>
                             <div
-                              className="progress-bar"
+                              className="progress-bar bg-primary"
                               role="progressbar"
-                              style={{
-                                width: `${progress.percent}%`,
-                                background:
-                                  "linear-gradient(90deg, #667eea 0%, #764ba2 100%)",
-                              }}
+                              style={{ width: `${progress.percent}%` }}
                               aria-valuenow={progress.percent}
                               aria-valuemin={0}
                               aria-valuemax={100}
@@ -763,7 +752,7 @@ export default function SlipReader({
                           </h5>
 
                           {ocrData.amount && (
-                            <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
+                            <div className="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
                               <small className="text-muted fw-semibold d-block mb-1">
                                 💰 จำนวนเงิน
                               </small>
@@ -781,7 +770,7 @@ export default function SlipReader({
                           )}
 
                           {ocrData.fee && (
-                            <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
+                            <div className="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
                               <small className="text-muted fw-semibold d-block mb-1">
                                 💳 ค่าธรรมเนียม
                               </small>
@@ -799,7 +788,7 @@ export default function SlipReader({
                           )}
 
                           {ocrData.date && (
-                            <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
+                            <div className="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
                               <small className="text-muted fw-semibold d-block mb-1">
                                 📅 วันที่-เวลาทำรายการ
                               </small>
@@ -810,7 +799,7 @@ export default function SlipReader({
                           )}
 
                           {ocrData.reference && (
-                            <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
+                            <div className="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
                               <small className="text-muted fw-semibold d-block mb-1">
                                 🔖 หมายเลขอ้างอิง
                               </small>
@@ -823,7 +812,7 @@ export default function SlipReader({
                           )}
 
                           {ocrData.transactionNo && (
-                            <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
+                            <div className="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
                               <small className="text-muted fw-semibold d-block mb-1">
                                 🆔 เลขที่ธุรกรรม
                               </small>
@@ -836,7 +825,7 @@ export default function SlipReader({
                           )}
 
                           {ocrData.transferType && (
-                            <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
+                            <div className="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
                               <small className="text-muted fw-semibold d-block mb-1">
                                 📱 ประเภทการโอน
                               </small>
@@ -845,7 +834,7 @@ export default function SlipReader({
                           )}
 
                           {ocrData.fromAccount && (
-                            <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
+                            <div className="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
                               <small className="text-muted fw-semibold d-block mb-1">
                                 🏦 บัญชีต้นทาง
                               </small>
@@ -854,7 +843,7 @@ export default function SlipReader({
                           )}
 
                           {ocrData.toAccount && (
-                            <div className="mb-3 p-3 bg-light rounded border-start border-primary border-4">
+                            <div className="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
                               <small className="text-muted fw-semibold d-block mb-1">
                                 🏦 บัญชีปลายทาง
                               </small>
@@ -873,10 +862,9 @@ export default function SlipReader({
                               </button>
                               {showOcrText && (
                                 <pre
-                                  className="bg-light p-3 rounded mt-2 small text-muted"
+                                  className="bg-light p-3 rounded-3 mt-2 small text-muted overflow-auto"
                                   style={{
                                     maxHeight: "200px",
-                                    overflow: "auto",
                                     whiteSpace: "pre-wrap",
                                   }}
                                 >
@@ -890,29 +878,15 @@ export default function SlipReader({
                     )}
 
                     {qrData && !loading && (
-                      <div
-                        className="card text-white mb-4"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                        }}
-                      >
+                      <div className="card bg-primary text-white mb-4">
                         <div className="card-body">
                           <h5 className="card-title text-center mb-4">
                             📱 ข้อมูลจาก QR Code
                           </h5>
 
                           {qrData.amount && (
-                            <div
-                              className="mb-3 p-3 rounded"
-                              style={{
-                                backgroundColor: "rgba(255,255,255,0.1)",
-                              }}
-                            >
-                              <small
-                                className="d-block mb-1"
-                                style={{ opacity: 0.9 }}
-                              >
+                            <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
+                              <small className="d-block mb-1 opacity-75">
                                 💰 จำนวนเงิน
                               </small>
                               <div className="fs-3 fw-bold">
@@ -929,16 +903,8 @@ export default function SlipReader({
                           )}
 
                           {qrData.merchantID && (
-                            <div
-                              className="mb-3 p-3 rounded"
-                              style={{
-                                backgroundColor: "rgba(255,255,255,0.1)",
-                              }}
-                            >
-                              <small
-                                className="d-block mb-1"
-                                style={{ opacity: 0.9 }}
-                              >
+                            <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
+                              <small className="d-block mb-1 opacity-75">
                                 👤 PromptPay ID (ผู้รับเงิน)
                               </small>
                               <div className="fs-6">{qrData.merchantID}</div>
@@ -946,16 +912,8 @@ export default function SlipReader({
                           )}
 
                           {qrData.reference && (
-                            <div
-                              className="mb-3 p-3 rounded"
-                              style={{
-                                backgroundColor: "rgba(255,255,255,0.1)",
-                              }}
-                            >
-                              <small
-                                className="d-block mb-1"
-                                style={{ opacity: 0.9 }}
-                              >
+                            <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
+                              <small className="d-block mb-1 opacity-75">
                                 🔖 เลขอ้างอิง
                               </small>
                               <div className="fs-6">
@@ -967,16 +925,8 @@ export default function SlipReader({
                           )}
 
                           {qrData.billPaymentRef1 && (
-                            <div
-                              className="mb-3 p-3 rounded"
-                              style={{
-                                backgroundColor: "rgba(255,255,255,0.1)",
-                              }}
-                            >
-                              <small
-                                className="d-block mb-1"
-                                style={{ opacity: 0.9 }}
-                              >
+                            <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
+                              <small className="d-block mb-1 opacity-75">
                                 📋 Ref 1
                               </small>
                               <div className="fs-6">
@@ -988,16 +938,8 @@ export default function SlipReader({
                           )}
 
                           {qrData.billPaymentRef2 && (
-                            <div
-                              className="mb-3 p-3 rounded"
-                              style={{
-                                backgroundColor: "rgba(255,255,255,0.1)",
-                              }}
-                            >
-                              <small
-                                className="d-block mb-1"
-                                style={{ opacity: 0.9 }}
-                              >
+                            <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
+                              <small className="d-block mb-1 opacity-75">
                                 📋 Ref 2
                               </small>
                               <div className="fs-6">
@@ -1015,7 +957,7 @@ export default function SlipReader({
                       <div className="card bg-dark text-light mb-4">
                         <div className="card-body">
                           <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                            <h6 className="mb-0" style={{ color: "#4ec9b0" }}>
+                            <h6 className="mb-0 text-info">
                               📋 JSON Output
                             </h6>
                             <button
@@ -1028,10 +970,9 @@ export default function SlipReader({
                             </button>
                           </div>
                           <pre
-                            className="bg-black p-3 rounded text-light mb-0 small"
+                            className="bg-black p-3 rounded-3 text-light mb-0 small overflow-auto"
                             style={{
                               maxHeight: "400px",
-                              overflow: "auto",
                               whiteSpace: "pre-wrap",
                             }}
                           >
@@ -1044,12 +985,7 @@ export default function SlipReader({
                     {!loading && (
                       <div className="text-center">
                         <button
-                          className="btn btn-lg text-white"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            borderRadius: "25px",
-                          }}
+                          className="btn btn-primary btn-lg text-white rounded-pill"
                           onClick={resetUpload}
                         >
                           📤 อัปโหลดสลิปใหม่

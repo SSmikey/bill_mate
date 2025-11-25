@@ -10,19 +10,45 @@ import User from '@/models/User';
  * GET /api/notifications/stats
  * Get notification statistics for admin dashboard
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
 
-    // Check if user is admin
+    await connectDB();
+
+    // If userId is provided, return user-specific stats
+    if (userId) {
+      // Check if user is requesting their own stats or is admin
+      if (!session || (session.user?.id !== userId && session.user?.role !== 'admin')) {
+        return NextResponse.json(
+          { error: 'ไม่มีสิทธิ์เข้าถึง' },
+          { status: 401 }
+        );
+      }
+
+      const totalNotifications = await Notification.countDocuments({ userId });
+      const unreadNotifications = await Notification.countDocuments({ userId, read: false });
+      const readNotifications = totalNotifications - unreadNotifications;
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          total: totalNotifications,
+          unread: unreadNotifications,
+          read: readNotifications
+        }
+      });
+    }
+
+    // Check if user is admin for global stats
     if (!session || session.user?.role !== 'admin') {
       return NextResponse.json(
         { error: 'ไม่มีสิทธิ์เข้าถึง - ต้องเป็น Admin เท่านั้น' },
         { status: 401 }
       );
     }
-
-    await connectDB();
 
     // Get total users count
     const totalUsers = await User.countDocuments({ role: 'tenant' });

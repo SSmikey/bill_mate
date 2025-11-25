@@ -252,12 +252,21 @@ export default function RoomForm({
     formData.rentPrice + formData.waterPrice + formData.electricityPrice * 30; // Assuming 30 units
 
   return (
-    <div className="card">
-      <div className="card-body">
-        <h5 className="card-title mb-4">
-          <i className="bi bi-house me-2"></i>
-          {isEditing ? 'แก้ไขข้อมูลห้อง' : 'เพิ่มห้องใหม่'}
-        </h5>
+    <div className="card border-0 bg-white rounded-3 shadow-sm">
+      <div className="card-body p-4">
+        <div className="d-flex align-items-center mb-4">
+          <div className="rounded-circle p-3 me-3 bg-primary bg-opacity-10">
+            <i className="bi bi-house-fill fs-4 text-primary"></i>
+          </div>
+          <div>
+            <h5 className="mb-1 fw-semibold text-dark">
+              {isEditing ? 'แก้ไขข้อมูลห้อง' : 'เพิ่มห้องใหม่'}
+            </h5>
+            <p className="mb-0 text-muted small">
+              {isEditing ? 'ปรับเปลี่ยนแปลงข้อมูลห้อง' : 'กรอกข้อมูลห้องใหม่ในระบบ'}
+            </p>
+          </div>
+        </div>
 
         {/* Alert สำหรับแสดง Error/Success */}
         {error && (
@@ -287,15 +296,15 @@ export default function RoomForm({
         )}
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="row">
+          <div className="row g-3">
             {/* หมายเลขห้อง */}
             <div className="col-md-6 mb-3">
-              <label htmlFor="roomNumber" className="form-label">
+              <label htmlFor="roomNumber" className="form-label fw-semibold text-dark">
                 หมายเลขห้อง <span className="text-danger">*</span>
               </label>
               <input
                 type="text"
-                className={`form-control ${
+                className={`form-control rounded-2 bg-white ${
                   touched.roomNumber && fieldErrors.roomNumber ? 'is-invalid' : ''
                 } ${touched.roomNumber && !fieldErrors.roomNumber && formData.roomNumber ? 'is-valid' : ''}`}
                 id="roomNumber"
@@ -305,24 +314,25 @@ export default function RoomForm({
                 placeholder="เช่น 101, A-201, B12"
                 disabled={isLoading}
                 required
+                style={{ color: '#000' }}
               />
               {touched.roomNumber && fieldErrors.roomNumber && (
                 <div className="invalid-feedback">{fieldErrors.roomNumber}</div>
               )}
               <div className="form-text">
-                <i className="bi bi-info-circle me-1"></i>
+                <i className="bi bi-info-circle me-1 text-muted"></i>
                 ใช้ตัวอักษร ตัวเลข หรือ - เท่านั้น (ไม่เกิน 20 ตัวอักษร)
               </div>
             </div>
 
             {/* ชั้น */}
             <div className="col-md-6 mb-3">
-              <label htmlFor="floor" className="form-label">
+              <label htmlFor="floor" className="form-label fw-semibold text-dark">
                 ชั้น
               </label>
               <input
                 type="number"
-                className={`form-control ${
+                className={`form-control rounded-2 bg-white ${
                   touched.floor && fieldErrors.floor ? 'is-invalid' : ''
                 } ${touched.floor && !fieldErrors.floor && formData.floor !== undefined ? 'is-valid' : ''}`}
                 id="floor"
@@ -335,27 +345,28 @@ export default function RoomForm({
                 min="0"
                 max="100"
                 disabled={isLoading}
+                style={{ color: '#000' }}
               />
               {touched.floor && fieldErrors.floor && (
                 <div className="invalid-feedback">{fieldErrors.floor}</div>
               )}
               <div className="form-text">
-                <i className="bi bi-info-circle me-1"></i>
+                <i className="bi bi-info-circle me-1 text-muted"></i>
                 ระบุชั้นของห้อง (0-100) หรือเว้นว่างไว้
               </div>
             </div>
           </div>
 
-          <div className="row">
+          <div className="row g-3">
             {/* ค่าเช่า */}
             <div className="col-md-6 mb-3">
-              <label htmlFor="rentPrice" className="form-label">
+              <label htmlFor="rentPrice" className="form-label fw-semibold text-dark">
                 ค่าเช่า (บาท/เดือน) <span className="text-danger">*</span>
               </label>
               <div className="input-group">
                 <input
                   type="number"
-                  className={`form-control ${
+                  className={`form-control rounded-2 bg-white ${
                     touched.rentPrice && fieldErrors.rentPrice ? 'is-invalid' : ''
                   } ${touched.rentPrice && !fieldErrors.rentPrice && formData.rentPrice > 0 ? 'is-valid' : ''}`}
                   id="rentPrice"
@@ -368,6 +379,7 @@ export default function RoomForm({
                   step="0.01"
                   disabled={isLoading}
                   required
+                  style={{ color: '#000' }}
                 />
                 <span className="input-group-text">฿</span>
                 {touched.rentPrice && fieldErrors.rentPrice && (
@@ -384,13 +396,13 @@ export default function RoomForm({
 
             {/* ค่าน้ำ */}
             <div className="col-md-6 mb-3">
-              <label htmlFor="waterPrice" className="form-label">
+              <label htmlFor="waterPrice" className="form-label fw-semibold text-dark">
                 ค่าน้ำ (บาท/เดือน) <span className="text-danger">*</span>
               </label>
               <div className="input-group">
                 <input
                   type="number"
-                  className={`form-control ${
+                  className={`form-control rounded-2 bg-white ${
                     touched.waterPrice && fieldErrors.waterPrice ? 'is-invalid' : ''
                   } ${touched.waterPrice && !fieldErrors.waterPrice && formData.waterPrice > 0 ? 'is-valid' : ''}`}
                   id="waterPrice"
@@ -403,6 +415,7 @@ export default function RoomForm({
                   step="0.01"
                   disabled={isLoading}
                   required
+                  style={{ color: '#000' }}
                 />
                 <span className="input-group-text">฿</span>
                 {touched.waterPrice && fieldErrors.waterPrice && (
@@ -410,22 +423,22 @@ export default function RoomForm({
                 )}
               </div>
               <div className="form-text">
-                <i className="bi bi-droplet-fill me-1"></i>
+                <i className="bi bi-droplet-fill me-1 text-muted"></i>
                 ค่าน้ำแบบเหมาจ่ายต่อเดือน (ไม่คิดตามหน่วย)
               </div>
             </div>
           </div>
 
-          <div className="row">
+          <div className="row g-3">
             {/* ค่าไฟต่อหน่วย */}
             <div className="col-md-6 mb-3">
-              <label htmlFor="electricityPrice" className="form-label">
+              <label htmlFor="electricityPrice" className="form-label fw-semibold text-dark">
                 ค่าไฟต่อหน่วย (บาท/หน่วย) <span className="text-danger">*</span>
               </label>
               <div className="input-group">
                 <input
                   type="number"
-                  className={`form-control ${
+                  className={`form-control rounded-2 bg-white ${
                     touched.electricityPrice && fieldErrors.electricityPrice ? 'is-invalid' : ''
                   } ${
                     touched.electricityPrice &&
@@ -446,6 +459,7 @@ export default function RoomForm({
                   step="0.01"
                   disabled={isLoading}
                   required
+                  style={{ color: '#000' }}
                 />
                 <span className="input-group-text">฿/หน่วย</span>
                 {touched.electricityPrice && fieldErrors.electricityPrice && (
@@ -453,8 +467,8 @@ export default function RoomForm({
                 )}
               </div>
               <div className="form-text">
-                <i className="bi bi-lightning-charge-fill me-1"></i>
-                กรอกราคาต่อหน่วย (จะคำนวณตามหน่วยที่ใช้จริงในแต่ละเดือน)
+                <i className="bi bi-lightning-charge-fill me-1 text-muted"></i>
+                กรอกราคาต่อหน่วย (จะคำนวณจากการใช้จริงในแต่ละเดือน)
               </div>
               {formData.electricityPrice > 0 && (
                 <div className="form-text text-info">
@@ -467,35 +481,36 @@ export default function RoomForm({
 
             {/* Estimated Cost Summary */}
             <div className="col-md-6 mb-3">
-              <label className="form-label">
+              <label className="form-label fw-semibold text-dark">
                 <i className="bi bi-calculator-fill me-2"></i>
                 ประมาณการค่าใช้จ่ายต่อเดือน
               </label>
-              <div className="card bg-light">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>ค่าเช่า:</span>
-                    <strong>{formData.rentPrice.toLocaleString('th-TH')} ฿</strong>
+              <div className="card border-0 bg-light rounded-3">
+                <div className="card-body p-3">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="text-muted">ค่าเช่า:</span>
+                    <strong className="text-dark">{formData.rentPrice.toLocaleString('th-TH')} ฿</strong>
                   </div>
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>ค่าน้ำ:</span>
-                    <strong>{formData.waterPrice.toLocaleString('th-TH')} ฿</strong>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="text-muted">ค่าน้ำ:</span>
+                    <strong className="text-dark">{formData.waterPrice.toLocaleString('th-TH')} ฿</strong>
                   </div>
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>ค่าไฟ (30 หน่วย):</span>
-                    <strong>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="text-muted">ค่าไฟ (30 หน่วย):</span>
+                    <strong className="text-dark">
                       {(formData.electricityPrice * 30).toLocaleString('th-TH')} ฿
                     </strong>
                   </div>
-                  <hr />
-                  <div className="d-flex justify-content-between">
+                  <hr className="my-2" />
+                  <div className="d-flex justify-content-between align-items-center">
                     <strong className="text-primary">รวมประมาณการ:</strong>
                     <strong className="text-primary fs-5">
                       {estimatedMonthlyCost.toLocaleString('th-TH')} ฿
                     </strong>
                   </div>
                   <small className="text-muted d-block mt-2">
-                    * ค่าไฟคำนวณจากการใช้ 30 หน่วยเป็นตัวอย่าง
+                    <i className="bi bi-info-circle me-1"></i>
+                    * ค่าไฟคำนวณจากการใช้จริงในแต่ละเดือน
                   </small>
                 </div>
               </div>
@@ -504,7 +519,7 @@ export default function RoomForm({
 
           {/* ปุ่ม Submit และ Reset */}
           <div className="d-flex gap-2 mt-4">
-            <button type="submit" className="btn btn-primary" disabled={isLoading}>
+            <button type="submit" className="btn btn-primary rounded-2" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <span
@@ -524,7 +539,7 @@ export default function RoomForm({
 
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn btn-outline-secondary rounded-2"
               onClick={handleReset}
               disabled={isLoading}
             >
@@ -534,7 +549,7 @@ export default function RoomForm({
 
             <button
               type="button"
-              className="btn btn-outline-secondary"
+              className="btn btn-outline-primary rounded-2"
               onClick={() => {
                 const allFieldsEmpty = Object.values(formData).every(
                   (val) => val === '' || val === 0 || val === undefined

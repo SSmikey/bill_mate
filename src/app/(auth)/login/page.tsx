@@ -62,103 +62,120 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="container-fluid d-flex justify-content-center align-items-center min-vh-100" style={{ backgroundColor: '#f8f9fa' }}>
-      <div className="col-md-5 col-lg-4">
-        <div className="card shadow-lg border-0" style={{ borderRadius: '10px' }}>
-          <div className="card-body p-5">
-            <h1 className="text-center mb-4 fw-bold" style={{ color: '#2c3e50' }}>
-              Bill Mate
-            </h1>
-            <h5 className="text-center mb-4 text-muted">เข้าสู่ระบบ</h5>
+    <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: '#f8fafc' }}>
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-md-6 col-lg-5 col-xl-4">
+            <div className="card shadow-lg border-0 bg-white rounded-4 fade-in">
+              <div className="card-body p-5">
+                <div className="text-center mb-5">
+                  <div className="bg-gradient-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
+                    <i className="bi bi-house-check fs-2"></i>
+                  </div>
+                  <h1 className="fw-bold text-gradient mb-2">Bill Mate</h1>
+                  <p className="text-muted">ระบบจัดการค่าเช่าหอพักที่ทันสมัย</p>
+                </div>
 
-            {error && (
-              <div className="alert alert-danger alert-dismissible fade show" role="alert">
-                {error}
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setError('')}
-                  aria-label="Close"
-                ></button>
-              </div>
-            )}
+                <h5 className="text-center mb-4 fw-semibold text-dark">เข้าสู่ระบบ</h5>
 
-            {successMessage && (
-              <div className="alert alert-success alert-dismissible fade show" role="alert">
-                {successMessage}
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setSuccessMessage('')}
-                  aria-label="Close"
-                ></button>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label htmlFor="email" className="form-label fw-bold">
-                  อีเมล
-                </label>
-                <input
-                  type="email"
-                  className="form-control form-control-lg"
-                  id="email"
-                  placeholder="example@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="mb-4">
-                <label htmlFor="password" className="form-label fw-bold">
-                  รหัสผ่าน
-                </label>
-                <input
-                  type="password"
-                  className="form-control form-control-lg"
-                  id="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary btn-lg w-100 fw-bold"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    กำลังเข้าสู่ระบบ...
-                  </>
-                ) : (
-                  'เข้าสู่ระบบ'
+                {error && (
+                  <div className="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div className="flex-grow-1">{error}</div>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={() => setError('')}
+                      aria-label="Close"
+                    ></button>
+                  </div>
                 )}
-              </button>
-            </form>
 
-            <hr className="my-4" />
+                {successMessage && (
+                  <div className="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+                    <i className="bi bi-check-circle-fill me-2"></i>
+                    <div className="flex-grow-1">{successMessage}</div>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={() => setSuccessMessage('')}
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                )}
 
-            <div className="text-center">
-              <p className="text-muted mb-0">
-                ยังไม่มีบัญชี?{' '}
-                <Link href="/register" className="fw-bold text-primary text-decoration-none">
-                  สมัครสมาชิก
-                </Link>
+                <form onSubmit={handleSubmit}>
+                  <div className="mb-4">
+                    <label htmlFor="email" className="form-label fw-semibold text-muted">
+                      <i className="bi bi-envelope me-2 text-muted"></i>
+                      อีเมล
+                    </label>
+                    <input
+                      type="email"
+                      className="form-control form-control-lg rounded-3 bg-light"
+                      id="email"
+                      placeholder="example@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <div className="mb-4">
+                    <label htmlFor="password" className="form-label fw-semibold text-muted">
+                      <i className="bi bi-lock me-2 text-muted"></i>
+                      รหัสผ่าน
+                    </label>
+                    <input
+                      type="password"
+                      className="form-control form-control-lg rounded-3 bg-light"
+                      id="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn-secondary btn-lg w-100 fw-semibold py-3 rounded-3 shadow-hover"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        กำลังเข้าสู่ระบบ...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-box-arrow-in-right me-2 "></i>
+                        เข้าสู่ระบบ
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                <div className="text-center mt-4">
+                  <p className="text-muted mb-0">
+                    ยังไม่มีบัญชี?{' '}
+                    <Link href="/register" className="fw-semibold text-link text-muted">
+                      สมัครสมาชิก
+                    </Link>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center mt-4">
+              <p className="text-muted small">
+                <i className="bi bi-shield-check me-1"></i>
+                ระบบจัดการค่าเช่าหอพักที่ปลอดภัยและเชื่อถือได้
               </p>
             </div>
           </div>
-        </div>
-
-        <div className="text-center mt-4 text-muted small">
-          <p>ระบบจัดการค่าเช่าหอพัก</p>
         </div>
       </div>
     </div>
