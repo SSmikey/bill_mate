@@ -188,11 +188,13 @@ export default function MaintenancePage() {
 
   if (loading) {
     return (
-      <div className="text-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">กำลังโหลด...</span>
+      <div className="d-flex justify-content-center align-items-center vh-80">
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}>
+            <span className="visually-hidden">กำลังโหลด...</span>
+          </div>
+          <h5 className="text-muted">กำลังโหลดข้อมูล...</h5>
         </div>
-        <p className="mt-3 text-muted">กำลังโหลดข้อมูล...</p>
       </div>
     );
   }
@@ -200,36 +202,34 @@ export default function MaintenancePage() {
   return (
     <div className="fade-in">
       {/* Header */}
-      <div className="d-flex align-items-center justify-content-between mb-4">
-        <div>
-          <h2 className="fw-bold mb-1">
-            <i className="bi bi-tools me-2 text-primary"></i>
-            แจ้งซ่อมบำรุง
-          </h2>
-          <p className="text-muted mb-0">
-            <i className="bi bi-house-door me-2"></i>
-            {userRoom ? `ห้อง ${userRoom.roomNumber}` : 'ไม่พบข้อมูลห้องพัก'}
-          </p>
+      <div className="mb-5">
+        <div className="d-flex align-items-center justify-content-between mb-3">
+          <div>
+            <h1 className="fw-bold text-dark mb-2">แจ้งซ่อมบำรุง</h1>
+            <p className="text-muted mb-0">
+              <i className="bi bi-house-door me-2"></i>
+              {userRoom ? `ห้อง ${userRoom.roomNumber}` : 'ไม่พบข้อมูลห้องพัก'}
+            </p>
+          </div>
+          <button
+            className="btn btn-primary rounded-3"
+            onClick={() => setShowForm(!showForm)}
+            disabled={!userRoom}
+          >
+            <i className="bi bi-plus-circle me-2"></i>
+            แจ้งซ่อมใหม่
+          </button>
         </div>
-        <button
-          className="btn btn-primary shadow-hover"
-          onClick={() => setShowForm(!showForm)}
-          disabled={!userRoom}
-          style={{ borderRadius: 'var(--radius-lg)' }}
-        >
-          <i className="bi bi-plus-circle me-2"></i>
-          แจ้งซ่อมใหม่
-        </button>
       </div>
 
       {/* Maintenance Request Form */}
       {showForm && (
-        <div className="card border-0 shadow-sm mb-4 fade-in">
-          <div className="card-header bg-white border-bottom p-4">
-            <h5 className="card-title mb-0 fw-semibold">
+        <div className="card border-0 bg-white rounded-3 shadow-sm mb-4 fade-in">
+          <div className="card-header bg-white border-bottom p-4 rounded-top-3">
+            <h6 className="card-title mb-0 fw-semibold text-dark">
               <i className="bi bi-wrench me-2 text-primary"></i>
               แจ้งซ่อมบำรุงใหม่
-            </h5>
+            </h6>
           </div>
           <div className="card-body p-4">
             <form onSubmit={handleSubmit}>
@@ -268,12 +268,11 @@ export default function MaintenancePage() {
                 </label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control rounded-2"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="ระบุหัวข้อการแจ้งซ่อม"
                   required
-                  style={{ borderRadius: 'var(--radius-md)' }}
                 />
               </div>
               <div className="mb-4">
@@ -282,25 +281,23 @@ export default function MaintenancePage() {
                   รายละเอียด
                 </label>
                 <textarea
-                  className="form-control"
+                  className="form-control rounded-2"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="อธิบายปัญหาที่พบโดยละเอียด"
                   rows={4}
                   required
-                  style={{ borderRadius: 'var(--radius-md)' }}
                 />
               </div>
               <div className="d-flex gap-2">
-                <button type="submit" className="btn btn-primary shadow-hover" style={{ borderRadius: 'var(--radius-lg)' }}>
+                <button type="submit" className="btn btn-primary rounded-2">
                   <i className="bi bi-send me-2"></i>
                   ส่งคำขอ
                 </button>
                 <button
                   type="button"
-                  className="btn btn-outline-secondary"
+                  className="btn btn-outline-secondary rounded-2"
                   onClick={() => setShowForm(false)}
-                  style={{ borderRadius: 'var(--radius-lg)' }}
                 >
                   ยกเลิก
                 </button>
@@ -311,12 +308,12 @@ export default function MaintenancePage() {
       )}
 
       {/* Maintenance Requests List */}
-      <div className="card border-0 shadow-sm">
-        <div className="card-header bg-white border-bottom p-4">
-          <h5 className="card-title mb-0 fw-semibold">
+      <div className="card border-0 bg-white rounded-3 shadow-sm">
+        <div className="card-header bg-white border-bottom p-4 rounded-top-3">
+          <h6 className="card-title mb-0 fw-semibold text-dark">
             <i className="bi bi-clock-history me-2 text-primary"></i>
             ประวัติการแจ้งซ่อม
-          </h5>
+          </h6>
         </div>
         <div className="card-body p-0">
           {requests.length === 0 ? (

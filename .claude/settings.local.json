@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm install)",
       "Bash(del /F /S /Q .next)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

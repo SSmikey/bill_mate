@@ -53,94 +53,185 @@ export default function TenantDashboard() {
 
   if (loading) {
     return (
-      <div className="text-center py-5">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">กำลังโหลด...</span>
+      <div className="d-flex justify-content-center align-items-center vh-80">
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}>
+            <span className="visually-hidden">กำลังโหลด...</span>
+          </div>
+          <h5 className="text-muted">กำลังโหลดข้อมูล...</h5>
         </div>
       </div>
     );
   }
 
+  const paidBills = bills.filter(b => b.status === 'verified').length;
+  const pendingBills = bills.filter(b => b.status === 'pending' || b.status === 'overdue').length;
+
   return (
     <div className="fade-in">
-      {/* Welcome Section */}
+      {/* Header - Clean and minimal */}
       <div className="mb-5">
-        <div className="d-flex align-items-center justify-content-between">
-          <div>
-            <h1 className="fw-bold mb-2">สวัสดี, {session?.user?.name}</h1>
-            <p className="text-muted mb-0">
-              <i className="bi bi-house-door me-2"></i>
-              ห้องของคุณ: <span className="badge bg-primary bg-opacity-10 text-primary">รอดึงข้อมูล</span>
-            </p>
+        <h1 className="fw-bold text-dark mb-2">สวัสดี, {session?.user?.name}</h1>
+        <p className="text-muted mb-0">ภาพรวมของข้อมูลบิลและการชำระเงินของคุณ</p>
+      </div>
+
+      {/* Stats Cards - Clean white background */}
+      <div className="row mb-5 g-3">
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <p className="text-muted small mb-1">บิลทั้งหมด</p>
+                  <h3 className="mb-0 fw-bold text-dark">{bills.length}</h3>
+                </div>
+                <div className="rounded-circle p-3 bg-primary bg-opacity-10">
+                  <i className="bi bi-receipt-fill fs-4 text-primary"></i>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="text-end">
-            <div className="text-muted small">วันนี้</div>
-            <div className="fw-semibold">
-              {new Date().toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </div>
+
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <p className="text-muted small mb-1">ชำระแล้ว</p>
+                  <h3 className="mb-0 fw-bold text-dark">{paidBills}</h3>
+                </div>
+                <div className="rounded-circle p-3 bg-success bg-opacity-10">
+                  <i className="bi bi-check-circle-fill fs-4 text-success"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <p className="text-muted small mb-1">รอชำระ</p>
+                  <h3 className="mb-0 fw-bold text-dark">{pendingBills}</h3>
+                </div>
+                <div className="rounded-circle p-3 bg-warning bg-opacity-10">
+                  <i className="bi bi-exclamation-circle-fill fs-4 text-warning"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <p className="text-muted small mb-1">ห้องของคุณ</p>
+                  <h3 className="mb-0 fw-bold text-dark">-</h3>
+                </div>
+                <div className="rounded-circle p-3 bg-info bg-opacity-10">
+                  <i className="bi bi-house-door-fill fs-4 text-info"></i>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="row mb-5">
-        <div className="col-md-4 mb-4">
-          <div className="card border-0 shadow-sm h-100">
+      {/* Quick Info Card */}
+      <div className="row mb-5 g-3">
+        <div className="col-lg-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
             <div className="card-body p-4">
-              <div className="d-flex align-items-center">
-                <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                  <i className="bi bi-receipt text-primary fs-4"></i>
+              <div className="d-flex align-items-center mb-4">
+                <div className="rounded-circle p-3 me-3 bg-primary bg-opacity-10">
+                  <i className="bi bi-bell-fill fs-5 text-primary"></i>
                 </div>
-                <div className="flex-grow-1">
-                  <h6 className="text-muted mb-1">บิลทั้งหมด</h6>
-                  <h2 className="mb-0 fw-bold">{bills.length}</h2>
+                <div>
+                  <h6 className="mb-0 fw-semibold text-dark">สำคัญ</h6>
+                  <p className="mb-0 small text-muted">ข้อมูลที่ต้องให้ความสนใจ</p>
                 </div>
+              </div>
+              <div className="list-group list-group-flush border-0">
+                {pendingBills > 0 ? (
+                  <div className="list-group-item d-flex justify-content-between align-items-center px-0 py-3 border-bottom border-light">
+                    <div className="d-flex align-items-center">
+                      <div className="rounded-circle p-2 me-3 bg-warning bg-opacity-10">
+                        <i className="bi bi-exclamation-circle-fill fs-5 text-warning"></i>
+                      </div>
+                      <div>
+                        <div className="fw-semibold text-dark">บิลรอชำระ</div>
+                        <small className="text-muted">โปรดชำระให้ทันกำหนด</small>
+                      </div>
+                    </div>
+                    <span className="badge bg-warning bg-opacity-10 text-warning fw-semibold px-2 py-1 rounded-2">
+                      {pendingBills}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="list-group-item d-flex justify-content-between align-items-center px-0 py-3 border-bottom border-light">
+                    <div className="d-flex align-items-center">
+                      <div className="rounded-circle p-2 me-3 bg-success bg-opacity-10">
+                        <i className="bi bi-check-circle-fill fs-5 text-success"></i>
+                      </div>
+                      <div>
+                        <div className="fw-semibold text-dark">ไม่มีบิลค้างชำระ</div>
+                        <small className="text-muted">ยอดเยี่ยม</small>
+                      </div>
+                    </div>
+                    <span className="badge bg-success bg-opacity-10 text-success fw-semibold px-2 py-1 rounded-2">
+                      ✓
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-4 mb-4">
-          <div className="card border-0 shadow-sm h-100">
+        <div className="col-lg-6">
+          <div className="card border-0 h-100 bg-white rounded-3 shadow-sm">
             <div className="card-body p-4">
-              <div className="d-flex align-items-center">
-                <div className="bg-success bg-opacity-10 rounded-circle p-3 me-3">
-                  <i className="bi bi-check-circle text-success fs-4"></i>
+              <div className="d-flex align-items-center mb-4">
+                <div className="rounded-circle p-3 me-3 bg-info bg-opacity-10">
+                  <i className="bi bi-lightning-charge-fill fs-5 text-info"></i>
                 </div>
-                <div className="flex-grow-1">
-                  <h6 className="text-muted mb-1">ชำระแล้ว</h6>
-                  <h2 className="mb-0 fw-bold text-success">{bills.filter(b => b.status === 'verified').length}</h2>
+                <div>
+                  <h6 className="mb-0 fw-semibold text-dark">การกระทำเร็ว</h6>
+                  <p className="mb-0 small text-muted">ทำงานที่ใช้บ่อย</p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-4 mb-4">
-          <div className="card border-0 shadow-sm h-100">
-            <div className="card-body p-4">
-              <div className="d-flex align-items-center">
-                <div className="bg-warning bg-opacity-10 rounded-circle p-3 me-3">
-                  <i className="bi bi-clock text-warning fs-4"></i>
-                </div>
-                <div className="flex-grow-1">
-                  <h6 className="text-muted mb-1">รอชำระ</h6>
-                  <h2 className="mb-0 fw-bold text-warning">{bills.filter(b => b.status === 'pending').length}</h2>
-                </div>
+              <div className="d-grid gap-2">
+                <Link href="/tenant/bills" className="btn btn-primary d-flex align-items-center justify-content-center py-2 text-white text-decoration-none fw-medium rounded-2">
+                  <i className="bi bi-file-earmark-text-fill me-2"></i>
+                  ดูบิลทั้งหมด
+                </Link>
+                <Link href="/tenant/payments" className="btn btn-outline-primary d-flex align-items-center justify-content-center py-2 text-decoration-none fw-medium rounded-2">
+                  <i className="bi bi-credit-card-fill me-2"></i>
+                  ประวัติการชำระ
+                </Link>
+                <Link href="/tenant/maintenance" className="btn btn-outline-primary d-flex align-items-center justify-content-center py-2 text-decoration-none fw-medium rounded-2">
+                  <i className="bi bi-tools me-2"></i>
+                  แจ้งซ่อมบำรุง
+                </Link>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bills List */}
-      <div className="card border-0 shadow-sm">
-        <div className="card-header bg-white border-bottom p-4">
+      {/* Recent Bills */}
+      <div className="card border-0 bg-white rounded-3 shadow-sm">
+        <div className="card-header bg-white border-bottom p-4 rounded-top-3">
           <div className="d-flex align-items-center justify-content-between">
-            <h5 className="mb-0 fw-semibold">
+            <h6 className="mb-0 fw-semibold text-dark">
               <i className="bi bi-file-text me-2 text-primary"></i>
-              บิลของฉัน
-            </h5>
+              บิลล่าสุด
+            </h6>
             <Link href="/tenant/bills" className="btn btn-sm btn-outline-primary rounded-pill">
               ดูทั้งหมด
               <i className="bi bi-arrow-right ms-1"></i>
@@ -150,7 +241,7 @@ export default function TenantDashboard() {
         <div className="card-body p-0">
           {bills.length === 0 ? (
             <div className="text-center py-5">
-              <div className="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3 w-5rem h-5rem">
+              <div className="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
                 <i className="bi bi-inbox fs-2 text-muted"></i>
               </div>
               <h6 className="text-muted">ยังไม่มีบิล</h6>
