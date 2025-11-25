@@ -61,7 +61,6 @@ export default function AdminRoomsPage() {
 
   // State สำหรับการค้นหาและเรียงลำดับ
   const [searchQuery, setSearchQuery] = useState('');
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 999999 });
   const [floorFilter, setFloorFilter] = useState<number | 'all'>('all');
   const [sortField, setSortField] = useState<SortField>('roomNumber');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -69,6 +68,11 @@ export default function AdminRoomsPage() {
   // State สำหรับ bulk operations
   const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
   const [bulkMode, setBulkMode] = useState(false);
+
+  // State สำหรับ checkout confirmation dialog
+  const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
+  const [checkoutRoom, setCheckoutRoom] = useState<Room | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   // โหลดข้อมูลห้องทั้งหมดเมื่อเปิดหน้า
   useEffect(() => {
@@ -78,7 +82,7 @@ export default function AdminRoomsPage() {
   // อัปเดต filteredRooms เมื่อมีการเปลี่ยนแปลง
   useEffect(() => {
     applyFiltersAndSort();
-  }, [rooms, filter, searchQuery, priceRange, floorFilter, sortField, sortOrder]);
+  }, [rooms, filter, searchQuery, floorFilter, sortField, sortOrder]);
 
   // ฟังก์ชันดึงข้อมูลห้องจาก API
   const fetchRooms = async () => {
@@ -124,10 +128,6 @@ export default function AdminRoomsPage() {
       );
     }
 
-    // Filter by price range
-    filtered = filtered.filter(
-      (r) => r.rentPrice >= priceRange.min && r.rentPrice <= priceRange.max
-    );
 
     // Filter by floor
     if (floorFilter !== 'all') {
@@ -297,18 +297,19 @@ export default function AdminRoomsPage() {
   };
 
   // ฟังก์ชัน Checkout (unassign tenant)
-  const handleCheckout = async (room: Room) => {
-    const confirmed = window.confirm(
-      `ต้องการให้ผู้เช่า ${room.tenantId?.name} ออกจากห้อง ${room.roomNumber} ใช่หรือไม่?\n\nการดำเนินการนี้จะทำให้ห้องกลายเป็นห้องว่าง`
-    );
+  const handleCheckout = (room: Room) => {
+    setCheckoutRoom(room);
+    setShowCheckoutDialog(true);
+  };
 
-    if (!confirmed) return;
+  const confirmCheckout = async () => {
+    if (!checkoutRoom) return;
 
     try {
       setError('');
-      setLoading(true);
+      setCheckoutLoading(true);
 
-      const response = await fetch(`/api/rooms/${room._id}/assign`, {
+      const response = await fetch(`/api/rooms/${checkoutRoom._id}/assign`, {
         method: 'DELETE',
       });
 
@@ -319,13 +320,15 @@ export default function AdminRoomsPage() {
       }
 
       await fetchRooms();
-      setSuccess(`ปลดผู้เช่าออกจากห้อง ${room.roomNumber} สำเร็จ`);
+      setSuccess(`ปลดผู้เช่าออกจากห้อง ${checkoutRoom.roomNumber} สำเร็จ`);
       setTimeout(() => setSuccess(''), 3000);
+      setShowCheckoutDialog(false);
+      setCheckoutRoom(null);
     } catch (err: any) {
       console.error('Error checking out tenant:', err);
       setError(err.message || 'เกิดข้อผิดพลาดในการปลดผู้เช่า');
     } finally {
-      setLoading(false);
+      setCheckoutLoading(false);
     }
   };
 
@@ -591,49 +594,25 @@ export default function AdminRoomsPage() {
               />
             </div>
 
-            {/* Price Range */}
-            <div className="col-md-4">
-              <label className="form-label fw-semibold text-dark">
-                <i className="bi bi-cash me-2"></i>
-                ช่วงราคา
-              </label>
-              <div className="d-flex gap-2">
-                <input
-                  type="number"
-                  className="form-control rounded-2 bg-white"
-                  placeholder="ต่ำสุด"
-                  value={priceRange.min}
-                  onChange={(e) =>
-                    setPriceRange({ ...priceRange, min: Number(e.target.value) })
-                  }
-                  style={{ color: '#000' }}
-                />
-                <input
-                  type="number"
-                  className="form-control rounded-2 bg-white"
-                  placeholder="สูงสุด"
-                  value={priceRange.max}
-                  onChange={(e) =>
-                    setPriceRange({ ...priceRange, max: Number(e.target.value) })
-                  }
-                  style={{ color: '#000' }}
-                />
-              </div>
-            </div>
 
             {/* Floor Filter */}
             <div className="col-md-2">
               <StyledSelect
                 value={floorFilter}
-                onChange={(val) =>
-                  setFloorFilter(val === 'all' ? 'all' : Number(val))
-                }
+                onChange={(val) => {
+                  if (val === 'all') {
+                    setFloorFilter('all');
+                  } else {
+                    const numVal = typeof val === 'string' ? Number(val) : val;
+                    setFloorFilter(numVal);
+                  }
+                }}
                 label="ชั้น"
                 icon="bi bi-building"
                 options={[
                   { value: 'all', label: 'ทั้งหมด' },
                   ...uniqueFloors.sort((a, b) => a! - b!).map((floor) => ({
-                    value: floor!.toString(),
+                    value: floor!,
                     label: `ชั้น ${floor}`,
                   })),
                 ]}
@@ -645,15 +624,14 @@ export default function AdminRoomsPage() {
               <StyledSelect
                 value={`${sortField}-${sortOrder}`}
                 onChange={(val) => {
-                  const [field, order] = val.split('-');
+                  const valStr = val.toString();
+                  const [field, order] = valStr.split('-');
                   setSortField(field as SortField);
                   setSortOrder(order as SortOrder);
                 }}
                 label="เรียงตาม"
                 icon="bi bi-sort-down"
                 options={[
-                  { value: 'roomNumber-asc', label: 'หมายเลขห้อง (A-Z)' },
-                  { value: 'roomNumber-desc', label: 'หมายเลขห้อง (Z-A)' },
                   { value: 'floor-asc', label: 'ชั้น (น้อย-มาก)' },
                   { value: 'floor-desc', label: 'ชั้น (มาก-น้อย)' },
                   { value: 'rentPrice-asc', label: 'ราคา (ถูก-แพง)' },
@@ -669,7 +647,6 @@ export default function AdminRoomsPage() {
               className="btn btn-sm btn-outline-secondary rounded-2"
               onClick={() => {
                 setSearchQuery('');
-                setPriceRange({ min: 0, max: 999999 });
                 setFloorFilter('all');
                 setSortField('roomNumber');
                 setSortOrder('asc');
@@ -753,7 +730,7 @@ export default function AdminRoomsPage() {
                     <i className="bi bi-inbox fs-1 text-muted"></i>
                   </div>
                   <h5 className="text-muted">
-                    {searchQuery || priceRange.min > 0 || floorFilter !== 'all'
+                    {searchQuery || floorFilter !== 'all'
                       ? 'ไม่พบห้องที่ตรงกับเงื่อนไขการค้นหา'
                       : filter === 'all'
                       ? 'ยังไม่มีห้องในระบบ'
@@ -934,6 +911,119 @@ export default function AdminRoomsPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Checkout Confirmation Dialog */}
+      {showCheckoutDialog && checkoutRoom && (
+        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex={-1}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 rounded-3 shadow-lg">
+              <div className="modal-header bg-warning text-dark border-0 rounded-top-3">
+                <h6 className="modal-title fw-semibold">
+                  <i className="bi bi-person-dash-fill me-2"></i>
+                  ยืนยันการปลดผู้เช่า
+                </h6>
+              </div>
+              <div className="modal-body p-4">
+                <div className="alert alert-warning border-0 rounded-3">
+                  <h6 className="fw-semibold mb-3">
+                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                    คำเตือน
+                  </h6>
+                  <p className="mb-0">
+                    การดำเนินการนี้จะปลดผู้เช่าออกจากห้องและทำให้ห้องกลายเป็นห้องว่าง
+                  </p>
+                </div>
+
+                <div className="alert alert-info border-0 rounded-3">
+                  <h6 className="fw-semibold mb-3">
+                    <i className="bi bi-house me-2"></i>
+                    ข้อมูลห้อง
+                  </h6>
+                  <div className="row g-2">
+                    <div className="col-12">
+                      <strong>หมายเลขห้อง:</strong> {checkoutRoom.roomNumber}
+                    </div>
+                    <div className="col-12">
+                      <strong>ชั้น:</strong> {checkoutRoom.floor || '-'}
+                    </div>
+                    <div className="col-12">
+                      <strong>ค่าเช่า:</strong> {checkoutRoom.rentPrice.toLocaleString('th-TH')} ฿/เดือน
+                    </div>
+                  </div>
+                </div>
+
+                {checkoutRoom.tenantId && (
+                  <div className="alert alert-danger border-0 rounded-3">
+                    <h6 className="fw-semibold mb-3">
+                      <i className="bi bi-person me-2"></i>
+                      ข้อมูลผู้เช่าที่จะถูกปลด
+                    </h6>
+                    <div className="row g-2">
+                      <div className="col-12">
+                        <strong>ชื่อ:</strong> {checkoutRoom.tenantId.name}
+                      </div>
+                      <div className="col-12">
+                        <strong>อีเมล:</strong> {checkoutRoom.tenantId.email}
+                      </div>
+                      {checkoutRoom.moveInDate && (
+                        <div className="col-12">
+                          <strong>วันที่เข้าพัก:</strong>{' '}
+                          {new Date(checkoutRoom.moveInDate).toLocaleDateString('th-TH')}
+                        </div>
+                      )}
+                      {checkoutRoom.depositAmount && (
+                        <div className="col-12">
+                          <strong>เงินมัดจำ:</strong> {checkoutRoom.depositAmount.toLocaleString('th-TH')} ฿
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-center mt-3">
+                  <p className="mb-0 fw-semibold text-dark">
+                    <i className="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                    ต้องการยืนยันการปลดผู้เช่านี้ใช่หรือไม่?
+                  </p>
+                  <small className="text-muted">การดำเนินการนี้ไม่สามารถย้อนกลับได้</small>
+                </div>
+              </div>
+              <div className="modal-footer border-0 bg-light rounded-bottom-3">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary rounded-2 px-4"
+                  onClick={() => {
+                    setShowCheckoutDialog(false);
+                    setCheckoutRoom(null);
+                  }}
+                  disabled={checkoutLoading}
+                >
+                  <i className="bi bi-x-lg me-2"></i>
+                  ยกเลิก
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-warning text-dark rounded-2 px-4"
+                  onClick={confirmCheckout}
+                  disabled={checkoutLoading}
+                >
+                  {checkoutLoading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                      กำลังดำเนินการ...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-person-dash-fill me-2"></i>
+                      ยืนยันการปลดผู้เช่า
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

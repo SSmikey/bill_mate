@@ -20,9 +20,6 @@ export async function POST() {
       );
     }
 
-    console.log(`📄 [BILL GEN] Manual trigger by: ${session.user.email}`);
-    console.log(`📄 [BILL GEN] Time: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`);
-
     // สร้างบิล
     const billsCreated = await generateMonthlyBills();
 
@@ -37,7 +34,6 @@ export async function POST() {
     });
 
   } catch (error) {
-    console.error('❌ [BILL GEN] Error:', error);
     
     return NextResponse.json(
       { 

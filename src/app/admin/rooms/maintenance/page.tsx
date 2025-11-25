@@ -142,7 +142,7 @@ export default function MaintenancePage() {
       const requestBody = {
         ...formData,
         createdBy: {
-          userId: 'admin-user-id', // TODO: Get from auth session
+          userId: '507f1f77bcf86cd799439011', // Valid ObjectId placeholder - TODO: Get from auth session
           name: 'Admin',
           role: 'admin',
         },

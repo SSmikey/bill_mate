@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { UseFormRegisterReturn } from 'react-hook-form';
 
 interface StyledSelectProps {
   value?: string | number;
-  onChange?: (value: string) => void;
+  onChange?: (value: string | number) => void;
   options: Array<{
     value: string | number;
     label: string;
@@ -28,11 +28,35 @@ export default function StyledSelect({
   register,
 }: StyledSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [internalValue, setInternalValue] = useState(value || '');
+  const [internalValue, setInternalValue] = useState(value?.toString() || '');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const currentValue = register ? internalValue : value;
-  const selectedOption = options.find((opt) => opt.value === currentValue);
+  const currentValue = register ? internalValue : value?.toString();
+  const selectedOption = options.find((opt) => opt.value.toString() === currentValue);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  // Update internal value when prop value changes
+  useEffect(() => {
+    if (!register && value !== undefined) {
+      setInternalValue(value.toString());
+    }
+  }, [value, register]);
 
   return (
     <div className="position-relative" ref={dropdownRef}>
@@ -106,7 +130,8 @@ export default function StyledSelect({
                   setInternalValue(newValue);
                   register.onChange({ target: { value: newValue } });
                 } else {
-                  onChange?.(newValue);
+                  setInternalValue(newValue);
+                  onChange?.(option.value); // Pass original value type
                 }
                 setIsOpen(false);
               }}

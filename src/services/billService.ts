@@ -47,19 +47,16 @@ export async function generateMonthlyBills() {
         }
 
         // 3. Create a new bill
-        const waterUnits = 0; // Default to 0 for automatic generation
-        const electricityUnits = 0; // Default to 0 for automatic generation
-        const waterAmount = waterUnits * room.waterPrice;
-        const electricityAmount = electricityUnits * room.electricityPrice;
+        // Water and electricity are fixed charges, not unit-based
+        const waterAmount = room.waterPrice;
+        const electricityAmount = room.electricityPrice;
         const newBill = new Bill({
           roomId: room._id,
           tenantId: room.tenantId, // Use the populated tenant object directly
           month,
           year,
           rentAmount: room.rentPrice,
-          waterUnits,
           waterAmount,
-          electricityUnits,
           electricityAmount,
           totalAmount: room.rentPrice + waterAmount + electricityAmount,
           status: 'pending',

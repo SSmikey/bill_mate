@@ -48,6 +48,9 @@ const AdminBillsPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string>('');
   const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'danger' }>({ show: false, message: '', type: 'success' });
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [billToDelete, setBillToDelete] = useState<Bill | null>(null);
 
   useEffect(() => {
     const fetchBills = async () => {
@@ -114,8 +117,8 @@ const AdminBillsPage = () => {
       tenantId: selectedRoom?.tenantId?._id,
       month: Number(formData.get('month')),
       year: Number(formData.get('year')),
-      waterUnits: Number(formData.get('waterUnits')),
-      electricityUnits: Number(formData.get('electricityUnits')),
+      waterUnits: 0, // ค่าน้ำเป็นเหมาจ่าย ส่ง 0 หน่วย
+      electricityUnits: Number(formData.get('electricityUnits')), // ส่งหน่วยไฟฟ้าที่ใช้ไป
     };
 
     if (!billData.tenantId) {
@@ -151,8 +154,103 @@ const AdminBillsPage = () => {
     }
   };
 
+  const openDeleteModal = (bill: Bill) => {
+    setBillToDelete(bill);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteBill = async () => {
+    if (!billToDelete) return;
+
+    setDeletingId(billToDelete._id);
+    try {
+      const response = await fetch(`/api/bills/${billToDelete._id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('ล้มเหลวในการลบบิล');
+      }
+
+      setToast({ show: true, message: 'ลบบิลเรียบร้อยแล้ว!', type: 'success' });
+      setShowDeleteModal(false);
+      setBillToDelete(null);
+      // Refresh bills list after deletion
+      const res = await fetch('/api/bills');
+      const data = await res.json();
+      setBills(data.data || []);
+
+    } catch (err: any) {
+      setToast({ show: true, message: err.message || 'ล้มเหลวในการลบบิล', type: 'danger' });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const renderDeleteConfirmModal = () => (
+    <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+      <Modal.Header closeButton className="border-0">
+        <Modal.Title className="text-danger fw-bold">
+          <i className="bi bi-exclamation-triangle me-2"></i>ยืนยันการลบบิล
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body className="text-center py-4">
+        <div className="mb-3">
+          <i className="bi bi-trash fs-1 text-danger"></i>
+        </div>
+        <h5 className="mb-3">คุณต้องการลบบิลนี้หรือไม่?</h5>
+        {billToDelete && (
+          <div className="alert alert-light border-1 rounded-2">
+            <p className="mb-1 text-muted small">บิลสำหรับ:</p>
+            <p className="mb-0 fw-semibold">
+              ห้อง {billToDelete.roomId.roomNumber} ({billToDelete.tenantId.name}) - {billToDelete.month}/{billToDelete.year}
+            </p>
+            <p className="mb-0 text-danger fw-bold mt-2">
+              ยอดเงิน: {billToDelete.totalAmount.toLocaleString()} บาท
+            </p>
+          </div>
+        )}
+        <p className="text-muted small mb-0">
+          การกระทำนี้ไม่สามารถยกเลิกได้ กรุณาตรวจสอบก่อนลบ
+        </p>
+      </Modal.Body>
+      <Modal.Footer className="border-0">
+        <Button
+          variant="outline-secondary"
+          className="rounded-2"
+          onClick={() => setShowDeleteModal(false)}
+          disabled={deletingId !== null}
+        >
+          ยกเลิก
+        </Button>
+        <Button
+          variant="danger"
+          className="rounded-2"
+          onClick={handleDeleteBill}
+          disabled={deletingId !== null}
+        >
+          {deletingId ? (
+            <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> กำลังลบ...</>
+          ) : (
+            <>ลบบิล</>
+          )}
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+
   const renderCreateBillModal = () => (
     <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} centered>
+      <style>{`
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type="number"] {
+          -moz-appearance: textfield;
+        }
+      `}</style>
       <Modal.Header closeButton>
         <Modal.Title><i className="bi bi-receipt-cutoff me-2"></i>สร้างบิลใหม่</Modal.Title>
       </Modal.Header>
@@ -201,27 +299,21 @@ const AdminBillsPage = () => {
               />
             </div>
           </Form.Group>
-          <Form.Group className="mb-3" controlId="waterUnits">
-            <Form.Label className="fw-semibold text-dark">หน่วยน้ำ (ลบ.ม.)</Form.Label>
-            <Form.Control
-              name="waterUnits"
-              type="number"
-              placeholder="0.00"
-              required
-              step="0.01"
-              min="0"
-              className="form-control rounded-2 bg-white"
-              style={{ color: '#000' }}
-            />
-            <Form.Text className="text-muted">
+          {/* Water charge is fixed per month - no input needed */}
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-semibold text-dark">ค่าน้ำ (บาท/เดือน)</Form.Label>
+            <div className="form-control rounded-2 bg-white d-flex align-items-center" style={{ minHeight: '38px', color: '#000' }}>
               {(() => {
                 const selectedRoom = rooms.find(r => r._id === selectedRoomId);
-                return selectedRoom ? `อัตราค่าน้ำ: ${selectedRoom.waterPrice || 0} บาท/ลบ.ม.` : 'กรุณาเลือกห้องเพื่อแสดงอัตราค่าน้ำ';
+                return selectedRoom ? `${selectedRoom.waterPrice || 0} บาท (ค่าน้ำแบบเหมาจ่ายรายเดือน)` : 'กรุณาเลือกห้องเพื่อดึงค่าน้ำ';
               })()}
+            </div>
+            <Form.Text className="text-muted">
+              ค่าน้ำเป็นค่าคงที่จ่ายรายเดือน ไม่ต้องกรอกจำนวน
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="electricityUnits">
-            <Form.Label className="fw-semibold text-dark">หน่วยไฟฟ้า (kWh)</Form.Label>
+            <Form.Label className="fw-semibold text-dark">หน่วยไฟฟ้าที่ใช้ (kWh)</Form.Label>
             <Form.Control
               name="electricityUnits"
               type="number"
@@ -382,9 +474,7 @@ const AdminBillsPage = () => {
                         <th>ค่าไฟ</th>
                         <th>ครบกำหนด</th>
                         <th>สถานะ</th>
-                        <th className="text-center min-w-250px">
-                          การจัดการ
-                        </th>
+                        <th className="text-center">การจัดการ</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -398,11 +488,25 @@ const AdminBillsPage = () => {
                           <td>{b.electricityAmount ? b.electricityAmount.toLocaleString() : 0} บาท</td>
                           <td>{format(new Date(b.dueDate), 'dd MMM yy', { locale: th })}</td>
                           <td>{getBillStatusBadge(b.status)}</td>
-                          <td>
-                            {/* อาจจะลิงก์ไปหน้า Admin Payment ที่กรองตาม billId นี้ */}
-                            <Link href={`/admin/payments`} passHref>
-                              <Button variant="outline-primary" size="sm" className="rounded-2"><i className="bi bi-search me-1"></i>ดูการชำระเงิน</Button>
-                            </Link>
+                          <td className="text-center">
+                            <div className="d-flex gap-2 justify-content-center">
+                              <Link href={`/admin/payments`} passHref>
+                                <Button variant="outline-primary" size="sm" className="rounded-2"><i className="bi bi-search me-1"></i>ดู</Button>
+                              </Link>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                className="rounded-2"
+                                onClick={() => openDeleteModal(b)}
+                                disabled={deletingId === b._id}
+                              >
+                                {deletingId === b._id ? (
+                                  <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> ลบ</>
+                                ) : (
+                                  <><i className="bi bi-trash me-1"></i>ลบ</>
+                                )}
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -415,6 +519,7 @@ const AdminBillsPage = () => {
         </>
       )}
       {renderCreateBillModal()}
+      {renderDeleteConfirmModal()}
     </div>
   );
 };

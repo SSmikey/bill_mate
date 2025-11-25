@@ -7,7 +7,6 @@ export default function IconLoader() {
   useLayoutEffect(() => {
     // Mark icons as loaded since we're using local files
     document.body.classList.add('icons-loaded');
-    console.log('[IconLoader] Icons marked as loaded (local files)');
   }, []);
 
   return null;

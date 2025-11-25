@@ -65,7 +65,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Room not found' }, { status: 404 });
       }
 
-      const waterAmount = waterUnits * room.waterPrice;
+      // Water is fixed charge (flat rate per month)
+      const waterAmount = room.waterPrice;
+      // Electricity is charged per unit
       const electricityAmount = electricityUnits * room.electricityPrice;
       const totalAmount = room.rentPrice + waterAmount + electricityAmount;
       const dueDate = new Date(year, month - 1, dueDay);
@@ -114,12 +116,12 @@ export async function POST(req: NextRequest) {
       for (const room of rooms) {
         if (!room.tenantId) continue;
 
-        // For automatic generation, we'll use default values or previous month's consumption
-        // For now, we'll use the room's fixed prices as placeholders
-        // In a real implementation, you might want to track actual meter readings
-        const waterUnits = 0; // Default to 0 for automatic generation
+        // For automatic generation
+        // Water is fixed charge (flat rate per month)
+        // Electricity defaults to 0 units (manual entry required)
+        const waterUnits = 0; // Not used for water (it's a fixed charge)
         const electricityUnits = 0; // Default to 0 for automatic generation
-        const waterAmount = waterUnits * room.waterPrice;
+        const waterAmount = room.waterPrice; // Water is fixed charge
         const electricityAmount = electricityUnits * room.electricityPrice;
         const totalAmount = room.rentPrice + waterAmount + electricityAmount;
 

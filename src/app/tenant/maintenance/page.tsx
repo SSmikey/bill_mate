@@ -236,7 +236,7 @@ export default function MaintenancePage() {
                 <div className="col-md-6">
                   <StyledSelect
                     value={formData.category}
-                    onChange={(val) => setFormData({ ...formData, category: val })}
+                    onChange={(val) => setFormData({ ...formData, category: val.toString() })}
                     label="ประเภท"
                     icon="bi bi-tag"
                     options={categories.map((cat) => ({
@@ -249,7 +249,7 @@ export default function MaintenancePage() {
                 <div className="col-md-6">
                   <StyledSelect
                     value={formData.priority}
-                    onChange={(val) => setFormData({ ...formData, priority: val })}
+                    onChange={(val) => setFormData({ ...formData, priority: val.toString() })}
                     label="ความสำคัญ"
                     icon="bi bi-exclamation-triangle"
                     options={priorities.map((pri) => ({

@@ -125,15 +125,8 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
   );
 
   return (
-    <div className="card border-0 shadow">
-      <div className="card-header bg-white border-bottom p-4">
-        <h5 className="card-title mb-0 fw-semibold">
-          <i className="bi bi-upload text-primary me-2"></i>
-          อัปโหลดสลิปการชำระเงิน
-        </h5>
-      </div>
-      <div className="card-body p-4">
-        <SlipReader onScanComplete={handleScanComplete} isEmbedded={true} />
+    <div>
+      <SlipReader onScanComplete={handleScanComplete} isEmbedded={true} />
 
         {(ocrData || qrData) && (
           <div className="mt-4">
@@ -152,7 +145,7 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
                       </div>
                       <div>
                         <small className="text-muted d-block">จำนวนเงิน</small>
-                        <div className="fw-bold">
+                        <div className="fw-bold text-dark">
                           {ocrData?.amount || qrData?.amount || "N/A"} บาท
                           {!ocrData && qrData?.amount && (
                             <small className="text-muted d-block">(จาก QR Code)</small>
@@ -169,7 +162,7 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
                       </div>
                       <div>
                         <small className="text-muted d-block">วันที่</small>
-                        <div className="fw-semibold">{ocrData?.date || "N/A"}</div>
+                        <div className="fw-semibold text-dark">{ocrData?.date || "N/A"}</div>
                       </div>
                     </div>
                   </div>
@@ -181,7 +174,7 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
                       </div>
                       <div>
                         <small className="text-muted d-block">เวลา</small>
-                        <div className="fw-semibold">{ocrData?.time || "N/A"}</div>
+                        <div className="fw-semibold text-dark">{ocrData?.time || "N/A"}</div>
                       </div>
                     </div>
                   </div>
@@ -194,7 +187,7 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
                         </div>
                         <div>
                           <small className="text-muted d-block">เลขอ้างอิง (QR)</small>
-                          <div className="fw-semibold font-monospace small">{qrData.reference}</div>
+                          <div className="fw-semibold font-monospace small text-dark">{qrData.reference}</div>
                         </div>
                       </div>
                     </div>
@@ -278,7 +271,6 @@ const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 };

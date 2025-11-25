@@ -257,12 +257,15 @@ export default function SlipReader({
       console.log("Starting OCR processing...");
       
       // Add timeout and retry logic for OCR
-      const OCR_TIMEOUT = 30000; // 30 seconds timeout
+      const OCR_TIMEOUT = 90000; // Increased to 90 seconds timeout
       
       const result = await Promise.race([
         (async () => {
           try {
-            const ocrResult = await Tesseract.recognize(previewImage, "tha+eng", {
+            // Pre-process image for better OCR results
+            const processedImage = await preprocessImage(previewImage);
+            
+            const ocrResult = await Tesseract.recognize(processedImage, "tha+eng", {
               logger: (m: any) => {
                 console.log("OCR Progress:", m);
                 if (m.status === "recognizing text") {
@@ -275,6 +278,11 @@ export default function SlipReader({
                   setProgress({
                     message: `กำลังโหลดข้อมูลภาษา...`,
                     percent: 45,
+                  });
+                } else if (m.status === "initializing tesseract") {
+                  setProgress({
+                    message: `กำลังเริ่มต้นระบบ OCR...`,
+                    percent: 30,
                   });
                 }
               },
@@ -298,7 +306,17 @@ export default function SlipReader({
 
       console.log("OCR text extracted:", result.data.text);
       setOcrTextFull(result.data.text);
-      return extractSlipInfo(result.data.text);
+      
+      // Try multiple extraction methods for better accuracy
+      let ocrData = extractSlipInfo(result.data.text);
+      
+      // If initial extraction failed, try with enhanced patterns
+      if (!ocrData.amount) {
+        console.log("Initial extraction failed, trying enhanced patterns...");
+        ocrData = extractSlipInfoEnhanced(result.data.text);
+      }
+      
+      return ocrData;
     } catch (err) {
       // Enhanced error logging
       console.error("OCR Error Details:", {
@@ -314,6 +332,186 @@ export default function SlipReader({
       // Just log and return null so the process can continue with QR data
       return null;
     }
+  };
+
+  // Pre-process image to improve OCR accuracy
+  const preprocessImage = async (imageSrc: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          resolve(imageSrc);
+          return;
+        }
+
+        // Increase resolution for better OCR
+        const scaleFactor = 2;
+        canvas.width = img.width * scaleFactor;
+        canvas.height = img.height * scaleFactor;
+        
+        // Draw and enhance image
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Apply image enhancements
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        
+        // Increase contrast and convert to grayscale
+        for (let i = 0; i < data.length; i += 4) {
+          const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+          const enhanced = gray > 128 ? 255 : 0; // Threshold for better text recognition
+          data[i] = enhanced;
+          data[i + 1] = enhanced;
+          data[i + 2] = enhanced;
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+        resolve(canvas.toDataURL('image/jpeg', 0.95));
+      };
+      img.src = imageSrc;
+    });
+  };
+
+  // Enhanced extraction with more patterns
+  const extractSlipInfoEnhanced = (text: string): OCRData => {
+    const info: OCRData = {
+      amount: null,
+      fee: null,
+      date: null,
+      time: null,
+      reference: null,
+      ref1: null,
+      ref2: null,
+      transactionNo: null,
+      fromAccount: null,
+      toAccount: null,
+      transferType: null,
+    };
+
+    const cleanText = text
+      .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s\.\,\:\-\/\(\)\฿\.\,]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // Enhanced amount patterns with more Thai variations
+    const amountPatterns = [
+      /(?:จำนวนเงิน|จ่าย|ยอดเงิน|โอน|ชำระ|ทำรายการ)[:\s]+([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})/i,
+      /(?:Amount|Total|Pay|Payment)[:\s]+([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})/i,
+      /THB[:\s]+([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})/i,
+      /฿[:\s]*([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})/,
+      /([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})\s*(?:บาท|Baht)/i,
+      /\b([1-9][0-9]{0,2}(?:,?[0-9]{3})*\.[0-9]{2})\b/,
+      /(?:จำนวน|ยอด)[:\s]*([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})/i,
+      /([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})\s*บาท/i,
+      // Additional patterns for Thai banking apps
+      /(?:รับเงิน|รับโอน)[:\s]+([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})/i,
+      /(?:สำเร็จ|成功)[:\s]+.*?([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})/i,
+    ];
+
+    for (const pattern of amountPatterns) {
+      const match = cleanText.match(pattern);
+      if (match) {
+        const amount = match[1].replace(/,/g, "");
+        const numAmount = parseFloat(amount);
+        if (!isNaN(numAmount) && numAmount >= 0.01 && numAmount <= 10000000) {
+          info.amount = amount;
+          break;
+        }
+      }
+    }
+
+    // Enhanced fee patterns
+    const feePatterns = [
+      /(?:ค่าธรรมเนียม|ค่าบริการ|ค่าธุรกรรม)[:\s]+([0-9]+(?:\.[0-9]{2})?)/i,
+      /(?:Fee|Service\s*Charge|Transaction\s*Fee)[:\s]+([0-9]+(?:\.[0-9]{2})?)/i,
+    ];
+
+    for (const pattern of feePatterns) {
+      const match = cleanText.match(pattern);
+      if (match) {
+        const fee = match[1].replace(/,/g, "");
+        const numFee = parseFloat(fee);
+        if (!isNaN(numFee) && numFee >= 0 && numFee <= 1000) {
+          info.fee = fee;
+          break;
+        }
+      }
+    }
+
+    // Enhanced date patterns
+    const datePatterns = [
+      /(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{4})/i,
+      /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})/,
+      /(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/,
+      // Thai date formats
+      /(\d{1,2})\s+(?:มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม)\s+(\d{4})/,
+    ];
+
+    for (const pattern of datePatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        info.date = match[1] || `${match[1]} ${match[2]}`;
+        break;
+      }
+    }
+
+    // Enhanced time patterns
+    const timePatterns = [
+      /(\d{1,2}:\d{2}:\d{2}(?:\s*(?:AM|PM|น\.|am|pm))?)/i,
+      /(\d{1,2}:\d{2}(?:\s*(?:AM|PM|น\.|am|pm))?)/i,
+      // Thai time format
+      /(\d{1,2}:\d{2}\s*น\.?)/i,
+    ];
+
+    for (const pattern of timePatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        info.time = match[1];
+        break;
+      }
+    }
+
+    // Enhanced reference patterns
+    const refPatterns = [
+      /(?:เลขที่อ้างอิง|หมายเลขอ้างอิง|อ้างอิง|Reference|Ref\s*No\.?|Ref\.?)[:\s]*([A-Z0-9]{10,})/i,
+      /(?:Transaction\s*(?:ID|No|Number))[:\s]*([A-Z0-9]{10,})/i,
+      /\b([A-Z]{3,6}[0-9]{8,})\b/,
+      // Thai reference patterns
+      /(?:รหัส|เลขที่)[:\s]*([A-Z0-9]{10,})/i,
+    ];
+
+    for (const pattern of refPatterns) {
+      const match = text.match(pattern);
+      if (match && match[1] && match[1].length >= 10 && match[1].length <= 50) {
+        info.reference = match[1].trim();
+        break;
+      }
+    }
+
+    // Enhanced account pattern
+    const accountPattern = /\b(\d{3}-?\d{1}-?\d{5}-?\d{1})\b/g;
+    const accounts = text.match(accountPattern);
+    if (accounts && accounts.length >= 1) {
+      info.fromAccount = accounts[0];
+      if (accounts.length >= 2) {
+        info.toAccount = accounts[1];
+      }
+    }
+
+    // Enhanced transfer type detection
+    const lowerText = text.toLowerCase();
+    if (lowerText.includes("promptpay") || text.includes("พร้อมเพย์")) {
+      info.transferType = "PromptPay";
+    } else if (text.includes("โอน") || lowerText.includes("transfer")) {
+      info.transferType = "โอนเงิน";
+    } else if (lowerText.includes("qr") || lowerText.includes("คิวอาร์")) {
+      info.transferType = "QR Code";
+    }
+
+    return info;
   };
 
   const parsePromptPayData = (data: string): QRData | null => {
@@ -420,7 +618,7 @@ export default function SlipReader({
     };
 
     const cleanText = text
-      .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s\.\,\:\-\/\(\)\฿]/g, " ")
+      .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s\.\,\:\-\/\(\)\฿\.\,]/g, " ")
       .replace(/\s+/g, " ")
       .trim();
 
@@ -432,6 +630,8 @@ export default function SlipReader({
       /฿[:\s]*([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})/,
       /([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})\s*(?:บาท|Baht)/i,
       /\b([1-9][0-9]{0,2}(?:,?[0-9]{3})*\.[0-9]{2})\b/,
+      /(?:จำนวน|ยอด)[:\s]*([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})/i,
+      /([0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2})\s*บาท/i,
     ];
 
     for (const pattern of amountPatterns) {
@@ -630,65 +830,38 @@ export default function SlipReader({
     <div className="min-vh-100 d-flex align-items-center justify-content-center py-4 bg-primary">
       {isEmbedded && (
         <div className="w-100">
-          {" "}
-          {/* Use w-100 to make it take full width in embedded mode */}
-          <div className="row justify-content-center">
-            <div className="col-lg-12">
-              {" "}
-              {/* Adjust column size for embedded */}
-              <div className="card shadow-lg rounded-3">
-                {" "}
-                {/* Smaller border radius for embedded */}
-                <div className="card-body p-3">
-                  {" "}
-                  {/* Smaller padding for embedded */}
-                  {!previewImage && (
-                    <div
-                      className={`border border-3 border-dashed rounded-3 p-3 text-center ${
-                        dragging ? "border-primary bg-light" : "border-primary bg-light"
-                      }`}
-                      style={{
-                        cursor: "pointer",
-                        transition: "all 0.3s ease",
-                      }}
-                      onClick={() => fileInputRef.current?.click()}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                    >
-                      <div className="fs-1 mb-2">
-                        📄
-                      </div>{" "}
-                      {/* Smaller icon for embedded */}
-                      <div className="text-primary fw-semibold fs-6 mb-1">
-                        คลิกเพื่ออัปโหลดสลิป หรือลากไฟล์มาวางที่นี่
-                      </div>
-                      <div className="text-muted small">
-                        รองรับไฟล์ JPG, PNG
-                      </div>
-                    </div>
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="d-none"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                  />
-                  {loading && (
-                    <p className="text-center mt-2 text-primary">
-                      {progress.message} ({progress.percent}%)
-                    </p>
-                  )}
-                  {error && (
-                    <div className="alert alert-danger mt-2 small" role="alert">
-                      ❌ {error}
-                    </div>
-                  )}
-                </div>
+          {!previewImage && (
+            <div
+              className={`border border-3 border-dashed rounded-3 p-4 text-center ${
+                dragging ? "border-primary bg-light" : "border-primary bg-light"
+              }`}
+              style={{
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <div className="fs-1 mb-2">
+                📄
+              </div>
+              <div className="text-primary fw-semibold fs-6 mb-1">
+                คลิกเพื่ออัปโหลดสลิป หรือลากไฟล์มาวางที่นี่
+              </div>
+              <div className="text-muted small">
+                รองรับไฟล์ JPG, PNG
               </div>
             </div>
-          </div>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="d-none"
+            accept="image/*"
+            onChange={handleFileSelect}
+          />
         </div>
       )}
       <div className="container">
@@ -886,10 +1059,10 @@ export default function SlipReader({
 
                           {qrData.amount && (
                             <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
-                              <small className="d-block mb-1 opacity-75">
+                              <small className="d-block mb-1 text-white">
                                 💰 จำนวนเงิน
                               </small>
-                              <div className="fs-3 fw-bold">
+                              <div className="fs-3 fw-bold text-white">
                                 {parseFloat(qrData.amount).toLocaleString(
                                   "th-TH",
                                   {
@@ -904,16 +1077,16 @@ export default function SlipReader({
 
                           {qrData.merchantID && (
                             <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
-                              <small className="d-block mb-1 opacity-75">
+                              <small className="d-block mb-1 text-white">
                                 👤 PromptPay ID (ผู้รับเงิน)
                               </small>
-                              <div className="fs-6">{qrData.merchantID}</div>
+                              <div className="fs-6 text-white">{qrData.merchantID}</div>
                             </div>
                           )}
 
                           {qrData.reference && (
                             <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
-                              <small className="d-block mb-1 opacity-75">
+                              <small className="d-block mb-1 text-white">
                                 🔖 เลขอ้างอิง
                               </small>
                               <div className="fs-6">
@@ -926,7 +1099,7 @@ export default function SlipReader({
 
                           {qrData.billPaymentRef1 && (
                             <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
-                              <small className="d-block mb-1 opacity-75">
+                              <small className="d-block mb-1 text-white">
                                 📋 Ref 1
                               </small>
                               <div className="fs-6">
@@ -939,7 +1112,7 @@ export default function SlipReader({
 
                           {qrData.billPaymentRef2 && (
                             <div className="mb-3 p-3 rounded-3 bg-white bg-opacity-10">
-                              <small className="d-block mb-1 opacity-75">
+                              <small className="d-block mb-1 text-white">
                                 📋 Ref 2
                               </small>
                               <div className="fs-6">

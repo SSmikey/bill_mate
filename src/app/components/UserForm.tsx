@@ -3,11 +3,6 @@
 import { useState, useEffect } from 'react';
 import StyledSelect from './StyledSelect';
 
-interface Room {
-  _id: string;
-  roomNumber: string;
-}
-
 interface UserFormData {
   email: string;
   password?: string;
@@ -40,26 +35,12 @@ export default function UserForm({
       roomId: '',
     }
   );
-  const [rooms, setRooms] = useState<Room[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    fetchRooms();
+    // No-op effect, but keeping structure for future use
   }, []);
-
-  const fetchRooms = async () => {
-    try {
-      const response = await fetch('/api/rooms');
-      const data = await response.json();
-
-      if (data.success) {
-        setRooms(data.data || []);
-      }
-    } catch (err) {
-      console.error('Failed to fetch rooms');
-    }
-  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -239,24 +220,6 @@ export default function UserForm({
             ]}
           />
         </div>
-
-        {formData.role === 'tenant' && (
-          <div className="col-md-6">
-            <StyledSelect
-              value={formData.roomId || ''}
-              onChange={(val) => handleChange({ target: { name: 'roomId', value: val } } as any)}
-              label="ห้องพัก"
-              disabled={isLoading}
-              options={[
-                { value: '', label: '-- เลือกห้อง --' },
-                ...rooms.map((room) => ({
-                  value: room._id,
-                  label: room.roomNumber,
-                })),
-              ]}
-            />
-          </div>
-        )}
       </div>
 
       <div className="d-flex gap-2 mt-4">
