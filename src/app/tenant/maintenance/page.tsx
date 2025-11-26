@@ -43,6 +43,7 @@ export default function MaintenancePage() {
   const [userRoom, setUserRoom] = useState<UserRoom | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [formData, setFormData] = useState({
     category: 'other',
     title: '',
@@ -156,7 +157,7 @@ export default function MaintenancePage() {
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          alert('ส่งคำขอแจ้งซ่อมเรียบร้อยแล้ว');
+          setShowSuccessNotification(true);
           setShowForm(false);
           setFormData({
             category: 'other',
@@ -165,6 +166,11 @@ export default function MaintenancePage() {
             priority: 'medium',
           });
           fetchMaintenanceRequests();
+          
+          // Hide notification after 5 seconds
+          setTimeout(() => {
+            setShowSuccessNotification(false);
+          }, 5000);
         }
       } else {
         const errorData = await response.json();
@@ -201,6 +207,33 @@ export default function MaintenancePage() {
 
   return (
     <div className="fade-in">
+      {/* Success Notification */}
+      {showSuccessNotification && (
+        <div className="position-fixed top-0 start-50 translate-middle-x mt-3" style={{ zIndex: 1050 }}>
+          <div className="card border-0 bg-success text-white rounded-3 shadow-lg fade-in" style={{ minWidth: '300px' }}>
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center">
+                <div className="flex-shrink-0">
+                  <div className="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px' }}>
+                    <i className="bi bi-check-circle-fill fs-4"></i>
+                  </div>
+                </div>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="card-title mb-1 fw-semibold">ส่งคำขอแจ้งซ่อมเรียบร้อยแล้ว</h6>
+                  <p className="card-text small mb-0 opacity-90">เราได้รับคำขอของคุณแล้ว จะดำเนินการตรวจสอบในเร็วๆ นี้</p>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white ms-2"
+                  onClick={() => setShowSuccessNotification(false)}
+                  aria-label="Close"
+                ></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-5">
         <div className="d-flex align-items-center justify-content-between mb-3">

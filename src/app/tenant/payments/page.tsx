@@ -11,6 +11,12 @@ interface Payment {
     _id: string;
     month: number;
     year: number;
+    status: 'pending' | 'paid' | 'overdue' | 'verified';
+    roomId?: {
+      _id: string;
+      roomNumber: string;
+      floor?: number;
+    };
   };
   ocrData?: {
     amount?: number;
@@ -53,11 +59,22 @@ const TenantPaymentsPage = () => {
     return payments.filter((p) => p.status === filter);
   }, [payments, filter]);
 
-  const getStatusBadge = (status: PaymentStatus) => {
+  const getPaymentStatusBadge = (status: PaymentStatus) => {
     const statusMap: { [key in PaymentStatus]: { bg: string; text: string } } = {
       pending: { bg: 'warning', text: 'รอตรวจสอบ' },
       verified: { bg: 'success', text: 'อนุมัติแล้ว' },
       rejected: { bg: 'danger', text: 'ปฏิเสธ' },
+    };
+    const { bg, text } = statusMap[status] || { bg: 'secondary', text: status };
+    return <span className={`badge bg-${bg}`}>{text}</span>;
+  };
+
+  const getBillStatusBadge = (status: string) => {
+    const statusMap: { [key: string]: { bg: string; text: string } } = {
+      pending: { bg: 'secondary', text: 'รอชำระ' },
+      paid: { bg: 'info', text: 'ชำระแล้ว' },
+      overdue: { bg: 'danger', text: 'ค้างชำระ' },
+      verified: { bg: 'success', text: 'ยืนยันแล้ว' },
     };
     const { bg, text } = statusMap[status] || { bg: 'secondary', text: status };
     return <span className={`badge bg-${bg}`}>{text}</span>;
@@ -221,7 +238,8 @@ const TenantPaymentsPage = () => {
                     <th className="fw-semibold">วันที่อัปโหลด</th>
                     <th className="fw-semibold">สำหรับบิล</th>
                     <th className="fw-semibold">จำนวนเงิน</th>
-                    <th className="fw-semibold">สถานะ</th>
+                    <th className="fw-semibold">สถานะการชำระ</th>
+                    <th className="fw-semibold">สถานะบิล</th>
                     <th className="fw-semibold text-center">การจัดการ</th>
                   </tr>
                 </thead>
@@ -237,19 +255,31 @@ const TenantPaymentsPage = () => {
                         </small>
                       </td>
                       <td>
-                        <span className="badge bg-light text-dark">เดือน {p.billId.month}/{p.billId.year}</span>
+                        <div>
+                          <span className="badge bg-light text-dark">เดือน {p.billId.month}/{p.billId.year}</span>
+                          {p.billId.roomId && (
+                            <div className="small text-muted mt-1">
+                              <i className="bi bi-house-door me-1"></i>
+                              {p.billId.roomId.roomNumber}
+                              {p.billId.roomId.floor && ` (ชั้น ${p.billId.roomId.floor})`}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td>
                         <div className="fw-bold">{p.ocrData?.amount ? `${p.ocrData.amount.toLocaleString('th-TH')} บาท` : 'ไม่สามารถอ่านได้'}</div>
                       </td>
                       <td>
-                        <div className="mb-1">{getStatusBadge(p.status)}</div>
+                        <div className="mb-1">{getPaymentStatusBadge(p.status)}</div>
                         {p.status === 'rejected' && (
                           <small className="text-danger">
                             <i className="bi bi-exclamation-circle me-1"></i>
                             {p.rejectionReason}
                           </small>
                         )}
+                      </td>
+                      <td>
+                        {getBillStatusBadge(p.billId.status)}
                       </td>
                       <td className="text-center">
                         <Link href={`/tenant/bills/${p.billId._id}`} className="btn btn-sm btn-outline-primary rounded-pill text-decoration-none">

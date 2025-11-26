@@ -20,7 +20,14 @@ export async function GET(req: NextRequest) {
     }
 
     const payments = await Payment.find(query)
-      .populate('billId', 'roomId month year totalAmount dueDate')
+      .populate({
+        path: 'billId',
+        select: 'roomId month year totalAmount dueDate status tenantId',
+        populate: {
+          path: 'roomId',
+          select: 'roomNumber floor'
+        }
+      })
       .populate('userId', 'name email')
       .sort({ createdAt: -1 });
 
