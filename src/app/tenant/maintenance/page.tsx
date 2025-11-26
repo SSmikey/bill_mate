@@ -267,7 +267,7 @@ export default function MaintenancePage() {
                 </label>
                 <input
                   type="text"
-                  className="form-control rounded-2 bg-light "
+                  className="form-control rounded-2 bg-light text-dark"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="ระบุหัวข้อการแจ้งซ่อม"
@@ -280,7 +280,7 @@ export default function MaintenancePage() {
                   รายละเอียด
                 </label>
                 <textarea
-                  className="form-control rounded-2 bg-light"
+                  className="form-control rounded-2 bg-light text-dark"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="อธิบายปัญหาที่พบโดยละเอียด"
