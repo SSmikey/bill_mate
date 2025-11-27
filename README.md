@@ -35,8 +35,8 @@
 - [API Routes](#-api-routes)
 - [การ Deploy](#-การ-deploy)
 - [การพัฒนาและทดสอบ](#-การพัฒนาและทดสอบ)
+- [Contributing](#-contributing)
 - [ทีมผู้พัฒนา](#-ทีมผู้พัฒนา)
-- [License](#-license)
 
 ---
 
@@ -483,6 +483,18 @@ git push origin feature/your-feature-name
 - Component names ใช้ PascalCase
 - เขียน comments สำหรับโค้ดที่ซับซ้อน
 - ใช้ async/await แทน Promise chains
+
+---
+
+## 🤝 Contributing
+
+เรายินดีรับ contributions! หากคุณพบ bug หรือต้องการเพิ่มฟีเจอร์ใหม่:
+
+1. Fork โปรเจค
+2. สร้าง Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit การเปลี่ยนแปลง (`git commit -m 'Add some AmazingFeature'`)
+4. Push ไปยัง Branch (`git push origin feature/AmazingFeature`)
+5. เปิด Pull Request
 
 ---
 
