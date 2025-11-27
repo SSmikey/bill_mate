@@ -101,56 +101,9 @@
 
 ---
 
-## 🛠 เทคโนโลยีที่ใช้
+## 🛠 เทคโนโลジีที่ใช้
 
-<table>
-<tr>
-<td align="center" width="25%">
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" width="48" height="48" alt="Next.js" />
-<br><strong>Next.js 15</strong>
-<br><sub>React Framework</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" width="48" height="48" alt="React" />
-<br><strong>React 19</strong>
-<br><sub>UI Library</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" width="48" height="48" alt="TypeScript" />
-<br><strong>TypeScript</strong>
-<br><sub>Type Safety</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" width="48" height="48" alt="MongoDB" />
-<br><strong>MongoDB 7</strong>
-<br><sub>NoSQL Database</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg" width="48" height="48" alt="Bootstrap" />
-<br><strong>Bootstrap 5</strong>
-<br><sub>CSS Framework</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" width="48" height="48" alt="Node.js" />
-<br><strong>Node.js</strong>
-<br><sub>Runtime</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" width="48" height="48" alt="AWS" />
-<br><strong>AWS S3</strong>
-<br><sub>Cloud Storage</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://www.gstatic.com/devrel-devsite/prod/v5c0ec57a8c7133a5e28b47869eb2c14d4c935fdaba8f3f29c7b0e26643e8c817/cloud/images/favicons/onecloud/super_cloud.png" width="48" height="48" alt="Google Cloud" />
-<br><strong>Google Vision</strong>
-<br><sub>OCR API</sub>
-</td>
-</tr>
-</table>
-
-### 📚 Stack เต็มรูปแบบ
+### 📚 Tech Stack
 
 #### Frontend
 - **Next.js 15** - React Framework with App Router
@@ -500,31 +453,39 @@ git push origin feature/your-feature-name
 
 ## 👨‍💻 ทีมผู้พัฒนา
 
+<div align="center">
+
 <table>
   <tr>
-    <td align="center">
+    <td align="center" width="50%">
+      <img src="https://ui-avatars.com/api/?name=Sitthichai+Saengnon&background=0D8ABC&color=fff&size=100&bold=true" alt="Sitthichai" width="100" height="100" style="border-radius: 50%;"><br>
       <b>นายสิทธิชัย แสงนนท์</b><br>
-      <sub>6612732134</sub>
+      <sub>รหัสนักศึกษา: 6612732134</sub>
     </td>
-    <td align="center">
+    <td align="center" width="50%">
+      <img src="https://ui-avatars.com/api/?name=Peeraphat+Suttapanya&background=4CAF50&color=fff&size=100&bold=true" alt="Peeraphat" width="100" height="100" style="border-radius: 50%;"><br>
       <b>นายพีรพัฒน์ สุทธปัญญา</b><br>
-      <sub>6612732121</sub>
+      <sub>รหัสนักศึกษา: 6612732121</sub>
     </td>
   </tr>
   <tr>
-    <td align="center">
+    <td align="center" width="50%">
+      <img src="https://ui-avatars.com/api/?name=Wasinee+Marit&background=E91E63&color=fff&size=100&bold=true" alt="Wasinee" width="100" height="100" style="border-radius: 50%;"><br>
       <b>นางสาววาสินี มาฤทธิ์</b><br>
-      <sub>6712732126</sub>
+      <sub>รหัสนักศึกษา: 6712732126</sub>
     </td>
-    <td align="center">
+    <td align="center" width="50%">
+      <img src="https://ui-avatars.com/api/?name=Waranya+Chimngam&background=FF9800&color=fff&size=100&bold=true" alt="Waranya" width="100" height="100" style="border-radius: 50%;"><br>
       <b>นางสาววรัญญา ฉิมงาม</b><br>
-      <sub>6712732125</sub>
+      <sub>รหัสนักศึกษา: 6712732125</sub>
     </td>
   </tr>
 </table>
 
-**สาขาวิชา**: วิทยาการคอมพิวเตอร์  
-**สถาบัน**: มหาวิทยาลัยราชภัฏศรีสะเกษ
+**🎓 สาขาวิชา**: วิทยาการคอมพิวเตอร์  
+**🏛️ สถาบัน**: มหาวิทยาลัยราชภัฏศรีสะเกษ
+
+</div>
 
 ---
 
