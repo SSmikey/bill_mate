@@ -458,24 +458,20 @@ git push origin feature/your-feature-name
 <table>
   <tr>
     <td align="center" width="50%">
-      <img src="https://ui-avatars.com/api/?name=Sitthichai+Saengnon&background=0D8ABC&color=fff&size=100&bold=true" alt="Sitthichai" width="100" height="100" style="border-radius: 50%;"><br>
       <b>นายสิทธิชัย แสงนนท์</b><br>
       <sub>รหัสนักศึกษา: 6612732134</sub>
     </td>
     <td align="center" width="50%">
-      <img src="https://ui-avatars.com/api/?name=Peeraphat+Suttapanya&background=4CAF50&color=fff&size=100&bold=true" alt="Peeraphat" width="100" height="100" style="border-radius: 50%;"><br>
       <b>นายพีรพัฒน์ สุทธปัญญา</b><br>
       <sub>รหัสนักศึกษา: 6612732121</sub>
     </td>
   </tr>
   <tr>
     <td align="center" width="50%">
-      <img src="https://ui-avatars.com/api/?name=Wasinee+Marit&background=E91E63&color=fff&size=100&bold=true" alt="Wasinee" width="100" height="100" style="border-radius: 50%;"><br>
       <b>นางสาววาสินี มาฤทธิ์</b><br>
       <sub>รหัสนักศึกษา: 6712732126</sub>
     </td>
     <td align="center" width="50%">
-      <img src="https://ui-avatars.com/api/?name=Waranya+Chimngam&background=FF9800&color=fff&size=100&bold=true" alt="Waranya" width="100" height="100" style="border-radius: 50%;"><br>
       <b>นางสาววรัญญา ฉิมงาม</b><br>
       <sub>รหัสนักศึกษา: 6712732125</sub>
     </td>
