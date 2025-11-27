@@ -10,39 +10,15 @@
 
 **ระบบจัดการหอพักครบวงจร พร้อมเทคโนโลยี OCR และ QR Code สำหรับการตรวจสอบการชำระเงินอัตโนมัติ**
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Team](#-development-team)
-
-</div>
+[Features](#-คุณสมบัติเด่น) • [Quick Start](#-การติดตั้งและใช้งาน) • [Documentation](#-โครงสร้างโปรเจค) • [Team](#-ทีมผู้พัฒนา)
 
 ---
 
-## 👨‍💻 ทีมผู้พัฒนา
+### 📸 ภาพตัวอย่างระบบ
 
-<table>
-  <tr>
-    <td align="center">
-      <b>นายสิทธิชัย แสงนนท์</b><br>
-      <sub>6612732134</sub>
-    </td>
-    <td align="center">
-      <b>นายพีรพัฒน์ สุทธปัญญา</b><br>
-      <sub>6612732121</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <b>นางสาววาสินี มาฤทธิ์</b><br>
-      <sub>6712732126</sub>
-    </td>
-    <td align="center">
-      <b>นางสาววรัญญา ฉิมงาม</b><br>
-      <sub>6712732125</sub>
-    </td>
-  </tr>
-</table>
+<img src="public/img_screenshots/screenshots_web.png" alt="Bill Mate Dashboard" width="100%">
 
-**สาขาวิชา**: วิทยาการคอมพิวเตอร์  
-**สถาบัน**: มหาวิทยาลัยราชภัฏศรีสะเกษ
+</div>
 
 ---
 
@@ -66,77 +42,139 @@
 
 ## 🎯 เกี่ยวกับโปรเจค
 
-**Bill Mate** เป็นระบบบริหารจัดการหอพักแบบครบวงจร ที่ออกแบบมาเพื่อช่วยให้เจ้าของหอพักและผู้เช่าสามารถจัดการค่าเช่า ค่าน้ำ ค่าไฟ และการชำระเงินได้อย่างมีประสิทธิภาพ ด้วยเทคโนโลยี OCR (Optical Character Recognition) และ QR Code ที่ช่วยตรวจสอบสลิปการโอนเงินอัตโนมัติ
+**Bill Mate** เป็นระบบบริหารจัดการหอพักแบบครบวงจร ที่ออกแบบมาเพื่อช่วยให้เจ้าของหอพักและผู้เช่าสามารถจัดการค่าเช่า ค่าน้ำ ค่าไฟ และการชำระเงินได้อย่างมีประสิทธิภาพ ด้วยเทคโนโลยี **OCR** (Optical Character Recognition) และ **QR Code** ที่ช่วยตรวจสอบสลิปการโอนเงินอัตโนมัติ
 
 ระบบนี้พัฒนาด้วย **Next.js 15** (App Router), **NextAuth** สำหรับการจัดการ authentication, **MongoDB** เป็นฐานข้อมูล และรองรับการจัดเก็บไฟล์บน **AWS S3** พร้อมระบบแจ้งเตือนอัตโนมัติทางอีเมล
+
+> 💡 **โปรเจคนี้เหมาะสำหรับ**: เจ้าของหอพัก, ผู้จัดการอสังหาริมทรัพย์, และผู้ที่ต้องการระบบจัดการการเงินที่มีประสิทธิภาพ
 
 ---
 
 ## ✨ คุณสมบัติเด่น
 
+<table>
+<tr>
+<td width="50%">
+
 ### 👥 การจัดการผู้ใช้งาน
-- **2 ระดับสิทธิ์**: Administrator และ Tenant (ผู้เช่า)
-- ระบบ Authentication ที่ปลอดภัยด้วย NextAuth (JWT Session)
-- การจัดการโปรไฟล์และข้อมูลส่วนตัว
+- ✅ **2 ระดับสิทธิ์**: Administrator และ Tenant (ผู้เช่า)
+- ✅ ระบบ Authentication ที่ปลอดภัยด้วย NextAuth (JWT Session)
+- ✅ การจัดการโปรไฟล์และข้อมูลส่วนตัว
 
 ### 💰 การจัดการบิลและการชำระเงิน
-- สร้างและส่งบิลค่าเช่า ค่าน้ำ ค่าไฟแบบอัตโนมัติ
-- ติดตามสถานะการชำระเงินแบบ Real-time
-- ประวัติการชำระเงินและรายงานสรุป
+- ✅ สร้างและส่งบิลค่าเช่า ค่าน้ำ ค่าไฟแบบอัตโนมัติ
+- ✅ ติดตามสถานะการชำระเงินแบบ Real-time
+- ✅ ประวัติการชำระเงินและรายงานสรุป
 
 ### 🔍 เทคโนโลยี OCR และ QR Code
-- **Tesseract.js**: OCR Engine สำหรับอ่านข้อความจากสลิป
-- **Google Cloud Vision API**: OCR แม่นยำสูงสำหรับเอกสารภาษาไทย
-- **QR Code Scanner**: ตรวจสอบความถูกต้องของสลิปด้วย QR Code
+- ✅ **Tesseract.js**: OCR Engine สำหรับอ่านข้อความจากสลิป
+- ✅ **Google Cloud Vision API**: OCR แม่นยำสูงสำหรับเอกสารภาษาไทย
+- ✅ **QR Code Scanner**: ตรวจสอบความถูกต้องของสลิปด้วย QR Code
+
+</td>
+<td width="50%">
 
 ### 🏠 การจัดการห้องพัก
-- จัดการข้อมูลห้องพัก อัตราค่าเช่า และสถานะ
-- กำหนดผู้เช่าเข้าห้องพัก
-- รายงานสถานะห้องว่าง/ห้องเต็ม
+- ✅ จัดการข้อมูลห้องพัก อัตราค่าเช่า และสถานะ
+- ✅ กำหนดผู้เช่าเข้าห้องพัก
+- ✅ รายงานสถานะห้องว่าง/ห้องเต็ม
 
 ### 🔔 ระบบแจ้งเตือน
-- แจ้งเตือนทางอีเมลเมื่อมีบิลใหม่
-- แจ้งเตือนเมื่อชำระเงินสำเร็จ
-- แจ้งเตือนค่าเช่าค้างชำระ
-- Notification Center ในระบบ
+- ✅ แจ้งเตือนทางอีเมลเมื่อมีบิลใหม่
+- ✅ แจ้งเตือนเมื่อชำระเงินสำเร็จ
+- ✅ แจ้งเตือนค่าเช่าค้างชำระ
+- ✅ Notification Center ในระบบ
 
 ### 📦 การจัดเก็บไฟล์
-- รองรับการเก็บไฟล์แบบ Local Storage
-- รองรับ AWS S3 สำหรับ Cloud Storage
-- จัดการไฟล์สลิปและเอกสารแนบ
+- ✅ รองรับการเก็บไฟล์แบบ Local Storage
+- ✅ รองรับ AWS S3 สำหรับ Cloud Storage
+- ✅ จัดการไฟล์สลิปและเอกสารแนบ
 
 ### ⏰ ระบบ Cron Jobs
-- ตรวจสอบบิลค้างชำระอัตโนมัติ
-- ส่งการแจ้งเตือนตามกำหนดเวลา
-- สร้างบิลประจำเดือนอัตโนมัติ
+- ✅ ตรวจสอบบิลค้างชำระอัตโนมัติ
+- ✅ ส่งการแจ้งเตือนตามกำหนดเวลา
+- ✅ สร้างบิลประจำเดือนอัตโนมัติ
+
+</td>
+</tr>
+</table>
 
 ---
 
 ## 🛠 เทคโนโลยีที่ใช้
 
-### Frontend
+<table>
+<tr>
+<td align="center" width="25%">
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" width="48" height="48" alt="Next.js" />
+<br><strong>Next.js 15</strong>
+<br><sub>React Framework</sub>
+</td>
+<td align="center" width="25%">
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" width="48" height="48" alt="React" />
+<br><strong>React 19</strong>
+<br><sub>UI Library</sub>
+</td>
+<td align="center" width="25%">
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" width="48" height="48" alt="TypeScript" />
+<br><strong>TypeScript</strong>
+<br><sub>Type Safety</sub>
+</td>
+<td align="center" width="25%">
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" width="48" height="48" alt="MongoDB" />
+<br><strong>MongoDB 7</strong>
+<br><sub>NoSQL Database</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg" width="48" height="48" alt="Bootstrap" />
+<br><strong>Bootstrap 5</strong>
+<br><sub>CSS Framework</sub>
+</td>
+<td align="center" width="25%">
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" width="48" height="48" alt="Node.js" />
+<br><strong>Node.js</strong>
+<br><sub>Runtime</sub>
+</td>
+<td align="center" width="25%">
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" width="48" height="48" alt="AWS" />
+<br><strong>AWS S3</strong>
+<br><sub>Cloud Storage</sub>
+</td>
+<td align="center" width="25%">
+<img src="https://www.gstatic.com/devrel-devsite/prod/v5c0ec57a8c7133a5e28b47869eb2c14d4c935fdaba8f3f29c7b0e26643e8c817/cloud/images/favicons/onecloud/super_cloud.png" width="48" height="48" alt="Google Cloud" />
+<br><strong>Google Vision</strong>
+<br><sub>OCR API</sub>
+</td>
+</tr>
+</table>
+
+### 📚 Stack เต็มรูปแบบ
+
+#### Frontend
 - **Next.js 15** - React Framework with App Router
 - **React 19** - UI Library
 - **TypeScript** - Type Safety
 - **Bootstrap 5** - CSS Framework
 - **React-Bootstrap** - React Components
 
-### Backend & Database
+#### Backend & Database
 - **Next.js API Routes** - RESTful API
 - **NextAuth.js** - Authentication & Authorization
 - **MongoDB** - NoSQL Database
 - **Mongoose** - ODM (Object Data Modeling)
 
-### OCR & Image Processing
+#### OCR & Image Processing
 - **Tesseract.js** - JavaScript OCR Engine
 - **Google Cloud Vision API** - Advanced OCR
 - **QR Code Scanner** - QR Code Detection
 
-### Cloud Services
+#### Cloud Services
 - **AWS S3** - Cloud File Storage
 - **@aws-sdk/client-s3** - AWS SDK for JavaScript
 
-### Development Tools
+#### Development Tools
 - **ESLint** - Code Linting
 - **Prettier** - Code Formatting
 - **Nodemailer** - Email Service
@@ -266,47 +304,59 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 bill_mate/
 ├── src/
-│   ├── app/                      # Next.js App Router (pages & routes)
-│   │   ├── (auth)/               # Authentication routes
+│   ├── app/                      # Next.js App Router
+│   │   ├── (auth)/              # Authentication routes
 │   │   │   ├── login/
 │   │   │   └── register/
-│   │   ├── admin/                # Admin routes
+│   │   ├── admin/               # Admin routes
 │   │   │   ├── dashboard/
 │   │   │   ├── bills/
 │   │   │   ├── rooms/
 │   │   │   └── users/
-│   │   ├── tenant/               # Tenant routes
+│   │   ├── tenant/              # Tenant routes
 │   │   │   ├── dashboard/
 │   │   │   └── bills/
-│   │   ├── api/                  # API routes (auth, bills, payments, notifications, ...)
+│   │   ├── api/                 # API routes
 │   │   │   ├── auth/
 │   │   │   ├── bills/
 │   │   │   ├── payments/
 │   │   │   └── notifications/
-│   │   ├── layout.tsx            # Root layout
-│   │   └── page.tsx              # Home page
-│   ├── components/               # React components (Navbar, DataTable, PageHeader, ...)
-│   ├── lib/                      # Utilities (auth.ts, mongodb.ts, fileStorage.ts, security.ts, ...)
-│   ├── models/                   # Mongoose models (User, Bill, Room, Payment, Notification, ...)
-│   ├── services/                 # Business logic (ocrService.ts, qrService.ts, emailService.ts, cronService.ts)
-│   └── types/                    # TypeScript types (index.ts, *.d.ts)
+│   │   ├── layout.tsx           # Root layout
+│   │   └── page.tsx             # Home page
+│   ├── components/              # React components
+│   │   ├── Navbar.tsx
+│   │   ├── DataTable.tsx
+│   │   ├── PageHeader.tsx
+│   │   └── ...
+│   ├── lib/                     # Utility functions
+│   │   ├── auth.ts              # NextAuth configuration
+│   │   ├── mongodb.ts           # Database connection
+│   │   ├── fileStorage.ts       # File upload handler
+│   │   └── security.ts          # Security utilities
+│   ├── models/                  # Mongoose models
+│   │   ├── User.ts
+│   │   ├── Bill.ts
+│   │   ├── Room.ts
+│   │   ├── Payment.ts
+│   │   └── Notification.ts
+│   ├── services/                # Business logic
+│   │   ├── ocrService.ts        # OCR processing
+│   │   ├── qrService.ts         # QR code handling
+│   │   ├── emailService.ts      # Email notifications
+│   │   └── cronService.ts       # Scheduled jobs
+│   └── types/                   # TypeScript types
+│       └── index.d.ts
 ├── scripts/
-│   ├── init-db.js                # Database initialization
-│   ├── create-admin.js
-│   ├── create-admin.ts
-│   ├── setup-admin.js
-│   └── copy-bootstrap-icons.js
-├── public/                       # Static files
-│   ├── bootstrap-icons/          # Bootstrap icon files (copied by script)
-│   └── (uploads/)                # Local uploads (created at runtime if used)
-├── .env.local                    # Local environment variables (not committed)
-├── .env.production.example       # Example production env
-├── .eslintrc.json                # ESLint configuration
-├── tsconfig.json                 # TypeScript configuration
-├── next.config.ts                # Next.js configuration (TypeScript)
-├── next-env.d.ts                 # Next.js type env file
-├── vercel.json                   # Vercel configuration (if present)
-└── package.json                  # Dependencies & scripts
+│   ├── init-db.js               # Database initialization
+│   └── create-admin.ts          # Create admin user
+├── public/                      # Static files
+│   ├── uploads/                 # Local file storage
+│   └── icons/                   # Bootstrap icons
+├── .env.local                   # Environment variables
+├── .eslintrc.json              # ESLint configuration
+├── tsconfig.json               # TypeScript configuration
+├── next.config.js              # Next.js configuration
+└── package.json                # Dependencies
 ```
 
 ---
@@ -436,14 +486,40 @@ git push origin feature/your-feature-name
 
 ---
 
-## 🤝 Contributing
+## 👨‍💻 ทีมผู้พัฒนา
 
-เรายินดีรับ contributions! หากคุณพบ bug หรือต้องการเพิ่มฟีเจอร์ใหม่:
+<table>
+  <tr>
+    <td align="center">
+      <b>นายสิทธิชัย แสงนนท์</b><br>
+      <sub>6612732134</sub>
+    </td>
+    <td align="center">
+      <b>นายพีรพัฒน์ สุทธปัญญา</b><br>
+      <sub>6612732121</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <b>นางสาววาสินี มาฤทธิ์</b><br>
+      <sub>6712732126</sub>
+    </td>
+    <td align="center">
+      <b>นางสาววรัญญา ฉิมงาม</b><br>
+      <sub>6712732125</sub>
+    </td>
+  </tr>
+</table>
 
-1. Fork โปรเจค
-2. สร้าง Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit การเปลี่ยนแปลง (`git commit -m 'Add some AmazingFeature'`)
-4. Push ไปยัง Branch (`git push origin feature/AmazingFeature`)
-5. เปิด Pull Request
+**สาขาวิชา**: วิทยาการคอมพิวเตอร์  
+**สถาบัน**: มหาวิทยาลัยราชภัฏศรีสะเกษ
 
 ---
+
+<div align="center">
+
+**Made with ❤️ by Bill Mate Development Team**
+
+⭐ ถ้าโปรเจคนี้มีประโยชน์ อย่าลืมกด Star ด้วยนะคะ!
+
+</div>
